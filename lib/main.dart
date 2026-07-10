@@ -5,6 +5,8 @@ import 'core/routes/app_router.dart';
 import 'core/network/dio_client.dart';
 import 'features/auth/services/auth_service.dart';
 import 'features/auth/providers/auth_provider.dart';
+import 'features/user_management/services/user_service.dart';
+import 'features/user_management/providers/user_provider.dart';
 
 void main() {
   runApp(const ConvenienceStoreApp());
@@ -26,6 +28,13 @@ class ConvenienceStoreApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthService, AuthProvider>(
           create: (context) => AuthProvider(context.read<AuthService>()),
           update: (context, authService, previous) => previous ?? AuthProvider(authService),
+        ),
+        ProxyProvider<DioClient, UserService>(
+          update: (context, dioClient, previous) => UserService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<UserService, UserProvider>(
+          create: (context) => UserProvider(context.read<UserService>()),
+          update: (context, userService, previous) => previous ?? UserProvider(userService),
         ),
       ],
       child: MaterialApp.router(
