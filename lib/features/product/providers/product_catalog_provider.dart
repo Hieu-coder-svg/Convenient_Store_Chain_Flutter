@@ -1,0 +1,197 @@
+import 'package:flutter/foundation.dart';
+import '../models/category_model.dart';
+import '../models/product_model.dart';
+import '../services/product_api_service.dart';
+
+class ProductCatalogProvider extends ChangeNotifier {
+  final ProductApiService _apiService;
+
+  List<CategoryModel> _categories = [];
+  List<ProductModel> _products = [];
+  bool _isLoading = false;
+  String? _error;
+
+  ProductCatalogProvider(this._apiService);
+
+  List<CategoryModel> get categories => _categories;
+  List<ProductModel> get products => _products;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  // --- Category Handlers ---
+  Future<void> fetchCategories() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final list = await _apiService.getCategories();
+      _categories = list;
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> addCategory(String name, String? description) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final newCat = await _apiService.createCategory(name, description);
+      _categories.add(newCat);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> editCategory(int id, String name, String? description) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final success = await _apiService.updateCategory(id, name, description);
+      if (success) {
+        final index = _categories.indexWhere((c) => c.categoryId == id);
+        if (index != -1) {
+          _categories[index] = _categories[index].copyWith(
+            categoryName: name,
+            description: description,
+          );
+        }
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> removeCategory(int id) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final success = await _apiService.deleteCategory(id);
+      if (success) {
+        _categories.removeWhere((c) => c.categoryId == id);
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  void reorderCategories(int oldIndex, int newIndex) {
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+    final CategoryModel item = _categories.removeAt(oldIndex);
+    _categories.insert(newIndex, item);
+    notifyListeners();
+    // Ghi chú: Nếu backend hỗ trợ lưu DisplayOrder, ta sẽ gọi API cập nhật hàng loạt ở đây.
+  }
+
+  // --- Product Handlers ---
+  Future<void> fetchProducts({String? search, int? categoryId}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final list = await _apiService.getProducts(search: search, categoryId: categoryId);
+      _products = list;
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> addProduct(ProductModel product) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final newProd = await _apiService.createProduct(product);
+      _products.add(newProd);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> editProduct(ProductModel product) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final success = await _apiService.updateProduct(product);
+      if (success) {
+        final index = _products.indexWhere((p) => p.productId == product.productId);
+        if (index != -1) {
+          _products[index] = product;
+        }
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> removeProduct(int id) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final success = await _apiService.deleteProduct(id);
+      if (success) {
+        _products.removeWhere((p) => p.productId == id);
+      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+}
