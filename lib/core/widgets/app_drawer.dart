@@ -1,0 +1,170 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../features/auth/providers/auth_provider.dart';
+import '../constants/app_colors.dart';
+
+class AppDrawer extends StatelessWidget {
+  const AppDrawer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().currentUser;
+
+    return Drawer(
+      child: Column(
+        children: [
+          _buildHeader(user),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildNavItem(
+                  context,
+                  icon: Icons.dashboard_outlined,
+                  title: 'Bảng điều khiển',
+                  onTap: () => context.go('/home'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.person_outline,
+                  title: 'Thông tin cá nhân',
+                  onTap: () {
+                    // TODO: Implement Profile Screen
+                    Navigator.pop(context); // Close drawer
+                  },
+                ),
+                const Divider(),
+                
+                // Cửa hàng & Sản phẩm
+                _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.inventory_2_outlined,
+                  title: 'Sản phẩm',
+                  onTap: () => context.go('/products'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.category_outlined,
+                  title: 'Danh mục',
+                  onTap: () => context.go('/categories'),
+                ),
+                
+                // Đối tác & Chi nhánh
+                _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.business_outlined,
+                  title: 'Nhà cung cấp',
+                  onTap: () => context.go('/suppliers'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.storefront_outlined,
+                  title: 'Chi nhánh',
+                  onTap: () => context.go('/branches'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          // Logout Button at the bottom
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text(
+              'Đăng xuất',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            onTap: () async {
+              Navigator.pop(context); // Close drawer first
+              await context.read<AuthProvider>().logout();
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(dynamic user) {
+    return UserAccountsDrawerHeader(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary,
+            Color(0xFF1E88E5), // Darker blue
+          ],
+        ),
+      ),
+      currentAccountPicture: CircleAvatar(
+        backgroundColor: Colors.white,
+        child: Text(
+          user?.fullName.substring(0, 1).toUpperCase() ?? 'U',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
+          ),
+        ),
+      ),
+      accountName: Text(
+        user?.fullName ?? 'Người dùng',
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      accountEmail: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(user?.username ?? 'Chưa đăng nhập'),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              user?.roleName ?? 'N/A',
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+      margin: EdgeInsets.zero,
+    );
+  }
+
+  Widget _buildNavItem(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap}) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.grey[700]),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey[600],
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+}

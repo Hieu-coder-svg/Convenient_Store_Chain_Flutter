@@ -89,20 +89,6 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text('Cấu hình hệ thống', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.blue[100],
-              child: const Text('A', style: TextStyle(color: Colors.blue)),
-            ),
-          )
-        ],
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(

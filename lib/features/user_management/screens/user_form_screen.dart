@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/user.dart';
+import '../providers/user_provider.dart';
 
 class UserFormScreen extends StatefulWidget {
   final User? user; // Nếu null => Create, Nếu có => Update
@@ -23,8 +25,10 @@ class _UserFormScreenState extends State<UserFormScreen> {
   
   final List<Map<String, dynamic>> _roles = [
     {'id': 1, 'name': 'System Admin'},
-    {'id': 2, 'name': 'Store Manager'},
-    {'id': 3, 'name': 'Store Staff'},
+    {'id': 2, 'name': 'Chain Director'},
+    {'id': 3, 'name': 'Store Manager'},
+    {'id': 4, 'name': 'Store Staff'},
+    {'id': 5, 'name': 'Warehouse Staff'},
   ];
 
   @override
@@ -54,10 +58,45 @@ class _UserFormScreenState extends State<UserFormScreen> {
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
     
-    // TODO: Call Create/Update API
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Chức năng Lưu đang được hoàn thiện')),
-    );
+    final isUpdate = widget.user != null;
+    final provider = context.read<UserProvider>();
+    
+    // Chuẩn bị dữ liệu gửi đi (Map với tên trường giống DTO)
+    final data = {
+      'fullName': _fullNameCtrl.text.trim(),
+      'email': _emailCtrl.text.trim(),
+      'phone': _phoneCtrl.text.trim(),
+      'roleId': _selectedRoleId,
+      // branchId hiện tại dropdown chưa liên kết động, giả lập branch nếu cần:
+      // 'branchId': _selectedBranchId,
+    };
+
+    if (!isUpdate) {
+      data['username'] = _usernameCtrl.text.trim();
+      data['password'] = _passwordCtrl.text;
+    } else {
+      data['isActive'] = widget.user!.isActive;
+    }
+
+    bool success;
+    if (isUpdate) {
+      success = await provider.updateUser(widget.user!.userId, data);
+    } else {
+      success = await provider.createUser(data);
+    }
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(isUpdate ? 'Cập nhật thành công!' : 'Tạo mới thành công!'), backgroundColor: Colors.green),
+      );
+      Navigator.pop(context); // Quay về danh sách
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(provider.error ?? 'Đã xảy ra lỗi'), backgroundColor: Colors.red),
+      );
+    }
   }
 
   @override

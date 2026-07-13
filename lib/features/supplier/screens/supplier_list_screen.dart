@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../providers/supplier_provider.dart';
 import '../models/supplier_model.dart';
 import '../widgets/add_edit_supplier_dialog.dart';
@@ -109,12 +110,6 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-          onPressed: () {
-            context.go('/home');
-          },
-        ),
         title: const Text(
           'Nhà cung cấp',
           style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
@@ -128,6 +123,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
           ),
         ],
       ),
+      drawer: const AppDrawer(),
       body: provider.isLoading && provider.suppliers.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

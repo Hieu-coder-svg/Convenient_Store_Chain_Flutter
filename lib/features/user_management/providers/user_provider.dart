@@ -75,7 +75,9 @@ class UserProvider extends ChangeNotifier {
       if (index != -1) {
         // Since User fields are final, we could recreate the user or just refetch
         await fetchUsers(); 
-        return true;
+        if (_error != null) {
+          return false;
+        }
       }
       return true;
     } catch (e) {
@@ -94,6 +96,9 @@ class UserProvider extends ChangeNotifier {
     try {
       await _userService.deactivateUser(id);
       await fetchUsers(); 
+      if (_error != null) {
+        return false;
+      }
       return true;
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
@@ -118,6 +123,40 @@ class UserProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return null;
+    }
+  }
+
+  Future<bool> createUser(Map<String, dynamic> data) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _userService.createUser(data);
+      await fetchUsers(); // Refresh the list
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateUser(int id, Map<String, dynamic> data) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _userService.updateUser(id, data);
+      await fetchUsers(); // Refresh the list
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
     }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/widgets/app_drawer.dart';
 import 'users_screen.dart';
 import 'roles_screen.dart';
 import 'system_config_screen.dart';
@@ -19,9 +20,28 @@ class _SystemAdminDashboardState extends State<SystemAdminDashboard> {
     const SystemConfigScreen(),
   ];
 
+  final List<String> _titles = [
+    'Quản lý người dùng',
+    'Vai trò & Quyền',
+    'Cấu hình hệ thống',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black87),
+        title: Text(
+          _titles[_currentIndex],
+          style: const TextStyle(
+            color: Colors.blue,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      drawer: const AppDrawer(),
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(

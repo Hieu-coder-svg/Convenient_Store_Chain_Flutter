@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../providers/product_catalog_provider.dart';
 import '../models/category_model.dart';
 
@@ -176,12 +177,6 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.primary),
-          onPressed: () {
-            context.go('/home');
-          },
-        ),
         title: const Text(
           'Danh mục sản phẩm',
           style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
@@ -199,6 +194,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           ),
         ],
       ),
+      drawer: const AppDrawer(),
       body: provider.isLoading && categories.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
