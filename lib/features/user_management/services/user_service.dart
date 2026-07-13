@@ -76,4 +76,26 @@ class UserService {
       throw Exception('Không thể kết nối đến máy chủ.');
     }
   }
+
+  Future<void> createUser(Map<String, dynamic> data) async {
+    try {
+      await _dioClient.dio.post(ApiConstants.users, data: data);
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.data != null) {
+        throw Exception(e.response?.data['message'] ?? 'Thêm người dùng thất bại');
+      }
+      throw Exception('Không thể kết nối đến máy chủ.');
+    }
+  }
+
+  Future<void> updateUser(int id, Map<String, dynamic> data) async {
+    try {
+      await _dioClient.dio.put('${ApiConstants.users}/$id', data: data);
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.data != null) {
+        throw Exception(e.response?.data['message'] ?? 'Cập nhật người dùng thất bại');
+      }
+      throw Exception('Không thể kết nối đến máy chủ.');
+    }
+  }
 }

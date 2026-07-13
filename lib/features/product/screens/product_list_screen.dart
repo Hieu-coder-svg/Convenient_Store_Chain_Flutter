@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../providers/product_catalog_provider.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
@@ -207,32 +208,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: AppColors.textSecondary),
-          onPressed: () {},
-        ),
         title: const Text(
           'Quản lý sản phẩm',
           style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.textSecondary),
             onPressed: () {},
           ),
-          // User avatar
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey.shade300,
-              child: const Icon(Icons.person, size: 20, color: Colors.grey),
-            ),
-          ),
         ],
       ),
+      drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
           await provider.fetchCategories();

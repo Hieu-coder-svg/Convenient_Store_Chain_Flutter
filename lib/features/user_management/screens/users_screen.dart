@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -85,7 +86,18 @@ class _UsersScreenState extends State<UsersScreen> {
                   title: const Text('Khóa tài khoản'),
                   onTap: () async {
                     Navigator.pop(context);
-                    await context.read<UserProvider>().deactivateUser(user.userId);
+                    final provider = context.read<UserProvider>();
+                    final success = await provider.deactivateUser(user.userId);
+                    if (!context.mounted) return;
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Khóa tài khoản thành công'), backgroundColor: Colors.green),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(provider.error ?? 'Đã xảy ra lỗi'), backgroundColor: Colors.red),
+                      );
+                    }
                   },
                 )
               else
@@ -94,7 +106,18 @@ class _UsersScreenState extends State<UsersScreen> {
                   title: const Text('Kích hoạt tài khoản'),
                   onTap: () async {
                     Navigator.pop(context);
-                    await context.read<UserProvider>().activateUser(user.userId);
+                    final provider = context.read<UserProvider>();
+                    final success = await provider.activateUser(user.userId);
+                    if (!context.mounted) return;
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Kích hoạt tài khoản thành công'), backgroundColor: Colors.green),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(provider.error ?? 'Đã xảy ra lỗi'), backgroundColor: Colors.red),
+                      );
+                    }
                   },
                 ),
             ],
@@ -174,37 +197,6 @@ class _UsersScreenState extends State<UsersScreen> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.black87),
-          onPressed: () {},
-        ),
-        title: const Text(
-          'Quản lý người dùng',
-          style: TextStyle(
-            color: Colors.blue,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black87),
-            onPressed: () {},
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.blue[100],
-              child: Text(
-                adminUser?.fullName.substring(0, 1).toUpperCase() ?? 'A',
-                style: const TextStyle(color: Colors.blue),
-              ),
-            ),
-          ),
-        ],
-      ),
       body: Consumer<UserProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.users.isEmpty) {

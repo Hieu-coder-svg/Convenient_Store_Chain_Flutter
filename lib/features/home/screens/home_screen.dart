@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_drawer.dart';
 import '../../user_management/screens/system_admin_dashboard.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -19,18 +20,8 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await context.read<AuthProvider>().logout();
-              if (context.mounted) {
-                context.go('/login');
-              }
-            },
-          ),
-        ],
       ),
+      drawer: const AppDrawer(),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
