@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../constants/api_constants.dart';
 
@@ -24,7 +26,7 @@ class DioClient {
         onRequest: (options, handler) async {
           // Add JWT Token
           final token = await _secureStorage.read(key: 'jwt_token');
-          if (token != null) {
+          if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
@@ -33,7 +35,6 @@ class DioClient {
           // Handle 401 Unauthorized (CR-09)
           if (e.response?.statusCode == 401) {
             // TODO: Implement token refresh or redirect to login
-            // We can emit an event or use a global key to navigate to '/login'
           }
           return handler.next(e);
         },

@@ -21,7 +21,7 @@ class AuthResponse {
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
-      accessToken: json['accessToken'] ?? '',
+      accessToken: json['token'] ?? json['accessToken'] ?? '',
       refreshToken: json['refreshToken'] ?? '',
       expiresIn: json['expiresIn'] ?? 0,
       userId: json['userId'] ?? 0,
