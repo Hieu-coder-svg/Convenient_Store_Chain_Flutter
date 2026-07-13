@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/atmospheric_background.dart';
 import '../widgets/custom_text_field.dart';
 
@@ -12,16 +14,77 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
-  bool _isLoading = false;
+  int _currentStep = 1; // 1: Input Email, 2: Input OTP & New Password
+  
+  final _emailController = TextEditingController();
+  final _otpController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
-  void _handleSubmit() async {
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1, milliseconds: 500)); // Simulate API call
-    if (mounted) {
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _otpController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  void _handleSendOtp() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập email')),
+      );
+      return;
+    }
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.forgotPassword(email);
+
+    if (success && mounted) {
       setState(() {
-        _isLoading = false;
+        _currentStep = 2;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mã OTP đã được gửi đến email của bạn')),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authProvider.error ?? 'Gửi OTP thất bại')),
+      );
+    }
+  }
+
+  void _handleResetPassword() async {
+    final email = _emailController.text.trim();
+    final otp = _otpController.text.trim();
+    final newPassword = _newPasswordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (otp.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập đầy đủ thông tin')),
+      );
+      return;
+    }
+
+    if (newPassword != confirmPassword) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Mật khẩu xác nhận không khớp')),
+      );
+      return;
+    }
+
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.resetPassword(email, otp, newPassword);
+
+    if (success && mounted) {
       _showSuccessModal();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(authProvider.error ?? 'Đổi mật khẩu thất bại')),
+      );
     }
   }
 
@@ -46,7 +109,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Yêu cầu đã gửi',
+              'Thành công',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: AppColors.textPrimary,
                     fontSize: 22,
@@ -55,7 +118,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Chúng tôi đã gửi hướng dẫn khôi phục mật khẩu vào thông tin bạn cung cấp. Vui lòng kiểm tra hộp thư.',
+              'Mật khẩu của bạn đã được thay đổi thành công. Vui lòng đăng nhập lại.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -88,6 +151,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -95,7 +160,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (_currentStep == 2) {
+              setState(() => _currentStep = 1);
+            } else {
+              context.pop();
+            }
+          },
         ),
       ),
       body: AtmosphericBackground(
@@ -122,16 +193,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         child: const Icon(Icons.lock_reset, color: AppColors.primary, size: 32),
                       ),
                       Text(
-                        'Quên mật khẩu',
+                        _currentStep == 1 ? 'Quên mật khẩu' : 'Đặt lại mật khẩu',
                         style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                               color: AppColors.textPrimary,
                             ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Nhập email hoặc số điện thoại đã đăng ký để khôi phục mật khẩu.',
+                      Text(
+                        _currentStep == 1 
+                            ? 'Nhập email đã đăng ký để nhận mã khôi phục mật khẩu.'
+                            : 'Nhập mã OTP đã được gửi đến email của bạn và mật khẩu mới.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           color: AppColors.textSecondary,
                         ),
@@ -159,40 +232,93 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
                   child: Column(
                     children: [
-                      const CustomTextField(
-                        labelText: 'Email hoặc Số điện thoại',
-                        hintText: 'name@store.com hoặc 09x...',
-                        prefixIcon: Icons.alternate_email,
-                      ),
-                      const SizedBox(height: 24),
-                      
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _handleSubmit,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                )
-                              : const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text('Gửi yêu cầu khôi phục', style: TextStyle(color: Colors.white, fontSize: 16)),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.send, color: Colors.white, size: 20),
-                                  ],
-                                ),
+                      if (_currentStep == 1) ...[
+                        CustomTextField(
+                          controller: _emailController,
+                          labelText: 'Email',
+                          hintText: 'name@store.com',
+                          prefixIcon: Icons.alternate_email,
                         ),
-                      ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _handleSendOtp,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('Gửi mã OTP', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.send, color: Colors.white, size: 20),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ] else ...[
+                        CustomTextField(
+                          controller: _otpController,
+                          labelText: 'Mã OTP',
+                          hintText: 'Nhập 6 số OTP',
+                          prefixIcon: Icons.password,
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          controller: _newPasswordController,
+                          labelText: 'Mật khẩu mới',
+                          hintText: 'Nhập mật khẩu mới',
+                          prefixIcon: Icons.lock_outline,
+                          isPassword: true,
+                        ),
+                        const SizedBox(height: 16),
+                        CustomTextField(
+                          controller: _confirmPasswordController,
+                          labelText: 'Xác nhận mật khẩu mới',
+                          hintText: 'Nhập lại mật khẩu mới',
+                          prefixIcon: Icons.lock_outline,
+                          isPassword: true,
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: isLoading ? null : _handleResetPassword,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('Đổi mật khẩu', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                      SizedBox(width: 8),
+                                      Icon(Icons.check, color: Colors.white, size: 20),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

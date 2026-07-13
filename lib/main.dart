@@ -11,6 +11,8 @@ import 'features/supplier/services/supplier_api_service.dart';
 import 'features/supplier/providers/supplier_provider.dart';
 import 'features/branch/services/branch_api_service.dart';
 import 'features/branch/providers/branch_provider.dart';
+import 'features/user_management/services/user_service.dart';
+import 'features/user_management/providers/user_provider.dart';
 
 void main() {
   runApp(const ConvenienceStoreApp());
@@ -53,6 +55,13 @@ class ConvenienceStoreApp extends StatelessWidget {
         ChangeNotifierProxyProvider<BranchApiService, BranchProvider>(
           create: (context) => BranchProvider(context.read<BranchApiService>()),
           update: (context, apiService, previous) => previous ?? BranchProvider(apiService),
+        ),
+        ProxyProvider<DioClient, UserService>(
+          update: (context, dioClient, previous) => UserService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<UserService, UserProvider>(
+          create: (context) => UserProvider(context.read<UserService>()),
+          update: (context, userService, previous) => previous ?? UserProvider(userService),
         ),
       ],
       child: MaterialApp.router(
