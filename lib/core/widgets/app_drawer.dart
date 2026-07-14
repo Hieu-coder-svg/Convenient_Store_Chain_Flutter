@@ -65,6 +65,28 @@ class AppDrawer extends StatelessWidget {
                   title: 'Chi nhánh',
                   onTap: () => context.go('/branches'),
                 ),
+
+                // Nghiệp vụ (Branch Orders & POS)
+                _buildSectionTitle('NGHIỆP VỤ'),
+                if (user?.roleName.contains('Store Manager') == true || user?.roleName.contains('Store Staff') == true || user?.roleName.contains('StoreManager') == true || user?.roleName.contains('StoreStaff') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.point_of_sale,
+                    title: 'Máy tính tiền (POS)',
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      context.go('/pos');
+                    },
+                  ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.local_shipping_outlined,
+                  title: 'Đơn đặt hàng nội bộ',
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    context.go('/branch-orders');
+                  },
+                ),
               ],
             ),
           ),

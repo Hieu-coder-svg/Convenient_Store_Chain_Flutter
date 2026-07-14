@@ -46,6 +46,20 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
+                    if (user?.roleName.contains('Store Manager') == true || user?.roleName.contains('Store Staff') == true || user?.roleName.contains('StoreManager') == true || user?.roleName.contains('StoreStaff') == true) ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade700,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          context.go('/pos');
+                        },
+                        icon: const Icon(Icons.point_of_sale, color: Colors.white),
+                        label: const Text('Máy tính tiền (POS)', style: TextStyle(color: Colors.white)),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
