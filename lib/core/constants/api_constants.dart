@@ -19,7 +19,14 @@ class ApiConstants {
   // User endpoints
   static const String users = '/user';
 
+  // Branch Order endpoints (Task 4.1)
+  static const String branchOrders = '/BranchOrder';
 
+  // Invoice endpoints (Task 4.2)
+  static const String invoices = '/Invoice';
+
+  // Customer endpoints (Task 4.2 - Loyalty)
+  static const String customers = '/Customer';
   // Timeout settings
   static const int connectTimeout = 5000; // 5 seconds
   static const int receiveTimeout = 5000; // 5 seconds

@@ -13,6 +13,11 @@ import 'features/branch/services/branch_api_service.dart';
 import 'features/branch/providers/branch_provider.dart';
 import 'features/user_management/services/user_service.dart';
 import 'features/user_management/providers/user_provider.dart';
+import 'features/branch_order/services/branch_order_api_service.dart';
+import 'features/branch_order/providers/branch_order_provider.dart';
+import 'features/pos/services/customer_api_service.dart';
+import 'features/pos/providers/customer_provider.dart';
+import 'features/pos/providers/cart_provider.dart';
 
 void main() {
   runApp(const ConvenienceStoreApp());
@@ -62,6 +67,23 @@ class ConvenienceStoreApp extends StatelessWidget {
         ChangeNotifierProxyProvider<UserService, UserProvider>(
           create: (context) => UserProvider(context.read<UserService>()),
           update: (context, userService, previous) => previous ?? UserProvider(userService),
+        ),
+        ProxyProvider<DioClient, BranchOrderApiService>(
+          update: (context, dioClient, previous) => previous ?? BranchOrderApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<BranchOrderApiService, BranchOrderProvider>(
+          create: (context) => BranchOrderProvider(context.read<BranchOrderApiService>()),
+          update: (context, apiService, previous) => previous ?? BranchOrderProvider(apiService),
+        ),
+        ProxyProvider<DioClient, CustomerApiService>(
+          update: (context, dioClient, previous) => previous ?? CustomerApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<CustomerApiService, CustomerProvider>(
+          create: (context) => CustomerProvider(context.read<CustomerApiService>()),
+          update: (context, apiService, previous) => previous ?? CustomerProvider(apiService),
+        ),
+        ChangeNotifierProvider<CartProvider>(
+          create: (_) => CartProvider(),
         ),
       ],
       child: MaterialApp.router(

@@ -7,6 +7,10 @@ import '../../features/product/screens/category_list_screen.dart';
 import '../../features/product/screens/add_edit_product_screen.dart';
 import '../../features/supplier/screens/supplier_list_screen.dart';
 import '../../features/branch/screens/branch_list_screen.dart';
+import '../../features/branch_order/screens/branch_order_list_screen.dart';
+import '../../features/branch_order/screens/create_branch_order_screen.dart';
+import '../../features/branch_order/screens/branch_order_detail_screen.dart';
+import '../../features/pos/screens/pos_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -51,6 +55,26 @@ class AppRouter {
       GoRoute(
         path: '/branches',
         builder: (context, state) => const BranchListScreen(),
+      ),
+      GoRoute(
+        path: '/branch-orders',
+        builder: (context, state) => const BranchOrderListScreen(),
+      ),
+      GoRoute(
+        path: '/branch-orders/create',
+        builder: (context, state) => const CreateBranchOrderScreen(),
+      ),
+      GoRoute(
+        path: '/branch-orders/:id',
+        builder: (context, state) {
+          final idString = state.pathParameters['id'];
+          final id = int.tryParse(idString ?? '') ?? 0;
+          return BranchOrderDetailScreen(orderId: id);
+        },
+      ),
+      GoRoute(
+        path: '/pos',
+        builder: (context, state) => const PosScreen(),
       ),
     ],
   );
