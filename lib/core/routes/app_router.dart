@@ -11,6 +11,9 @@ import '../../features/branch_order/screens/branch_order_list_screen.dart';
 import '../../features/branch_order/screens/create_branch_order_screen.dart';
 import '../../features/branch_order/screens/branch_order_detail_screen.dart';
 import '../../features/pos/screens/pos_screen.dart';
+import '../../features/pos/screens/checkout_screen.dart';
+import '../../features/pos/screens/invoice_detail_screen.dart';
+import '../../features/pos/screens/invoice_list_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -75,6 +78,21 @@ class AppRouter {
       GoRoute(
         path: '/pos',
         builder: (context, state) => const PosScreen(),
+      ),
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: '/invoices/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+          return InvoiceDetailScreen(invoiceId: id);
+        },
+      ),
+      GoRoute(
+        path: '/invoices',
+        builder: (context, state) => const InvoiceListScreen(),
       ),
     ],
   );

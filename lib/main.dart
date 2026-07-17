@@ -18,6 +18,8 @@ import 'features/branch_order/providers/branch_order_provider.dart';
 import 'features/pos/services/customer_api_service.dart';
 import 'features/pos/providers/customer_provider.dart';
 import 'features/pos/providers/cart_provider.dart';
+import 'features/pos/services/invoice_api_service.dart';
+import 'features/pos/providers/invoice_provider.dart';
 
 void main() {
   runApp(const ConvenienceStoreApp());
@@ -84,6 +86,13 @@ class ConvenienceStoreApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<CartProvider>(
           create: (_) => CartProvider(),
+        ),
+        ProxyProvider<DioClient, InvoiceApiService>(
+          update: (context, dioClient, previous) => previous ?? InvoiceApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<InvoiceApiService, InvoiceProvider>(
+          create: (context) => InvoiceProvider(context.read<InvoiceApiService>()),
+          update: (context, apiService, previous) => previous ?? InvoiceProvider(apiService),
         ),
       ],
       child: MaterialApp.router(

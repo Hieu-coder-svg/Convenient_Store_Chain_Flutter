@@ -87,6 +87,15 @@ class AppDrawer extends StatelessWidget {
                     context.go('/branch-orders');
                   },
                 ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.receipt_long,
+                  title: 'Lịch sử hóa đơn',
+                  onTap: () {
+                    Navigator.pop(context); // Close drawer
+                    context.go('/invoices');
+                  },
+                ),
               ],
             ),
           ),

@@ -82,7 +82,7 @@ class CartItemTile extends StatelessWidget {
               child: item.imageUrl != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(item.imageUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.image, color: Colors.grey)),
+                      child: Image.network(item.imageUrl!, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, color: Colors.grey)),
                     )
                   : const Icon(Icons.image, color: Colors.grey),
             ),
