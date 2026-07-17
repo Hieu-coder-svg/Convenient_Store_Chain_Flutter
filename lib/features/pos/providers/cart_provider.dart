@@ -15,7 +15,7 @@ class CartProvider extends ChangeNotifier {
 
   double get subtotal => _items.fold(0, (sum, item) => sum + item.lineTotal);
   double get vatAmount => 0; // Backend handles VAT or calculate if needed
-  double get discountFromPoints => _redeemPoints * 1000.0;
+  double get discountFromPoints => _redeemPoints * 100.0;
   double get grandTotal => subtotal - discountFromPoints > 0 ? subtotal - discountFromPoints : 0;
   
   int get totalItems => _items.length;

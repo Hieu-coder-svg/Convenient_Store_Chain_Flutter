@@ -9,6 +9,7 @@ import '../widgets/product_search_tile.dart';
 import '../widgets/cart_item_tile.dart';
 import '../widgets/cart_summary_bar.dart';
 import '../widgets/customer_search_dialog.dart';
+import '../../../../core/widgets/app_drawer.dart';
 import 'dart:async';
 
 class PosScreen extends StatefulWidget {
@@ -27,6 +28,9 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductCatalogProvider>().fetchProducts();
     });
@@ -63,9 +67,15 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
     final isTablet = MediaQuery.of(context).size.width >= 768; // Simple responsive check
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Máy tính tiền POS'),
+        title: const Text(
+          'Máy tính tiền POS',
+          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
         actions: [
           Center(
             child: Padding(
@@ -73,22 +83,23 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
               child: Badge(
                 label: Text('${cart.totalQuantity}'),
                 isLabelVisible: cart.totalQuantity > 0,
-                child: const Icon(Icons.shopping_cart),
+                child: const Icon(Icons.shopping_cart, color: AppColors.textSecondary),
               ),
             ),
           )
         ],
         bottom: !isTablet ? TabBar(
           controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: AppColors.textSecondary,
+          indicatorColor: AppColors.primary,
           tabs: const [
             Tab(icon: Icon(Icons.inventory_2), text: 'Sản phẩm'),
             Tab(icon: Icon(Icons.shopping_bag), text: 'Giỏ hàng'),
           ],
         ) : null,
       ),
+      drawer: const AppDrawer(),
       body: isTablet ? _buildTabletLayout(cart, customerProvider) : _buildMobileLayout(cart, customerProvider),
     );
   }
