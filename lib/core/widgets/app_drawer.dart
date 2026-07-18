@@ -34,6 +34,15 @@ class AppDrawer extends StatelessWidget {
                     Navigator.pop(context); // Close drawer
                   },
                 ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.notifications_outlined,
+                  title: 'Thông báo',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/notifications');
+                  },
+                ),
                 const Divider(),
 
                 // Cửa hàng & Sản phẩm
@@ -50,6 +59,25 @@ class AppDrawer extends StatelessWidget {
                   title: 'Danh mục',
                   onTap: () => context.go('/categories'),
                 ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.warehouse_outlined,
+                  title: 'Kho tổng (Warehouse)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/warehouse-inventory');
+                  },
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.store_mall_directory_outlined,
+                  title: 'Kho chi nhánh (Branch)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/branch-inventory');
+                  },
+                ),
+                
 
                 // Đối tác & Chi nhánh
                 _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
@@ -155,6 +183,13 @@ class AppDrawer extends StatelessWidget {
                 ),
                 _buildNavItem(
                   context,
+                  icon: Icons.add_box_outlined,
+                  title: 'Nhận hàng (Goods Receipt)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/goods-receiving');
+                  },
+                ),
                   icon: Icons.receipt_long,
                   title: 'Lịch sử hóa đơn',
                   onTap: () {
