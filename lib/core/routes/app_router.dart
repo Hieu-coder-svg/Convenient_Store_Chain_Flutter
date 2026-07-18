@@ -11,6 +11,10 @@ import '../../features/branch_order/screens/branch_order_list_screen.dart';
 import '../../features/branch_order/screens/create_branch_order_screen.dart';
 import '../../features/branch_order/screens/branch_order_detail_screen.dart';
 import '../../features/pos/screens/pos_screen.dart';
+import '../../features/pos/screens/checkout_screen.dart';
+import '../../features/pos/screens/invoice_detail_screen.dart';
+import '../../features/pos/screens/invoice_list_screen.dart';
+import '../../features/pos/screens/daily_summary_screen.dart';
 import '../../features/user_management/screens/employee_management_screen.dart';
 import '../../features/user_management/screens/store_schedule_builder_screen.dart';
 import '../../features/user_management/screens/personal_schedule_screen.dart';
@@ -71,7 +75,29 @@ class AppRouter {
           return BranchOrderDetailScreen(orderId: id);
         },
       ),
-      GoRoute(path: '/pos', builder: (context, state) => const PosScreen()),
+      GoRoute(
+        path: '/pos',
+        builder: (context, state) => const PosScreen(),
+      ),
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: '/invoices/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+          return InvoiceDetailScreen(invoiceId: id);
+        },
+      ),
+      GoRoute(
+        path: '/invoices',
+        builder: (context, state) => const InvoiceListScreen(),
+      ),
+      GoRoute(
+        path: '/daily-summary',
+        builder: (context, state) => const DailySummaryScreen(),
+      ),
       GoRoute(path: '/employee-management', builder: (context, state) => const EmployeeManagementScreen()),
       GoRoute(path: '/store-schedule', builder: (context, state) => const StoreScheduleBuilderScreen()),
       GoRoute(path: '/personal-schedule', builder: (context, state) => const PersonalScheduleScreen()),

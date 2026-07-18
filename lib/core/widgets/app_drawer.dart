@@ -162,6 +162,16 @@ class AppDrawer extends StatelessWidget {
                     context.go('/invoices');
                   },
                 ),
+                if (user?.roleName.contains('Director') == true || user?.roleName.contains('Admin') == true || user?.roleName.contains('Store Manager') == true || user?.roleName.contains('StoreManager') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.bar_chart,
+                    title: 'Báo cáo doanh thu',
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      context.go('/daily-summary');
+                    },
+                  ),
               ],
             ),
           ),

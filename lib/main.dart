@@ -1,3 +1,5 @@
+import 'package:convenient_store_chain_flutter/features/pos/providers/invoice_provider.dart';
+import 'package:convenient_store_chain_flutter/features/pos/services/invoice_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
@@ -108,11 +110,14 @@ class ConvenienceStoreApp extends StatelessWidget {
               previous ?? HrProvider(hrService),
         ),
         ProxyProvider<DioClient, InvoiceApiService>(
-          update: (context, dioClient, previous) => previous ?? InvoiceApiService(dioClient),
+          update: (context, dioClient, previous) =>
+              previous ?? InvoiceApiService(dioClient),
         ),
         ChangeNotifierProxyProvider<InvoiceApiService, InvoiceProvider>(
-          create: (context) => InvoiceProvider(context.read<InvoiceApiService>()),
-          update: (context, apiService, previous) => previous ?? InvoiceProvider(apiService),
+          create: (context) =>
+              InvoiceProvider(context.read<InvoiceApiService>()),
+          update: (context, apiService, previous) =>
+              previous ?? InvoiceProvider(apiService),
         ),
       ],
       child: MaterialApp.router(
