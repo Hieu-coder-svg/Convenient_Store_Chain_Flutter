@@ -93,9 +93,9 @@ class _PosScreenState extends State<PosScreen>
         bottom: !isTablet
             ? TabBar(
                 controller: _tabController,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                indicatorColor: Colors.white,
+                labelColor: AppColors.primary,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.primary,
                 tabs: const [
                   Tab(icon: Icon(Icons.inventory_2), text: 'Sản phẩm'),
                   Tab(icon: Icon(Icons.shopping_bag), text: 'Giỏ hàng'),
@@ -103,6 +103,7 @@ class _PosScreenState extends State<PosScreen>
               )
             : null,
       ),
+      drawer: const AppDrawer(),
       body: isTablet
           ? _buildTabletLayout(cart, customerProvider)
           : _buildMobileLayout(cart, customerProvider),

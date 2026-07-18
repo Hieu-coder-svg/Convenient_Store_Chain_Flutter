@@ -23,7 +23,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInvoice();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInvoice();
+    });
   }
 
   Future<void> _loadInvoice() async {
