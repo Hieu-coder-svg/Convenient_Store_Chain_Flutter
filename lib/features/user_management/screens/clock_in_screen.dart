@@ -7,7 +7,7 @@ import '../models/shift.dart';
 import '../providers/hr_provider.dart';
 
 class ClockInScreen extends StatefulWidget {
-  const ClockInScreen({Key? key}) : super(key: key);
+  const ClockInScreen({super.key});
 
   @override
   State<ClockInScreen> createState() => _ClockInScreenState();
@@ -303,7 +303,7 @@ class _ClockInScreenState extends State<ClockInScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: DropdownButtonFormField<ShiftAssignment>(
-        value: _selectedAssignment,
+        initialValue: _selectedAssignment,
         decoration: InputDecoration(
           labelText: 'Chọn ca làm việc hôm nay',
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

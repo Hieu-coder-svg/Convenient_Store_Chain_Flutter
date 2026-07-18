@@ -188,7 +188,7 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
                   style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 value: _emailAlertEnabled,
-                activeColor: Colors.blue,
+                activeThumbColor: Colors.blue,
                 onChanged: (val) => setState(() => _emailAlertEnabled = val),
               ),
             ]),

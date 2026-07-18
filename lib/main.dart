@@ -20,6 +20,10 @@ import 'features/branch_order/providers/branch_order_provider.dart';
 import 'features/pos/services/customer_api_service.dart';
 import 'features/pos/providers/customer_provider.dart';
 import 'features/pos/providers/cart_provider.dart';
+import 'features/inventory/services/inventory_api_service.dart';
+import 'features/inventory/providers/inventory_provider.dart';
+import 'features/notification/services/notification_api_service.dart';
+import 'features/notification/providers/notification_provider.dart';
 import 'features/user_management/services/hr_service.dart';
 import 'features/user_management/providers/hr_provider.dart';
 
@@ -118,6 +122,20 @@ class ConvenienceStoreApp extends StatelessWidget {
               InvoiceProvider(context.read<InvoiceApiService>()),
           update: (context, apiService, previous) =>
               previous ?? InvoiceProvider(apiService),
+        ),
+        ProxyProvider<DioClient, InventoryApiService>(
+          update: (context, dioClient, previous) => previous ?? InventoryApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<InventoryApiService, InventoryProvider>(
+          create: (context) => InventoryProvider(context.read<InventoryApiService>()),
+          update: (context, apiService, previous) => previous ?? InventoryProvider(apiService),
+        ),
+        ProxyProvider<DioClient, NotificationApiService>(
+          update: (context, dioClient, previous) => previous ?? NotificationApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<NotificationApiService, NotificationProvider>(
+          create: (context) => NotificationProvider(context.read<NotificationApiService>()),
+          update: (context, apiService, previous) => previous ?? NotificationProvider(apiService),
         ),
       ],
       child: MaterialApp.router(

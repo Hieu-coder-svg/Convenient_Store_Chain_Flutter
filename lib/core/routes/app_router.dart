@@ -11,6 +11,11 @@ import '../../features/branch_order/screens/branch_order_list_screen.dart';
 import '../../features/branch_order/screens/create_branch_order_screen.dart';
 import '../../features/branch_order/screens/branch_order_detail_screen.dart';
 import '../../features/pos/screens/pos_screen.dart';
+import '../../features/inventory/screens/warehouse_inventory_screen.dart';
+import '../../features/inventory/screens/goods_receiving_screen.dart';
+import '../../features/inventory/screens/branch_inventory_screen.dart';
+import '../../features/inventory/screens/stock_adjustment_screen.dart';
+import '../../features/notification/screens/notification_screen.dart';
 import '../../features/pos/screens/checkout_screen.dart';
 import '../../features/pos/screens/invoice_detail_screen.dart';
 import '../../features/pos/screens/invoice_list_screen.dart';
@@ -80,19 +85,44 @@ class AppRouter {
         builder: (context, state) => const PosScreen(),
       ),
       GoRoute(
+        path: '/warehouse-inventory',
+        builder: (context, state) => const WarehouseInventoryScreen(),
+      ),
+      GoRoute(
+        path: '/goods-receiving',
+        builder: (context, state) => const GoodsReceivingScreen(),
+      ),
+      GoRoute(
+        path: '/branch-inventory',
+        builder: (context, state) => const BranchInventoryScreen(),
+      ),
+      GoRoute(
+        path: '/stock-adjustment',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final branchId = extra?['branchId'] ?? 1;
+          return StockAdjustmentScreen(branchId: branchId);
+        },
+      ),
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationScreen(),
+      ),
+      GoRoute(
         path: '/checkout',
         builder: (context, state) => const CheckoutScreen(),
       ),
       GoRoute(
-        path: '/invoices/:id',
-        builder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
-          return InvoiceDetailScreen(invoiceId: id);
-        },
-      ),
-      GoRoute(
         path: '/invoices',
         builder: (context, state) => const InvoiceListScreen(),
+      ),
+      GoRoute(
+        path: '/invoices/:id',
+        builder: (context, state) {
+          final idString = state.pathParameters['id'];
+          final id = int.tryParse(idString ?? '') ?? 0;
+          return InvoiceDetailScreen(invoiceId: id);
+        },
       ),
       GoRoute(
         path: '/daily-summary',

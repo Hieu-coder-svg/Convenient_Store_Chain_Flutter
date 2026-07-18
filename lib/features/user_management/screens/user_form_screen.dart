@@ -156,10 +156,12 @@ class _UserFormScreenState extends State<UserFormScreen> {
                   if (isUpdate) return null;
                   final text = value?.trim() ?? '';
                   if (text.isEmpty) return 'Vui lòng nhập tên đăng nhập.';
-                  if (text.length < 3)
+                  if (text.length < 3) {
                     return 'Tên đăng nhập phải có ít nhất 3 ký tự.';
-                  if (text.length > 50)
+                  }
+                  if (text.length > 50) {
                     return 'Tên đăng nhập không được quá 50 ký tự.';
+                  }
                   return null;
                 },
               ),
@@ -219,7 +221,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
               // Dropdown Vai trò
               DropdownButtonFormField<int>(
-                value: _selectedRoleId,
+                initialValue: _selectedRoleId,
                 decoration: _inputDecoration('Vai trò'),
                 items: _roles.map((role) {
                   return DropdownMenuItem<int>(
@@ -238,7 +240,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
               Consumer<BranchProvider>(
                 builder: (context, branchProvider, _) {
                   return DropdownButtonFormField<int>(
-                    value: _selectedBranchId,
+                    initialValue: _selectedBranchId,
                     decoration: _inputDecoration('Chi nhánh (Tùy chọn)'),
                     items: branchProvider.branches.map((branch) {
                       return DropdownMenuItem<int>(

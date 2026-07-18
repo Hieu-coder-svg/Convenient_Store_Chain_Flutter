@@ -15,7 +15,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   int _currentStep = 1; // 1: Input Email, 2: Input OTP & New Password
-
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _otpController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -23,6 +23,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _otpController.dispose();
     _newPasswordController.dispose();
@@ -31,16 +32,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _handleSendOtp() async {
+    final username = _usernameController.text.trim();
     final email = _emailController.text.trim();
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Vui lòng nhập email')));
+    if (username.isEmpty || email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng nhập tên tài khoản và email')),
+      );
       return;
     }
 
     final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.forgotPassword(email);
+    final success = await authProvider.forgotPassword(username, email);
 
     if (success && mounted) {
       setState(() {
@@ -209,8 +211,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _currentStep == 1
-                            ? 'Nhập email đã đăng ký để nhận mã khôi phục mật khẩu.'
+                        _currentStep == 1 
+                            ? 'Nhập tên tài khoản và email đã đăng ký để nhận mã khôi phục mật khẩu.'
                             : 'Nhập mã OTP đã được gửi đến email của bạn và mật khẩu mới.',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
@@ -244,6 +246,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Column(
                     children: [
                       if (_currentStep == 1) ...[
+                        CustomTextField(
+                          controller: _usernameController,
+                          labelText: 'Tên tài khoản',
+                          hintText: 'Nhập tên tài khoản của bạn',
+                          prefixIcon: Icons.person_outline,
+                        ),
+                        const SizedBox(height: 16),
                         CustomTextField(
                           controller: _emailController,
                           labelText: 'Email',
