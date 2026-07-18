@@ -10,7 +10,9 @@ class CustomerApiService {
 
   Future<CustomerModel?> searchByPhone(String phone) async {
     try {
-      final response = await _dioClient.dio.get('${ApiConstants.customers}/search/phone/$phone');
+      final response = await _dioClient.dio.get(
+        '${ApiConstants.customers}/search/phone/$phone',
+      );
       if (response.data != null && response.data['data'] != null) {
         return CustomerModel.fromJson(response.data['data']);
       }
@@ -27,7 +29,9 @@ class CustomerApiService {
 
   Future<CustomerModel?> searchByMembership(String membershipId) async {
     try {
-      final response = await _dioClient.dio.get('${ApiConstants.customers}/search/membership/$membershipId');
+      final response = await _dioClient.dio.get(
+        '${ApiConstants.customers}/search/membership/$membershipId',
+      );
       if (response.data != null && response.data['data'] != null) {
         return CustomerModel.fromJson(response.data['data']);
       }
@@ -46,10 +50,7 @@ class CustomerApiService {
     try {
       final response = await _dioClient.dio.post(
         ApiConstants.customers,
-        data: {
-          'fullName': fullName,
-          'phone': phone,
-        },
+        data: {'fullName': fullName, 'phone': phone},
       );
       return CustomerModel.fromJson(response.data['data']);
     } on DioException catch (e) {
@@ -62,7 +63,9 @@ class CustomerApiService {
   Exception _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response?.data;
-      final message = data is Map ? data['message'] : 'Error: ${e.response?.statusCode}';
+      final message = data is Map
+          ? data['message']
+          : 'Error: ${e.response?.statusCode}';
       return Exception(message ?? 'Unknown server error');
     } else {
       return Exception('Network error or server unreachable');

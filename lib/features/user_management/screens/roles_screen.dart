@@ -22,7 +22,7 @@ class RolesScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
             const SizedBox(height: 24),
-            
+
             // Giám đốc chuỗi
             _buildRoleCard(
               title: 'System Admin / Chain Director',
@@ -37,9 +37,9 @@ class RolesScreen extends StatelessWidget {
               ],
               isExpanded: false,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Quản lý cửa hàng
             _buildRoleCard(
               title: 'Store Manager',
@@ -54,9 +54,9 @@ class RolesScreen extends StatelessWidget {
               ],
               isExpanded: true, // Expanded by default to match the UI template
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Nhân viên
             _buildRoleCard(
               title: 'Store Staff',
@@ -70,9 +70,9 @@ class RolesScreen extends StatelessWidget {
               ],
               isExpanded: false,
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Security Info Box
             Container(
               padding: const EdgeInsets.all(16),
@@ -88,12 +88,19 @@ class RolesScreen extends StatelessWidget {
                       children: const [
                         Text(
                           'BẢO MẬT HỆ THỐNG',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
                         ),
                         SizedBox(height: 4),
                         Text(
                           'Phân quyền theo vai trò (RBAC)',
-                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                         SizedBox(height: 4),
                         Text(
@@ -136,7 +143,7 @@ class RolesScreen extends StatelessWidget {
                   color: Colors.blue.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
-                )
+                ),
               ]
             : [],
       ),
@@ -158,14 +165,21 @@ class RolesScreen extends StatelessWidget {
             subtitle: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     subtitle,
-                    style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -180,14 +194,18 @@ class RolesScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'DANH SÁCH QUYỀN HẠN',
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   ...permissions.map((p) => _buildPermissionItem(p)).toList(),
                 ],
               ),
             ),
-          ]
+          ],
         ],
       ),
     );

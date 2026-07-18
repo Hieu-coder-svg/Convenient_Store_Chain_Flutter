@@ -35,7 +35,7 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 const Divider(),
-                
+
                 // Cửa hàng & Sản phẩm
                 _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
                 _buildNavItem(
@@ -50,7 +50,7 @@ class AppDrawer extends StatelessWidget {
                   title: 'Danh mục',
                   onTap: () => context.go('/categories'),
                 ),
-                
+
                 // Đối tác & Chi nhánh
                 _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
                 _buildNavItem(
@@ -66,9 +66,75 @@ class AppDrawer extends StatelessWidget {
                   onTap: () => context.go('/branches'),
                 ),
 
+                // NHÂN SỰ & CA LÀM
+                _buildSectionTitle('NHÂN SỰ & CA LÀM'),
+                if (user?.roleName.contains('Admin') == true ||
+                    user?.roleName.contains('Director') == true ||
+                    user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.people_outline,
+                    title: 'Quản lý nhân viên',
+                    onTap: () => context.go('/employee-management'),
+                  ),
+                if (user?.roleName.contains('Admin') == true ||
+                    user?.roleName.contains('Director') == true ||
+                    user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.calendar_month_outlined,
+                    title: 'Xếp lịch làm việc',
+                    onTap: () => context.go('/store-schedule'),
+                  ),
+                if (user?.roleName.contains('Admin') == true ||
+                    user?.roleName.contains('Director') == true ||
+                    user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.timer_outlined,
+                    title: 'Chấm công nhân viên',
+                    onTap: () => context.go('/attendance-report'),
+                  ),
+                if (user?.roleName.contains('Admin') == true ||
+                    user?.roleName.contains('Director') == true ||
+                    user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.schedule_outlined,
+                    title: 'Mẫu ca làm việc',
+                    onTap: () => context.go('/shift-templates'),
+                  ),
+                if (user?.roleName.contains('Store Staff') == true ||
+                    user?.roleName.contains('StoreStaff') == true ||
+                    user?.roleName.contains('Warehouse Staff') == true ||
+                    user?.roleName.contains('WarehouseStaff') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.event_available_outlined,
+                    title: 'Lịch cá nhân',
+                    onTap: () => context.go('/personal-schedule'),
+                  ),
+                if (user?.roleName.contains('Store Staff') == true ||
+                    user?.roleName.contains('StoreStaff') == true ||
+                    user?.roleName.contains('Warehouse Staff') == true ||
+                    user?.roleName.contains('WarehouseStaff') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.access_time,
+                    title: 'Chấm công (Check-in/out)',
+                    onTap: () => context.go('/clock-in'),
+                  ),
+
                 // Nghiệp vụ (Branch Orders & POS)
                 _buildSectionTitle('NGHIỆP VỤ'),
-                if (user?.roleName.contains('Store Manager') == true || user?.roleName.contains('Store Staff') == true || user?.roleName.contains('StoreManager') == true || user?.roleName.contains('StoreStaff') == true)
+                if (user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('Store Staff') == true ||
+                    user?.roleName.contains('StoreManager') == true ||
+                    user?.roleName.contains('StoreStaff') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.point_of_sale,
@@ -161,15 +227,17 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap}) {
+  Widget _buildNavItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
     return ListTile(
       leading: Icon(icon, color: Colors.grey[700]),
       title: Text(
         title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
       ),
       onTap: onTap,
     );
