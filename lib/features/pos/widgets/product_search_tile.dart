@@ -15,7 +15,10 @@ class ProductSearchTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+    );
 
     return Card(
       elevation: 2,
@@ -28,14 +31,24 @@ class ProductSearchTile extends StatelessWidget {
           children: [
             Expanded(
               child: ClipRutta(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(8),
+                ),
                 child: product.imageUrl != null
                     ? Image.network(
                         product.imageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                        errorBuilder: (_, __, ___) => const Icon(
+                          Icons.image_not_supported,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
                       )
-                    : const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                    : const Icon(
+                        Icons.image_not_supported,
+                        size: 50,
+                        color: Colors.grey,
+                      ),
               ),
             ),
             Padding(
@@ -47,12 +60,19 @@ class ProductSearchTile extends StatelessWidget {
                     product.productName,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     currencyFormatter.format(product.sellingPrice),
-                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
@@ -66,7 +86,7 @@ class ProductSearchTile extends StatelessWidget {
                         textStyle: const TextStyle(fontSize: 12),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -85,9 +105,6 @@ class ClipRutta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: child,
-    );
+    return ClipRRect(borderRadius: borderRadius, child: child);
   }
 }

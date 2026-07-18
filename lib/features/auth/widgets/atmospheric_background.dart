@@ -26,7 +26,10 @@ class _AtmosphericBackgroundState extends State<AtmosphericBackground>
 
     _animation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0.05, 0.05), // Mimics the CSS drift translate(10px, 10px)
+      end: const Offset(
+        0.05,
+        0.05,
+      ), // Mimics the CSS drift translate(10px, 10px)
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
@@ -67,7 +70,9 @@ class _AtmosphericBackgroundState extends State<AtmosphericBackground>
                   width: 500,
                   height: 500,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEBF0D).withValues(alpha: 0.1), // secondary-container from HTML
+                    color: const Color(
+                      0xFFFEBF0D,
+                    ).withValues(alpha: 0.1), // secondary-container from HTML
                     shape: BoxShape.circle,
                   ),
                 ),

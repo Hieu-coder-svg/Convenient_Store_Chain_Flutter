@@ -120,7 +120,10 @@ class ProductCatalogProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final list = await _apiService.getProducts(search: search, categoryId: categoryId);
+      final list = await _apiService.getProducts(
+        search: search,
+        categoryId: categoryId,
+      );
       _products = list;
       _isLoading = false;
       notifyListeners();
@@ -158,7 +161,9 @@ class ProductCatalogProvider extends ChangeNotifier {
     try {
       final success = await _apiService.updateProduct(product);
       if (success) {
-        final index = _products.indexWhere((p) => p.productId == product.productId);
+        final index = _products.indexWhere(
+          (p) => p.productId == product.productId,
+        );
         if (index != -1) {
           _products[index] = product;
         }

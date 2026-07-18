@@ -36,11 +36,11 @@ class BranchOrderModel {
       createdBy: json['createdBy'] ?? 0,
       creatorName: json['creatorName'] ?? '',
       status: json['status'] ?? 'Pending',
-      orderDate: json['orderDate'] != null 
-          ? DateTime.parse(json['orderDate']) 
+      orderDate: json['orderDate'] != null
+          ? DateTime.parse(json['orderDate'])
           : DateTime.now(),
-      updatedAt: json['updatedAt'] != null 
-          ? DateTime.parse(json['updatedAt']) 
+      updatedAt: json['updatedAt'] != null
+          ? DateTime.parse(json['updatedAt'])
           : DateTime.now(),
       items: items,
     );

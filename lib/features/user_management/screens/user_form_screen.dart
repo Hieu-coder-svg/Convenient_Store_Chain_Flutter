@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/user.dart';
 import '../providers/user_provider.dart';
+import '../../auth/providers/auth_provider.dart';
+// Đảm bảo import đúng đường dẫn đến BranchProvider của bạn
+import '../../branch/providers/branch_provider.dart';
 
 class UserFormScreen extends StatefulWidget {
-  final User? user; // Nếu null => Create, Nếu có => Update
+  final User? user;
 
   const UserFormScreen({super.key, this.user});
 
@@ -14,22 +17,36 @@ class UserFormScreen extends StatefulWidget {
 
 class _UserFormScreenState extends State<UserFormScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _usernameCtrl;
   late TextEditingController _fullNameCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
   late TextEditingController _passwordCtrl;
 
-  int _selectedRoleId = 3; // Mặc định Store Staff (tùy theo logic DB)
-  
+  int _selectedRoleId = 3;
+  int? _selectedBranchId; // Biến lưu ID chi nhánh được chọn
+
   final List<Map<String, dynamic>> _roles = [
-    {'id': 1, 'name': 'System Admin'},
-    {'id': 2, 'name': 'Chain Director'},
-    {'id': 3, 'name': 'Store Manager'},
-    {'id': 4, 'name': 'Store Staff'},
-    {'id': 5, 'name': 'Warehouse Staff'},
+    {'id': 3, 'name': 'Quản lý cửa hàng'},
+    {'id': 4, 'name': 'Nhân viên cửa hàng'},
+    {'id': 5, 'name': 'Nhân viên kho'},
   ];
+
+  int _roleIdFor(User user) {
+    if (_roles.any((role) => role['id'] == user.roleId)) return user.roleId;
+
+    switch (user.roleName) {
+      case 'Store Manager':
+        return 3;
+      case 'Store Staff':
+        return 4;
+      case 'Warehouse Staff':
+        return 5;
+      default:
+        return 4;
+    }
+  }
 
   @override
   void initState() {
@@ -39,10 +56,16 @@ class _UserFormScreenState extends State<UserFormScreen> {
     _emailCtrl = TextEditingController(text: widget.user?.email ?? '');
     _phoneCtrl = TextEditingController(text: widget.user?.phone ?? '');
     _passwordCtrl = TextEditingController();
-    
+
     if (widget.user != null) {
-      _selectedRoleId = widget.user!.roleId;
+      _selectedRoleId = _roleIdFor(widget.user!);
+      _selectedBranchId = widget.user!.branchId; // Gán ID chi nhánh từ user
     }
+
+    // Tải dữ liệu chi nhánh từ Backend
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BranchProvider>().fetchBranches();
+    });
   }
 
   @override
@@ -57,18 +80,16 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final isUpdate = widget.user != null;
     final provider = context.read<UserProvider>();
-    
-    // Chuẩn bị dữ liệu gửi đi (Map với tên trường giống DTO)
+
     final data = {
       'fullName': _fullNameCtrl.text.trim(),
       'email': _emailCtrl.text.trim(),
       'phone': _phoneCtrl.text.trim(),
       'roleId': _selectedRoleId,
-      // branchId hiện tại dropdown chưa liên kết động, giả lập branch nếu cần:
-      // 'branchId': _selectedBranchId,
+      'branchId': _selectedBranchId, // Đã thêm branchId vào đây
     };
 
     if (!isUpdate) {
@@ -78,23 +99,28 @@ class _UserFormScreenState extends State<UserFormScreen> {
       data['isActive'] = widget.user!.isActive;
     }
 
-    bool success;
-    if (isUpdate) {
-      success = await provider.updateUser(widget.user!.userId, data);
-    } else {
-      success = await provider.createUser(data);
-    }
+    bool success = isUpdate
+        ? await provider.updateUser(widget.user!.userId, data)
+        : await provider.createUser(data);
 
     if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(isUpdate ? 'Cập nhật thành công!' : 'Tạo mới thành công!'), backgroundColor: Colors.green),
+        SnackBar(
+          content: Text(
+            isUpdate ? 'Cập nhật thành công!' : 'Tạo mới thành công!',
+          ),
+          backgroundColor: Colors.green,
+        ),
       );
-      Navigator.pop(context); // Quay về danh sách
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error ?? 'Đã xảy ra lỗi'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(provider.error ?? 'Đã xảy ra lỗi'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -102,6 +128,8 @@ class _UserFormScreenState extends State<UserFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isUpdate = widget.user != null;
+    final isManager =
+        context.watch<AuthProvider>().currentUser?.roleName == 'Store Manager';
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -118,89 +146,121 @@ class _UserFormScreenState extends State<UserFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ... các TextField thông tin cơ bản giữ nguyên ...
               _buildSectionTitle('Thông tin cơ bản'),
               _buildTextField(
                 controller: _usernameCtrl,
                 label: 'Tên đăng nhập',
-                enabled: !isUpdate, // Không cho sửa username
-                validator: (val) => val == null || val.isEmpty ? 'Vui lòng nhập tên đăng nhập' : null,
+                enabled: !isUpdate,
+                validator: (value) {
+                  if (isUpdate) return null;
+                  final text = value?.trim() ?? '';
+                  if (text.isEmpty) return 'Vui lòng nhập tên đăng nhập.';
+                  if (text.length < 3)
+                    return 'Tên đăng nhập phải có ít nhất 3 ký tự.';
+                  if (text.length > 50)
+                    return 'Tên đăng nhập không được quá 50 ký tự.';
+                  return null;
+                },
               ),
               _buildTextField(
                 controller: _fullNameCtrl,
                 label: 'Họ và tên',
-                validator: (val) => val == null || val.isEmpty ? 'Vui lòng nhập họ tên' : null,
+                validator: (value) => value?.trim().isEmpty ?? true
+                    ? 'Vui lòng nhập họ và tên.'
+                    : null,
               ),
               _buildTextField(
                 controller: _emailCtrl,
                 label: 'Email',
                 keyboardType: TextInputType.emailAddress,
-                validator: (val) {
-                  if (val == null || val.isEmpty) return 'Vui lòng nhập email';
-                  if (!val.contains('@')) return 'Email không hợp lệ';
-                  return null;
+                validator: (value) {
+                  final text = value?.trim() ?? '';
+                  if (text.isEmpty) return null;
+                  final valid = RegExp(
+                    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                  ).hasMatch(text);
+                  return valid ? null : 'Email không đúng định dạng.';
                 },
               ),
               _buildTextField(
                 controller: _phoneCtrl,
-                label: 'Số điện thoại',
+                label: 'Số điện thoại *',
                 keyboardType: TextInputType.phone,
+                validator: (value) {
+                  final text = value?.trim() ?? '';
+                  if (text.isEmpty) return 'Vui lòng nhập số điện thoại.';
+                  final valid = RegExp(r'^\+?\d{9,12}$').hasMatch(text);
+                  return valid ? null : 'Số điện thoại phải gồm 9–12 chữ số.';
+                },
               ),
 
               if (!isUpdate) ...[
                 const SizedBox(height: 16),
-                _buildSectionTitle('Mật khẩu'),
                 _buildTextField(
                   controller: _passwordCtrl,
                   label: 'Mật khẩu',
                   obscureText: true,
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Vui lòng nhập mật khẩu';
-                    if (val.length < 8) return 'Mật khẩu tối thiểu 8 ký tự';
-                    // Theo BR-15: Chữ hoa, số, ký tự đặc biệt
-                    if (!RegExp(r'(?=.*[A-Z])').hasMatch(val)) return 'Phải chứa ít nhất 1 chữ hoa';
-                    if (!RegExp(r'(?=.*[0-9])').hasMatch(val)) return 'Phải chứa ít nhất 1 chữ số';
-                    if (!RegExp(r'(?=.*[!@#\$&*~])').hasMatch(val)) return 'Phải chứa ít nhất 1 ký tự đặc biệt';
-                    return null;
+                  validator: (value) {
+                    final text = value ?? '';
+                    if (text.isEmpty) return 'Vui lòng nhập mật khẩu.';
+                    final valid = RegExp(
+                      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$',
+                    ).hasMatch(text);
+                    return valid
+                        ? null
+                        : 'Mật khẩu tối thiểu 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.';
                   },
                 ),
               ],
 
               const SizedBox(height: 16),
               _buildSectionTitle('Vai trò & Chi nhánh'),
+
+              // Dropdown Vai trò
               DropdownButtonFormField<int>(
-                initialValue: _selectedRoleId,
-                decoration: InputDecoration(
-                  labelText: 'Vai trò',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
+                value: _selectedRoleId,
+                decoration: _inputDecoration('Vai trò'),
                 items: _roles.map((role) {
                   return DropdownMenuItem<int>(
                     value: role['id'],
                     child: Text(role['name']),
                   );
                 }).toList(),
-                onChanged: (val) {
-                  setState(() {
-                    _selectedRoleId = val!;
-                  });
-                },
+                onChanged: isManager
+                    ? null
+                    : (val) => setState(() => _selectedRoleId = val!),
               ),
+
               const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                initialValue: null,
-                decoration: InputDecoration(
-                  labelText: 'Chi nhánh (Tùy chọn)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                items: const [
-                  DropdownMenuItem<int>(value: 1, child: Text('Chi nhánh Quận 1')),
-                  DropdownMenuItem<int>(value: 2, child: Text('Chi nhánh Quận 3')),
-                ],
-                onChanged: (val) {},
+
+              // Dropdown Chi nhánh (Động)
+              Consumer<BranchProvider>(
+                builder: (context, branchProvider, _) {
+                  return DropdownButtonFormField<int>(
+                    value: _selectedBranchId,
+                    decoration: _inputDecoration('Chi nhánh (Tùy chọn)'),
+                    items: branchProvider.branches.map((branch) {
+                      return DropdownMenuItem<int>(
+                        value: branch.branchId,
+                        child: Text(branch.branchName),
+                      );
+                    }).toList(),
+                    onChanged: isManager
+                        ? null
+                        : (val) => setState(() => _selectedBranchId = val),
+                    hint: branchProvider.isLoading
+                        ? const Text("Đang tải...")
+                        : null,
+                    validator: (value) {
+                      if ((_selectedRoleId == 3 || _selectedRoleId == 4) &&
+                          value == null) {
+                        return 'Vai trò cửa hàng bắt buộc phải chọn chi nhánh.';
+                      }
+                      return null;
+                    },
+                  );
+                },
               ),
 
               const SizedBox(height: 32),
@@ -211,11 +271,10 @@ class _UserFormScreenState extends State<UserFormScreen> {
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[700],
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: Text(
-                    isUpdate ? 'Lưu thay đổi' : 'Tạo tài khoản',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: const Text(
+                    'Lưu thay đổi',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -226,19 +285,24 @@ class _UserFormScreenState extends State<UserFormScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
-        ),
+  InputDecoration _inputDecoration(String label) => InputDecoration(
+    labelText: label,
+    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+    filled: true,
+    fillColor: Colors.white,
+  );
+
+  Widget _buildSectionTitle(String title) => Padding(
+    padding: const EdgeInsets.only(bottom: 12.0),
+    child: Text(
+      title,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: Colors.grey,
       ),
-    );
-  }
+    ),
+  );
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -256,12 +320,9 @@ class _UserFormScreenState extends State<UserFormScreen> {
         obscureText: obscureText,
         keyboardType: keyboardType,
         validator: validator,
-        decoration: InputDecoration(
-          labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-          filled: true,
-          fillColor: enabled ? Colors.white : Colors.grey[200],
-        ),
+        decoration: _inputDecoration(
+          label,
+        ).copyWith(fillColor: enabled ? Colors.white : Colors.grey[200]),
       ),
     );
   }

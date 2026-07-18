@@ -59,7 +59,9 @@ class SupplierProvider extends ChangeNotifier {
     try {
       final success = await _apiService.updateSupplier(supplier);
       if (success) {
-        final index = _suppliers.indexWhere((s) => s.supplierId == supplier.supplierId);
+        final index = _suppliers.indexWhere(
+          (s) => s.supplierId == supplier.supplierId,
+        );
         if (index != -1) {
           _suppliers[index] = supplier;
         }
