@@ -107,6 +107,13 @@ class ConvenienceStoreApp extends StatelessWidget {
           update: (context, hrService, previous) =>
               previous ?? HrProvider(hrService),
         ),
+        ProxyProvider<DioClient, InvoiceApiService>(
+          update: (context, dioClient, previous) => previous ?? InvoiceApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<InvoiceApiService, InvoiceProvider>(
+          create: (context) => InvoiceProvider(context.read<InvoiceApiService>()),
+          update: (context, apiService, previous) => previous ?? InvoiceProvider(apiService),
+        ),
       ],
       child: MaterialApp.router(
         title: 'Convenience Store POS',
