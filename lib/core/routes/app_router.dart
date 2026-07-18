@@ -14,6 +14,7 @@ import '../../features/pos/screens/pos_screen.dart';
 import '../../features/pos/screens/checkout_screen.dart';
 import '../../features/pos/screens/invoice_detail_screen.dart';
 import '../../features/pos/screens/invoice_list_screen.dart';
+import '../../features/pos/screens/daily_summary_screen.dart';
 
 class AppRouter {
   static final router = GoRouter(
@@ -93,6 +94,10 @@ class AppRouter {
       GoRoute(
         path: '/invoices',
         builder: (context, state) => const InvoiceListScreen(),
+      ),
+      GoRoute(
+        path: '/daily-summary',
+        builder: (context, state) => const DailySummaryScreen(),
       ),
     ],
   );

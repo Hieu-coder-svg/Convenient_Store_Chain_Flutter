@@ -42,20 +42,36 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Chi tiết hóa đơn'),
+        title: Text(
+          _invoice != null ? 'Hóa đơn #INV-${_invoice!.invoiceId.toString().padLeft(6, '0')}' : 'Chi tiết hóa đơn',
+          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textSecondary),
           onPressed: () {
-            // Because we might have navigated directly here, ensure we pop to POS correctly
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/pos');
+              context.go('/invoices');
             }
           },
         ),
+        actions: [
+          if (_invoice != null)
+            IconButton(
+              icon: const Icon(Icons.print, color: AppColors.textSecondary),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đang gửi lệnh in đến máy in...')),
+                );
+              },
+            ),
+        ],
       ),
       body: _buildBody(),
       bottomNavigationBar: _invoice != null ? _buildBottomActions(context) : null,

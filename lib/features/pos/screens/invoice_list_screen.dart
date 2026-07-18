@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../providers/invoice_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../branch/providers/branch_provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/app_drawer.dart';
 
@@ -17,7 +18,8 @@ class InvoiceListScreen extends StatefulWidget {
 class _InvoiceListScreenState extends State<InvoiceListScreen> {
   DateTime? _fromDate;
   DateTime? _toDate;
-  int? _branchId; // Default to user's branch if not Admin, but we can set to 1 for now
+  int? _branchId;
+  bool _canFilterBranch = false;
 
   @override
   void initState() {
@@ -25,8 +27,14 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<AuthProvider>().currentUser;
       if (user != null) {
-        // AuthResponse currently doesn't provide branchId, defaulting to 1 for testing
-        _branchId = 1; 
+        if (user.roleName.toLowerCase().contains('director') || user.roleName.toLowerCase().contains('admin')) {
+          _branchId = null;
+          _canFilterBranch = true;
+          context.read<BranchProvider>().fetchBranches();
+        } else {
+          _branchId = user.branchId; 
+          _canFilterBranch = false;
+        }
       }
       _fetchData();
     });
@@ -97,7 +105,36 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                       const SizedBox(width: 8),
                       const Text('Chi nhánh: ', style: TextStyle(fontWeight: FontWeight.bold)),
                       Expanded(
-                        child: Text(_branchId != null ? 'CN $_branchId' : 'Tất cả'), // Mock display, ideally dropdown
+                        child: _canFilterBranch
+                            ? Consumer<BranchProvider>(
+                                builder: (context, branchProvider, child) {
+                                  if (branchProvider.isLoading) {
+                                    return const Text('Đang tải...');
+                                  }
+                                  return DropdownButton<int?>(
+                                    isExpanded: true,
+                                    value: _branchId,
+                                    hint: const Text('Tất cả'),
+                                    underline: const SizedBox(),
+                                    items: [
+                                      const DropdownMenuItem<int?>(
+                                        value: null,
+                                        child: Text('Tất cả'),
+                                      ),
+                                      ...branchProvider.branches.map((b) => DropdownMenuItem<int?>(
+                                            value: b.branchId,
+                                            child: Text(b.branchName),
+                                          )),
+                                    ],
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _branchId = val;
+                                      });
+                                    },
+                                  );
+                                },
+                              )
+                            : Text(_branchId != null ? 'CN $_branchId' : 'Tất cả'),
                       ),
                     ],
                   ),
