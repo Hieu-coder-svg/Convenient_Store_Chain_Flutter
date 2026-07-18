@@ -52,13 +52,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> forgotPassword(String email) async {
+  Future<bool> forgotPassword(String username, String email) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      await _authService.forgotPassword(email);
+      await _authService.forgotPassword(username, email);
       _isLoading = false;
       notifyListeners();
       return true;

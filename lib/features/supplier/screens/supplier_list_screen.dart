@@ -167,14 +167,17 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                   // Filter Chips Section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    child: Row(
-                      children: [
-                        _buildFilterChip('Tất cả', null),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('Đang hợp tác', true),
-                        const SizedBox(width: 8),
-                        _buildFilterChip('Ngừng cung cấp', false),
-                      ],
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildFilterChip('Tất cả', null),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Đang hợp tác', true),
+                          const SizedBox(width: 8),
+                          _buildFilterChip('Ngừng cung cấp', false),
+                        ],
+                      ),
                     ),
                   ),
 
