@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/app_colors.dart';
 import '../providers/inventory_provider.dart';
 
 class GoodsReceivingScreen extends StatefulWidget {
@@ -16,7 +15,7 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
   final _poIdController = TextEditingController();
   final _notesController = TextEditingController();
   
-  List<Map<String, dynamic>> _items = [];
+  final List<Map<String, dynamic>> _items = [];
   bool _isSubmitting = false;
 
   void _addItem() {

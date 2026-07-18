@@ -190,6 +190,8 @@ class AppDrawer extends StatelessWidget {
                     context.go('/goods-receiving');
                   },
                 ),
+                _buildNavItem(
+                  context,
                   icon: Icons.receipt_long,
                   title: 'Lịch sử hóa đơn',
                   onTap: () {

@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
-import '../models/notification_model.dart';
 
 class NotificationApiService {
   final DioClient _dioClient;
@@ -26,7 +25,7 @@ class NotificationApiService {
     try {
       final response = await _dioClient.dio.get('/notifications/unread-count');
       return response.data['count'] ?? 0;
-    } on DioException catch (e) {
+    } on DioException {
       return 0; // Silently fail
     }
   }

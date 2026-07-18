@@ -7,7 +7,7 @@ import '../models/shift.dart';
 import '../providers/hr_provider.dart';
 
 class StoreScheduleBuilderScreen extends StatefulWidget {
-  const StoreScheduleBuilderScreen({Key? key}) : super(key: key);
+  const StoreScheduleBuilderScreen({super.key});
 
   @override
   State<StoreScheduleBuilderScreen> createState() =>
@@ -104,7 +104,7 @@ class _StoreScheduleBuilderScreenState
             FilledButton(
               onPressed: () async {
                 if (nameController.text.trim().isEmpty) return;
-                final time = (TimeOfDay value) =>
+                String time(TimeOfDay value) =>
                     '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}:00';
                 final provider = context.read<HrProvider>();
                 final success = shift == null
@@ -285,20 +285,20 @@ class _StoreScheduleBuilderScreenState
                           ),
                         );
                         if (confirmed != true) return;
-                        final provider = this.context.read<HrProvider>();
+                        final provider = context.read<HrProvider>();
                         final success = await provider.deleteShiftTemplate(
                           shift.shiftId,
                         );
                         if (!mounted) return;
                         if (success && dialogContext.mounted) {
                           Navigator.pop(dialogContext);
-                          ScaffoldMessenger.of(this.context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Đã xóa ca làm việc.'),
                             ),
                           );
                         } else {
-                          ScaffoldMessenger.of(this.context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
                                 provider.error ?? 'Không thể xóa ca làm việc',

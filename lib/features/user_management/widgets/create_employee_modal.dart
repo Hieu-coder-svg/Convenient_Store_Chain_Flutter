@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class CreateEmployeeModal extends StatefulWidget {
-  const CreateEmployeeModal({Key? key}) : super(key: key);
+  const CreateEmployeeModal({super.key});
 
   @override
   State<CreateEmployeeModal> createState() => _CreateEmployeeModalState();
@@ -92,7 +92,7 @@ class _CreateEmployeeModalState extends State<CreateEmployeeModal> {
                     _isActive = val;
                   });
                 },
-                activeColor: AppTheme.successGreen,
+                activeThumbColor: AppTheme.successGreen,
                 contentPadding: EdgeInsets.zero,
               ),
               const SizedBox(height: 32),

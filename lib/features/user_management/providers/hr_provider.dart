@@ -20,7 +20,7 @@ class HrProvider extends ChangeNotifier {
 
   // Attendance
   AttendanceRecord? _todayAttendance;
-  List<AttendanceRecord> _myRecentAttendance = [];
+  final List<AttendanceRecord> _myRecentAttendance = [];
   List<AttendanceReportItem> _branchReport = [];
   List<AttendanceRecord> _attendanceHistory = [];
   List<ShiftAssignment> _attendanceAssignments = [];

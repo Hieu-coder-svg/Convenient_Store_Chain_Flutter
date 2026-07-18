@@ -1,7 +1,5 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
-import '../models/warehouse_inventory_model.dart';
-import '../models/branch_inventory_model.dart';
 
 class InventoryApiService {
   final DioClient _dioClient;

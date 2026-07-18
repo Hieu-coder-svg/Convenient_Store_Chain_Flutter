@@ -30,11 +30,11 @@ class AuthService {
     }
   }
 
-  Future<void> forgotPassword(String email) async {
+  Future<void> forgotPassword(String username, String email) async {
     try {
       await _dioClient.dio.post(
         ApiConstants.forgotPassword,
-        data: {'email': email},
+        data: {'username': username, 'email': email},
       );
     } on DioException catch (e) {
       if (e.response != null && e.response?.data != null) {

@@ -108,19 +108,21 @@ class AppRouter {
         path: '/notifications',
         builder: (context, state) => const NotificationScreen(),
       ),
+      GoRoute(
         path: '/checkout',
         builder: (context, state) => const CheckoutScreen(),
       ),
       GoRoute(
-        path: '/invoices/:id',
-        builder: (context, state) {
-          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
-          return InvoiceDetailScreen(invoiceId: id);
-        },
-      ),
-      GoRoute(
         path: '/invoices',
         builder: (context, state) => const InvoiceListScreen(),
+      ),
+      GoRoute(
+        path: '/invoices/:id',
+        builder: (context, state) {
+          final idString = state.pathParameters['id'];
+          final id = int.tryParse(idString ?? '') ?? 0;
+          return InvoiceDetailScreen(invoiceId: id);
+        },
       ),
       GoRoute(
         path: '/daily-summary',

@@ -97,7 +97,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             child: ListView.separated(
               controller: _scrollController,
               itemCount: provider.notifications.length + (provider.isLoading ? 1 : 0),
-              separatorBuilder: (_, __) => const Divider(height: 1),
+              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 if (index == provider.notifications.length) {
                   return const Padding(
