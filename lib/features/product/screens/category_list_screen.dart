@@ -31,7 +31,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(category == null ? 'Thêm danh mục mới' : 'Chỉnh sửa danh mục'),
+          title: Text(
+            category == null ? 'Thêm danh mục mới' : 'Chỉnh sửa danh mục',
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -64,7 +66,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
 
                 if (name.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Vui lòng nhập tên danh mục.')),
+                    const SnackBar(
+                      content: Text('Vui lòng nhập tên danh mục.'),
+                    ),
                   );
                   return;
                 }
@@ -72,20 +76,36 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 final provider = context.read<ProductCatalogProvider>();
                 bool success;
                 if (category == null) {
-                  success = await provider.addCategory(name, desc.isEmpty ? null : desc);
+                  success = await provider.addCategory(
+                    name,
+                    desc.isEmpty ? null : desc,
+                  );
                 } else {
-                  success = await provider.editCategory(category.categoryId, name, desc.isEmpty ? null : desc);
+                  success = await provider.editCategory(
+                    category.categoryId,
+                    name,
+                    desc.isEmpty ? null : desc,
+                  );
                 }
 
                 if (context.mounted) {
                   Navigator.pop(context);
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(category == null ? 'Đã thêm danh mục thành công' : 'Đã cập nhật danh mục thành công')),
+                      SnackBar(
+                        content: Text(
+                          category == null
+                              ? 'Đã thêm danh mục thành công'
+                              : 'Đã cập nhật danh mục thành công',
+                        ),
+                      ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(provider.error ?? 'Thao tác thất bại'), backgroundColor: AppColors.error),
+                      SnackBar(
+                        content: Text(provider.error ?? 'Thao tác thất bại'),
+                        backgroundColor: AppColors.error,
+                      ),
                     );
                   }
                 }
@@ -104,7 +124,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Xác nhận xóa'),
-          content: Text('Bạn có chắc chắn muốn xóa danh mục "${category.categoryName}" không?'),
+          content: Text(
+            'Bạn có chắc chắn muốn xóa danh mục "${category.categoryName}" không?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -114,17 +136,26 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
               onPressed: () async {
                 final provider = context.read<ProductCatalogProvider>();
-                final success = await provider.removeCategory(category.categoryId);
+                final success = await provider.removeCategory(
+                  category.categoryId,
+                );
 
                 if (context.mounted) {
                   Navigator.pop(context);
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Đã xóa danh mục thành công')),
+                      const SnackBar(
+                        content: Text('Đã xóa danh mục thành công'),
+                      ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(provider.error ?? 'Không thể xóa danh mục'), backgroundColor: AppColors.error),
+                      SnackBar(
+                        content: Text(
+                          provider.error ?? 'Không thể xóa danh mục',
+                        ),
+                        backgroundColor: AppColors.error,
+                      ),
                     );
                   }
                 }
@@ -140,11 +171,21 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   // Lấy icon tượng trưng cho danh mục sản phẩm
   IconData _getCategoryIcon(String categoryName) {
     final name = categoryName.toLowerCase();
-    if (name.contains('uống') || name.contains('nước') || name.contains('bev') || name.contains('drink')) {
+    if (name.contains('uống') ||
+        name.contains('nước') ||
+        name.contains('bev') ||
+        name.contains('drink')) {
       return Icons.local_drink;
-    } else if (name.contains('ăn') || name.contains('bánh') || name.contains('food') || name.contains('snack')) {
+    } else if (name.contains('ăn') ||
+        name.contains('bánh') ||
+        name.contains('food') ||
+        name.contains('snack')) {
       return Icons.fastfood;
-    } else if (name.contains('tươi') || name.contains('sống') || name.contains('thịt') || name.contains('cá') || name.contains('meal')) {
+    } else if (name.contains('tươi') ||
+        name.contains('sống') ||
+        name.contains('thịt') ||
+        name.contains('cá') ||
+        name.contains('meal')) {
       return Icons.set_meal;
     } else if (name.contains('sữa') || name.contains('dairy')) {
       return Icons.egg_alt_outlined;
@@ -172,14 +213,20 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     final categories = provider.categories;
 
     // Tổng số sản phẩm gắn thẻ (tổng hợp từ số lượng sản phẩm của các danh mục)
-    int totalProducts = categories.fold(0, (sum, item) => sum + item.productCount);
+    int totalProducts = categories.fold(
+      0,
+      (sum, item) => sum + item.productCount,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
           'Danh mục sản phẩm',
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -215,14 +262,17 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: const Border(
-                                top: BorderSide(color: AppColors.primary, width: 4),
+                                top: BorderSide(
+                                  color: AppColors.primary,
+                                  width: 4,
+                                ),
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
-                                )
+                                ),
                               ],
                             ),
                             child: Column(
@@ -230,12 +280,20 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                               children: [
                                 const Text(
                                   'Tổng danh mục',
-                                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   categories.length.toString().padLeft(2, '0'),
-                                  style: const TextStyle(fontSize: 24, color: AppColors.primary, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -249,14 +307,17 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: const Border(
-                                top: BorderSide(color: AppColors.secondary, width: 4),
+                                top: BorderSide(
+                                  color: AppColors.secondary,
+                                  width: 4,
+                                ),
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 6,
                                   offset: const Offset(0, 2),
-                                )
+                                ),
                               ],
                             ),
                             child: Column(
@@ -264,12 +325,20 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                               children: [
                                 const Text(
                                   'Sản phẩm gắn thẻ',
-                                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   totalProducts.toString(),
-                                  style: const TextStyle(fontSize: 24, color: AppColors.secondary, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    color: AppColors.secondary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -285,19 +354,35 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                       children: [
                         const Text(
                           'Danh sách phân loại',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         TextButton.icon(
                           onPressed: () {
                             // Show sorting instruction info
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Giữ và kéo icon ở góc trái để sắp xếp thứ tự.')),
+                              const SnackBar(
+                                content: Text(
+                                  'Giữ và kéo icon ở góc trái để sắp xếp thứ tự.',
+                                ),
+                              ),
                             );
                           },
-                          icon: const Icon(Icons.sort, size: 18, color: AppColors.primary),
+                          icon: const Icon(
+                            Icons.sort,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
                           label: const Text(
                             'Sắp xếp',
-                            style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -313,15 +398,25 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                           decoration: BoxDecoration(
                             color: Colors.grey.shade100,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade300, style: BorderStyle.none),
+                            border: Border.all(
+                              color: Colors.grey.shade300,
+                              style: BorderStyle.none,
+                            ),
                           ),
                           child: const Column(
                             children: [
-                              Icon(Icons.dashboard_customize, size: 48, color: AppColors.textSecondary),
+                              Icon(
+                                Icons.dashboard_customize,
+                                size: 48,
+                                color: AppColors.textSecondary,
+                              ),
                               SizedBox(height: 12),
                               Text(
                                 'Không có danh mục nào.',
-                                style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
@@ -336,8 +431,12 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                           onReorder: provider.reorderCategories,
                           itemBuilder: (context, index) {
                             final category = categories[index];
-                            final color = _getCategoryColor(category.categoryName);
-                            final icon = _getCategoryIcon(category.categoryName);
+                            final color = _getCategoryColor(
+                              category.categoryName,
+                            );
+                            final icon = _getCategoryIcon(
+                              category.categoryName,
+                            );
 
                             return Container(
                               key: ValueKey(category.categoryId),
@@ -345,13 +444,17 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.2)),
+                                border: Border.all(
+                                  color: AppColors.outlineVariant.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withValues(alpha: 0.02),
                                     blurRadius: 4,
                                     offset: const Offset(0, 1),
-                                  )
+                                  ),
                                 ],
                               ),
                               child: ListTile(
@@ -362,7 +465,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                                       index: index,
                                       child: const Padding(
                                         padding: EdgeInsets.only(right: 8),
-                                        child: Icon(Icons.drag_indicator, color: AppColors.outline),
+                                        child: Icon(
+                                          Icons.drag_indicator,
+                                          color: AppColors.outline,
+                                        ),
                                       ),
                                     ),
                                     Container(
@@ -378,22 +484,40 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                                 ),
                                 title: Text(
                                   category.categoryName,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
                                 ),
                                 subtitle: Text(
                                   '${category.productCount} sản phẩm',
-                                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      icon: const Icon(Icons.edit, color: AppColors.textSecondary, size: 20),
-                                      onPressed: () => _showAddEditCategoryDialog(category: category),
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        color: AppColors.textSecondary,
+                                        size: 20,
+                                      ),
+                                      onPressed: () =>
+                                          _showAddEditCategoryDialog(
+                                            category: category,
+                                          ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete, color: AppColors.error, size: 20),
-                                      onPressed: () => _confirmDeleteCategory(category),
+                                      icon: const Icon(
+                                        Icons.delete,
+                                        color: AppColors.error,
+                                        size: 20,
+                                      ),
+                                      onPressed: () =>
+                                          _confirmDeleteCategory(category),
                                     ),
                                   ],
                                 ),
@@ -402,7 +526,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                           },
                         ),
                       ),
-                    
+
                     const SizedBox(height: 24),
                     // Empty State Illustration Placeholder (Subtle)
                     Container(
@@ -412,7 +536,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                         color: AppColors.surfaceBright,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                          color: AppColors.outlineVariant.withValues(
+                            alpha: 0.5,
+                          ),
                           style: BorderStyle.solid,
                         ),
                       ),
@@ -428,21 +554,30 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 10,
-                                )
+                                ),
                               ],
                             ),
-                            child: const Icon(Icons.dashboard_customize, color: AppColors.textSecondary, size: 30),
+                            child: const Icon(
+                              Icons.dashboard_customize,
+                              color: AppColors.textSecondary,
+                              size: 30,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           const Text(
                             'Tùy chỉnh danh mục để tối ưu quy trình kiểm kho và bán hàng tại quầy.',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 80), // Chừa trống cho FAB và Bottom Nav Bar
+                    const SizedBox(
+                      height: 80,
+                    ), // Chừa trống cho FAB và Bottom Nav Bar
                   ],
                 ),
               ),
@@ -482,7 +617,12 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     );
   }
 
-  Widget _buildBottomNavItem(IconData icon, String label, bool isSelected, VoidCallback onTap) {
+  Widget _buildBottomNavItem(
+    IconData icon,
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       child: Column(
@@ -498,7 +638,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                 : null,
             child: Icon(
               icon,
-              color: isSelected ? AppColors.onSecondaryFixed : AppColors.textSecondary,
+              color: isSelected
+                  ? AppColors.onSecondaryFixed
+                  : AppColors.textSecondary,
               size: 24,
             ),
           ),
@@ -508,7 +650,9 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected ? AppColors.onSecondaryFixed : AppColors.textSecondary,
+              color: isSelected
+                  ? AppColors.onSecondaryFixed
+                  : AppColors.textSecondary,
             ),
           ),
         ],

@@ -18,7 +18,12 @@ class BranchOrderListScreen extends StatefulWidget {
 
 class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
   String _selectedStatus = 'All';
-  final List<String> _statusOptions = ['All', 'Pending', 'Fulfilled', 'Cancelled'];
+  final List<String> _statusOptions = [
+    'All',
+    'Pending',
+    'Fulfilled',
+    'Cancelled',
+  ];
 
   @override
   void initState() {
@@ -30,9 +35,9 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
 
   void _loadOrders() {
     final orderProvider = context.read<BranchOrderProvider>();
-    const int? fetchBranchId = null; 
+    const int? fetchBranchId = null;
     final statusQuery = _selectedStatus == 'All' ? null : _selectedStatus;
-    
+
     orderProvider.fetchOrders(branchId: fetchBranchId, status: statusQuery);
   }
 
@@ -47,7 +52,10 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
       appBar: AppBar(
         title: const Text(
           'Đơn đặt hàng nội bộ',
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -77,7 +85,10 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                   children: _statusOptions.map((status) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: _buildFilterChip(status == 'All' ? 'Tất cả' : status, status),
+                      child: _buildFilterChip(
+                        status == 'All' ? 'Tất cả' : status,
+                        status,
+                      ),
                     );
                   }).toList(),
                 ),
@@ -90,20 +101,34 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                   if (provider.isLoading && provider.orders.isEmpty) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  
+
                   if (provider.error != null) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.error_outline, color: AppColors.error, size: 48),
+                          const Icon(
+                            Icons.error_outline,
+                            color: AppColors.error,
+                            size: 48,
+                          ),
                           const SizedBox(height: 16),
-                          Text(provider.error!, style: const TextStyle(color: AppColors.textSecondary)),
+                          Text(
+                            provider.error!,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                           const SizedBox(height: 12),
                           ElevatedButton(
-                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                            ),
                             onPressed: _loadOrders,
-                            child: const Text('Thử lại', style: TextStyle(color: Colors.white)),
+                            child: const Text(
+                              'Thử lại',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ],
                       ),
@@ -111,8 +136,14 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                   }
 
                   // Lọc đơn hàng: Store Manager chỉ thấy đơn do mình tạo
-                  final displayedOrders = isStoreManager 
-                      ? provider.orders.where((o) => o.createdBy == authProvider.currentUser?.userId).toList()
+                  final displayedOrders = isStoreManager
+                      ? provider.orders
+                            .where(
+                              (o) =>
+                                  o.createdBy ==
+                                  authProvider.currentUser?.userId,
+                            )
+                            .toList()
                       : provider.orders;
 
                   if (displayedOrders.isEmpty) {
@@ -123,16 +154,27 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                           margin: const EdgeInsets.only(top: 80),
                           child: const Column(
                             children: [
-                              Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.outline),
+                              Icon(
+                                Icons.inventory_2_outlined,
+                                size: 64,
+                                color: AppColors.outline,
+                              ),
                               SizedBox(height: 16),
                               Text(
                                 'Không có đơn hàng nào',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                               SizedBox(height: 4),
                               Text(
                                 'Chưa có đơn đặt hàng nào trong hệ thống.',
-                                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             ],
                           ),
@@ -152,13 +194,17 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.2)),
+                          border: Border.all(
+                            color: AppColors.outlineVariant.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(alpha: 0.02),
                               blurRadius: 4,
                               offset: const Offset(0, 1),
-                            )
+                            ),
                           ],
                         ),
                         child: InkWell(
@@ -172,17 +218,26 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
                                       children: [
                                         Container(
                                           padding: const EdgeInsets.all(8),
                                           decoration: BoxDecoration(
-                                            color: AppColors.primary.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
                                           ),
-                                          child: const Icon(Icons.local_shipping, color: AppColors.primary, size: 20),
+                                          child: const Icon(
+                                            Icons.local_shipping,
+                                            color: AppColors.primary,
+                                            size: 20,
+                                          ),
                                         ),
                                         const SizedBox(width: 12),
                                         Text(
@@ -199,15 +254,37 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 12),
-                                const Divider(height: 1, color: Colors.grey, thickness: 0.1),
+                                const Divider(
+                                  height: 1,
+                                  color: Colors.grey,
+                                  thickness: 0.1,
+                                ),
                                 const SizedBox(height: 12),
-                                _buildInfoRow(Icons.storefront, 'Chi nhánh', order.branchName),
+                                _buildInfoRow(
+                                  Icons.storefront,
+                                  'Chi nhánh',
+                                  order.branchName,
+                                ),
                                 const SizedBox(height: 6),
-                                _buildInfoRow(Icons.person_outline, 'Người tạo', order.creatorName),
+                                _buildInfoRow(
+                                  Icons.person_outline,
+                                  'Người tạo',
+                                  order.creatorName,
+                                ),
                                 const SizedBox(height: 6),
-                                _buildInfoRow(Icons.calendar_today, 'Ngày tạo', DateFormat('dd/MM/yyyy HH:mm').format(order.orderDate)),
+                                _buildInfoRow(
+                                  Icons.calendar_today,
+                                  'Ngày tạo',
+                                  DateFormat(
+                                    'dd/MM/yyyy HH:mm',
+                                  ).format(order.orderDate),
+                                ),
                                 const SizedBox(height: 6),
-                                _buildInfoRow(Icons.inventory_2_outlined, 'Số lượng', '${order.items.length} mặt hàng'),
+                                _buildInfoRow(
+                                  Icons.inventory_2_outlined,
+                                  'Số lượng',
+                                  '${order.items.length} mặt hàng',
+                                ),
                               ],
                             ),
                           ),
@@ -228,7 +305,10 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                 context.push('/branch-orders/create');
               },
               icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('Tạo đơn', style: TextStyle(color: Colors.white)),
+              label: const Text(
+                'Tạo đơn',
+                style: TextStyle(color: Colors.white),
+              ),
             )
           : null,
     );
@@ -247,7 +327,9 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
       selected: isSelected,
       selectedColor: AppColors.primary,
       backgroundColor: Colors.white,
-      side: BorderSide(color: isSelected ? AppColors.primary : AppColors.outlineVariant),
+      side: BorderSide(
+        color: isSelected ? AppColors.primary : AppColors.outlineVariant,
+      ),
       onSelected: (selected) {
         setState(() {
           _selectedStatus = selected ? value : 'All';
@@ -269,7 +351,11 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w500,
+            ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),

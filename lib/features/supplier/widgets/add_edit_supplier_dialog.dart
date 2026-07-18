@@ -26,8 +26,12 @@ class _AddEditSupplierDialogState extends State<AddEditSupplierDialog> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.supplier?.supplierName);
-    _contactController = TextEditingController(text: widget.supplier?.contactName);
+    _nameController = TextEditingController(
+      text: widget.supplier?.supplierName,
+    );
+    _contactController = TextEditingController(
+      text: widget.supplier?.contactName,
+    );
     _phoneController = TextEditingController(text: widget.supplier?.phone);
     _emailController = TextEditingController(text: widget.supplier?.email);
     _addressController = TextEditingController(text: widget.supplier?.address);
@@ -73,16 +77,25 @@ class _AddEditSupplierDialogState extends State<AddEditSupplierDialog> {
     }
 
     setState(() => _isSaving = false);
-    
+
     if (!mounted) return;
     if (success) {
       Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.supplier == null ? 'Đã thêm nhà cung cấp thành công' : 'Đã cập nhật nhà cung cấp thành công')),
+        SnackBar(
+          content: Text(
+            widget.supplier == null
+                ? 'Đã thêm nhà cung cấp thành công'
+                : 'Đã cập nhật nhà cung cấp thành công',
+          ),
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error ?? 'Thao tác thất bại'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(provider.error ?? 'Thao tác thất bại'),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
@@ -90,7 +103,11 @@ class _AddEditSupplierDialogState extends State<AddEditSupplierDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.supplier == null ? 'Thêm nhà cung cấp mới' : 'Chỉnh sửa nhà cung cấp'),
+      title: Text(
+        widget.supplier == null
+            ? 'Thêm nhà cung cấp mới'
+            : 'Chỉnh sửa nhà cung cấp',
+      ),
       content: _isSaving
           ? const SizedBox(
               height: 100,
@@ -158,7 +175,10 @@ class _AddEditSupplierDialogState extends State<AddEditSupplierDialog> {
                         children: [
                           const Text(
                             'Đang hợp tác (Active)',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
                           ),
                           Switch(
                             value: _isActive,
@@ -182,7 +202,9 @@ class _AddEditSupplierDialogState extends State<AddEditSupplierDialog> {
                 child: const Text('Hủy'),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
                 onPressed: _saveSupplier,
                 child: const Text('Lưu', style: TextStyle(color: Colors.white)),
               ),

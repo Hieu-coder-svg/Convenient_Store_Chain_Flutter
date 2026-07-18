@@ -38,9 +38,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   void _onSearchChanged(String query) {
     context.read<ProductCatalogProvider>().fetchProducts(
-          search: query,
-          categoryId: _selectedCategoryId,
-        );
+      search: query,
+      categoryId: _selectedCategoryId,
+    );
   }
 
   void _showCategoryFilterSheet(List<CategoryModel> categories) {
@@ -69,9 +69,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         _selectedCategoryId = null;
                       });
                       context.read<ProductCatalogProvider>().fetchProducts(
-                            search: _searchController.text,
-                            categoryId: null,
-                          );
+                        search: _searchController.text,
+                        categoryId: null,
+                      );
                       Navigator.pop(context);
                     },
                   ),
@@ -81,12 +81,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       selected: _selectedCategoryId == cat.categoryId,
                       onSelected: (selected) {
                         setState(() {
-                          _selectedCategoryId = selected ? cat.categoryId : null;
+                          _selectedCategoryId = selected
+                              ? cat.categoryId
+                              : null;
                         });
                         context.read<ProductCatalogProvider>().fetchProducts(
-                              search: _searchController.text,
-                              categoryId: _selectedCategoryId,
-                            );
+                          search: _searchController.text,
+                          categoryId: _selectedCategoryId,
+                        );
                         Navigator.pop(context);
                       },
                     ),
@@ -161,7 +163,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Xác nhận xóa'),
-          content: Text('Bạn có chắc chắn muốn xóa sản phẩm "${product.productName}" không?'),
+          content: Text(
+            'Bạn có chắc chắn muốn xóa sản phẩm "${product.productName}" không?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -177,11 +181,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   Navigator.pop(context);
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Đã xóa sản phẩm thành công')),
+                      const SnackBar(
+                        content: Text('Đã xóa sản phẩm thành công'),
+                      ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(provider.error ?? 'Thao tác thất bại'), backgroundColor: AppColors.error),
+                      SnackBar(
+                        content: Text(provider.error ?? 'Thao tác thất bại'),
+                        backgroundColor: AppColors.error,
+                      ),
                     );
                   }
                 }
@@ -210,7 +219,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
       appBar: AppBar(
         title: const Text(
           'Quản lý sản phẩm',
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -243,7 +255,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       color: Colors.black.withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ],
                 ),
                 child: TextField(
@@ -251,7 +263,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   onChanged: _onSearchChanged,
                   decoration: const InputDecoration(
                     hintText: 'Tìm kiếm sản phẩm, SKU...',
-                    prefixIcon: Icon(Icons.search, color: AppColors.textSecondary),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: AppColors.textSecondary,
+                    ),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
@@ -269,9 +284,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     _buildFilterChip(
                       label: _selectedCategoryId == null
                           ? 'Categories'
-                          : provider.categories.firstWhere((c) => c.categoryId == _selectedCategoryId).categoryName,
+                          : provider.categories
+                                .firstWhere(
+                                  (c) => c.categoryId == _selectedCategoryId,
+                                )
+                                .categoryName,
                       icon: Icons.expand_more,
-                      onTap: () => _showCategoryFilterSheet(provider.categories),
+                      onTap: () =>
+                          _showCategoryFilterSheet(provider.categories),
                       isActive: _selectedCategoryId != null,
                     ),
                     const SizedBox(width: 8),
@@ -299,21 +319,30 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
               // Product Cards Grid
               if (provider.isLoading && products.isEmpty)
-                const Center(child: Padding(
-                  padding: EdgeInsets.only(top: 48),
-                  child: CircularProgressIndicator(),
-                ))
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 48),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
               else if (products.isEmpty)
                 Center(
                   child: Container(
                     margin: const EdgeInsets.only(top: 48),
                     child: const Column(
                       children: [
-                        Icon(Icons.inventory_2_outlined, size: 64, color: AppColors.outline),
+                        Icon(
+                          Icons.inventory_2_outlined,
+                          size: 64,
+                          color: AppColors.outline,
+                        ),
                         SizedBox(height: 12),
                         Text(
                           'Không tìm thấy sản phẩm nào.',
-                          style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                     ),
@@ -388,7 +417,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary.withValues(alpha: 0.1) : Colors.white,
+          color: isActive
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isActive ? AppColors.primary : AppColors.outlineVariant,
@@ -434,7 +465,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
-          )
+          ),
         ],
       ),
       padding: const EdgeInsets.all(16),
@@ -458,7 +489,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         child: Image.network(
                           product.imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.image, color: Colors.grey),
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.image, color: Colors.grey),
                         ),
                       )
                     : const Icon(Icons.image, color: Colors.grey),
@@ -474,17 +506,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       product.productName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'SKU: ${product.barcode ?? 'N/A'}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       'Quy cách: 1 ${product.importUnit ?? 'Thùng'} = ${product.conversionFactor} ${product.unit ?? 'Cái'}',
-                      style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -506,7 +548,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       width: 6,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: product.isActive ? Colors.green : AppColors.error,
+                        color: product.isActive
+                            ? Colors.green
+                            : AppColors.error,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -516,7 +560,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
-                        color: product.isActive ? Colors.green.shade800 : AppColors.error,
+                        color: product.isActive
+                            ? Colors.green.shade800
+                            : AppColors.error,
                       ),
                     ),
                   ],
@@ -535,11 +581,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   children: [
                     const Text(
                       'Giá bán lẻ (Retail)',
-                      style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     Text(
                       '${product.sellingPrice.toStringAsFixed(0)} VND',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 14),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -550,11 +603,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   children: [
                     const Text(
                       'Giá nhập (Cost)',
-                      style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     Text(
                       '${product.costPrice.toStringAsFixed(0)} VND',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary, fontSize: 14),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),
@@ -575,7 +635,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
               children: [
                 Text(
                   'Danh mục: ${product.categoryName}',
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 Row(
                   children: [
@@ -583,24 +647,37 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       onTap: () {
                         context.go('/products/edit/${product.productId}');
                       },
-                      child: const Icon(Icons.edit, color: AppColors.primary, size: 18),
+                      child: const Icon(
+                        Icons.edit,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () => _confirmDeleteProduct(product),
-                      child: const Icon(Icons.delete, color: AppColors.error, size: 18),
+                      child: const Icon(
+                        Icons.delete,
+                        color: AppColors.error,
+                        size: 18,
+                      ),
                     ),
                   ],
-                )
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomNavItem(IconData icon, String label, bool isSelected, VoidCallback onTap) {
+  Widget _buildBottomNavItem(
+    IconData icon,
+    String label,
+    bool isSelected,
+    VoidCallback onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       child: Column(

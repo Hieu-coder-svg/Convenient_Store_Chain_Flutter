@@ -15,9 +15,10 @@ class CartProvider extends ChangeNotifier {
 
   double get subtotal => _items.fold(0, (sum, item) => sum + item.lineTotal);
   double get vatAmount => 0; // Backend handles VAT or calculate if needed
-  double get discountFromPoints => _redeemPoints * 100.0;
-  double get grandTotal => subtotal - discountFromPoints > 0 ? subtotal - discountFromPoints : 0;
-  
+  double get discountFromPoints => _redeemPoints * 1000.0;
+  double get grandTotal =>
+      subtotal - discountFromPoints > 0 ? subtotal - discountFromPoints : 0;
+
   int get totalItems => _items.length;
   int get totalQuantity => _items.fold(0, (sum, item) => sum + item.quantity);
 
@@ -37,16 +38,20 @@ class CartProvider extends ChangeNotifier {
   }
 
   void addItem(ProductModel product) {
-    final index = _items.indexWhere((item) => item.productId == product.productId);
+    final index = _items.indexWhere(
+      (item) => item.productId == product.productId,
+    );
     if (index >= 0) {
       _items[index].quantity += 1;
     } else {
-      _items.add(CartItemModel(
-        productId: product.productId,
-        productName: product.productName,
-        sellingPrice: product.sellingPrice,
-        imageUrl: product.imageUrl,
-      ));
+      _items.add(
+        CartItemModel(
+          productId: product.productId,
+          productName: product.productName,
+          sellingPrice: product.sellingPrice,
+          imageUrl: product.imageUrl,
+        ),
+      );
     }
     notifyListeners();
   }
@@ -61,7 +66,7 @@ class CartProvider extends ChangeNotifier {
       removeItem(productId);
       return;
     }
-    
+
     final index = _items.indexWhere((item) => item.productId == productId);
     if (index >= 0) {
       _items[index].quantity = newQuantity;
@@ -82,10 +87,11 @@ class CartProvider extends ChangeNotifier {
       'customerId': customerId,
       'paymentMethod': _paymentMethod,
       'redeemPoints': _redeemPoints,
-      'items': _items.map((item) => {
-        'productId': item.productId,
-        'quantity': item.quantity,
-      }).toList(),
+      'items': _items
+          .map(
+            (item) => {'productId': item.productId, 'quantity': item.quantity},
+          )
+          .toList(),
     };
   }
 }
