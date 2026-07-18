@@ -59,7 +59,9 @@ class BranchProvider extends ChangeNotifier {
     try {
       final success = await _apiService.updateBranch(branch);
       if (success) {
-        final index = _branches.indexWhere((b) => b.branchId == branch.branchId);
+        final index = _branches.indexWhere(
+          (b) => b.branchId == branch.branchId,
+        );
         if (index != -1) {
           _branches[index] = branch;
         }

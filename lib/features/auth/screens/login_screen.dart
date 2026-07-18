@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
-                      )
+                      ),
                     ],
                   ),
                   child: const Icon(Icons.store, color: Colors.white, size: 40),
@@ -86,16 +86,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Store Manager',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        letterSpacing: -0.5,
-                        color: AppColors.textPrimary,
-                      ),
+                    letterSpacing: -0.5,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Đăng nhập hệ thống',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 32),
 
@@ -105,14 +105,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: AppColors.surface.withValues(alpha: 0.85),
-                    border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                    ),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
-                      )
+                      ),
                     ],
                   ),
                   child: Column(
@@ -132,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         isPassword: true,
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Remember & Forgot
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -142,7 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               Checkbox(
                                 value: _rememberMe,
                                 activeColor: AppColors.primary,
-                                side: const BorderSide(color: AppColors.outlineVariant),
+                                side: const BorderSide(
+                                  color: AppColors.outlineVariant,
+                                ),
                                 onChanged: (value) {
                                   setState(() => _rememberMe = value ?? false);
                                 },
@@ -191,14 +195,24 @@ class _LoginScreenState extends State<LoginScreen> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text('Đăng nhập', style: TextStyle(color: Colors.white)),
+                                    Text(
+                                      'Đăng nhập',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
                                     SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward, color: Colors.white, size: 20),
+                                    Icon(
+                                      Icons.arrow_forward,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
                                   ],
                                 ),
                         ),
@@ -219,7 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
                         onPressed: () {},
-                        icon: const Icon(Icons.qr_code_scanner, color: AppColors.primary),
+                        icon: const Icon(
+                          Icons.qr_code_scanner,
+                          color: AppColors.primary,
+                        ),
                         label: const Text(
                           'Quét mã QR',
                           style: TextStyle(
@@ -229,8 +246,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          side: const BorderSide(color: AppColors.outlineVariant),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          side: const BorderSide(
+                            color: AppColors.outlineVariant,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24),
                           ),
@@ -239,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-                
+
                 // Footer
                 const SizedBox(height: 32),
                 const Text(
@@ -255,17 +277,41 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     TextButton(
                       onPressed: () {},
-                      child: const Text('Điều khoản', style: TextStyle(fontSize: 11, color: AppColors.outline)),
+                      child: const Text(
+                        'Điều khoản',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.outline,
+                        ),
+                      ),
                     ),
-                    const Text('•', style: TextStyle(color: AppColors.outlineVariant)),
+                    const Text(
+                      '•',
+                      style: TextStyle(color: AppColors.outlineVariant),
+                    ),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('Bảo mật', style: TextStyle(fontSize: 11, color: AppColors.outline)),
+                      child: const Text(
+                        'Bảo mật',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.outline,
+                        ),
+                      ),
                     ),
-                    const Text('•', style: TextStyle(color: AppColors.outlineVariant)),
+                    const Text(
+                      '•',
+                      style: TextStyle(color: AppColors.outlineVariant),
+                    ),
                     TextButton(
                       onPressed: () {},
-                      child: const Text('Hỗ trợ', style: TextStyle(fontSize: 11, color: AppColors.outline)),
+                      child: const Text(
+                        'Hỗ trợ',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.outline,
+                        ),
+                      ),
                     ),
                   ],
                 ),

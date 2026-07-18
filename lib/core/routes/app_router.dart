@@ -15,23 +15,22 @@ import '../../features/pos/screens/checkout_screen.dart';
 import '../../features/pos/screens/invoice_detail_screen.dart';
 import '../../features/pos/screens/invoice_list_screen.dart';
 import '../../features/pos/screens/daily_summary_screen.dart';
-
+import '../../features/user_management/screens/employee_management_screen.dart';
+import '../../features/user_management/screens/store_schedule_builder_screen.dart';
+import '../../features/user_management/screens/personal_schedule_screen.dart';
+import '../../features/user_management/screens/clock_in_screen.dart';
+import '../../features/user_management/screens/attendance_report_screen.dart';
+import '../../features/user_management/screens/shift_templates_screen.dart';
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
-      ),
+      GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
       GoRoute(
         path: '/products',
         builder: (context, state) => const ProductListScreen(),
@@ -99,6 +98,12 @@ class AppRouter {
         path: '/daily-summary',
         builder: (context, state) => const DailySummaryScreen(),
       ),
+      GoRoute(path: '/employee-management', builder: (context, state) => const EmployeeManagementScreen()),
+      GoRoute(path: '/store-schedule', builder: (context, state) => const StoreScheduleBuilderScreen()),
+      GoRoute(path: '/personal-schedule', builder: (context, state) => const PersonalScheduleScreen()),
+      GoRoute(path: '/clock-in', builder: (context, state) => const ClockInScreen()),
+      GoRoute(path: '/attendance-report', builder: (context, state) => const AttendanceReportScreen()),
+      GoRoute(path: '/shift-templates', builder: (context, state) => const ShiftTemplatesScreen()),
     ],
   );
 }

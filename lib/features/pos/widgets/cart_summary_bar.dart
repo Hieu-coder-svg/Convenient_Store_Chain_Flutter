@@ -16,7 +16,10 @@ class CartSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+    );
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -47,7 +50,10 @@ class CartSummaryBar extends StatelessWidget {
                     children: [
                       const Text(
                         'Tổng: ',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       Text(
                         currencyFormatter.format(grandTotal),
@@ -66,7 +72,10 @@ class CartSummaryBar extends StatelessWidget {
               onPressed: totalItems > 0 ? onCheckout : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -74,7 +83,13 @@ class CartSummaryBar extends StatelessWidget {
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('THANH TOÁN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  Text(
+                    'THANH TOÁN',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   SizedBox(width: 8),
                   Icon(Icons.arrow_forward, color: Colors.white),
                 ],

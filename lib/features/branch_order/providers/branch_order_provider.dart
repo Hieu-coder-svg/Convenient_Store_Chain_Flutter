@@ -47,7 +47,10 @@ class BranchOrderProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createOrder(int branchId, List<Map<String, dynamic>> items) async {
+  Future<bool> createOrder(
+    int branchId,
+    List<Map<String, dynamic>> items,
+  ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();

@@ -31,7 +31,9 @@ class AuthResponse {
       fullName: json['fullName'] ?? '',
       roleId: json['roleId'] ?? 0,
       roleName: json['roleName'] ?? '',
-      branchId: json['branchId'],
+      branchId: json['branchId'] is int
+          ? json['branchId'] as int
+          : int.tryParse(json['branchId']?.toString() ?? ''),
     );
   }
 }

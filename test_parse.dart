@@ -11,9 +11,12 @@ void main() {
   ''';
   var decoded = jsonDecode(jsonStr);
   try {
-    var result = PagedResult<User>.fromJson(decoded, (json) => User.fromJson(json));
+    var result = PagedResult<User>.fromJson(
+      decoded,
+      (json) => User.fromJson(json),
+    );
     print("Success: ${result.items.length}");
-  } catch(e, stacktrace) {
+  } catch (e, stacktrace) {
     print("Error: $e");
     print(stacktrace);
   }
