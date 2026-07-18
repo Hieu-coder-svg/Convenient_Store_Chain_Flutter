@@ -215,8 +215,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   Duration _workedDuration(Iterable<AttendanceRecord> records) {
     return records.fold(Duration.zero, (total, record) {
-      if (record.checkInTime == null || record.checkOutTime == null)
+      if (record.checkInTime == null || record.checkOutTime == null) {
         return total;
+      }
       final duration = record.checkOutTime!.difference(record.checkInTime!);
       return duration.isNegative ? total : total + duration;
     });
@@ -490,7 +491,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       child: Column(
         children: [
           DropdownButtonFormField<int>(
-            value:
+            initialValue:
                 provider.employees.any(
                   (employee) => employee['userId'] == _selectedEmployeeId,
                 )

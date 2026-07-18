@@ -499,7 +499,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       child: Column(
                         children: [
                           DropdownButtonFormField<int>(
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             decoration: const InputDecoration(
                               labelText: 'Danh mục sản phẩm *',
                             ),
@@ -528,7 +528,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                   ),
                                 )
                               : DropdownButtonFormField<int>(
-                                  value: _selectedSupplierId,
+                                  initialValue: _selectedSupplierId,
                                   decoration: const InputDecoration(
                                     labelText: 'Nhà cung cấp',
                                   ),
@@ -738,7 +738,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                               ),
                               Switch(
                                 value: _isActive,
-                                activeColor: AppColors.primary,
+                                activeThumbColor: AppColors.primary,
                                 onChanged: (val) {
                                   setState(() => _isActive = val);
                                 },

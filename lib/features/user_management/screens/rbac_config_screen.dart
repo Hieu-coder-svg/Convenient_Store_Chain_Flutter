@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
 class RbacConfigScreen extends StatefulWidget {
-  const RbacConfigScreen({Key? key}) : super(key: key);
+  const RbacConfigScreen({super.key});
 
   @override
   State<RbacConfigScreen> createState() => _RbacConfigScreenState();
@@ -152,7 +152,7 @@ class _RbacConfigScreenState extends State<RbacConfigScreen> {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-          ..._permissions.map((perm) => _buildPermissionCard(perm)).toList(),
+          ..._permissions.map((perm) => _buildPermissionCard(perm)),
         ],
       ),
     );

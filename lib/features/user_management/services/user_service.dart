@@ -140,7 +140,7 @@ class UserService {
         return [];
       }
 
-      return (rawData as List)
+      return (rawData)
           .map((e) => User.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {

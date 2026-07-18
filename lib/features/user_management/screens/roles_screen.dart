@@ -201,7 +201,7 @@ class RolesScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  ...permissions.map((p) => _buildPermissionItem(p)).toList(),
+                  ...permissions.map((p) => _buildPermissionItem(p)),
                 ],
               ),
             ),

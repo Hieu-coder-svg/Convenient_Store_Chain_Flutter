@@ -14,7 +14,7 @@ class StockAdjustmentScreen extends StatefulWidget {
 class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  List<Map<String, dynamic>> _items = [];
+  final List<Map<String, dynamic>> _items = [];
   bool _isSubmitting = false;
 
   final List<String> _reasons = ['Damaged', 'Expired', 'Lost', 'Found', 'Other'];
@@ -133,7 +133,7 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
                         decoration: const InputDecoration(labelText: 'Lý do', isDense: true),
-                        value: item['reason'],
+                        initialValue: item['reason'],
                         items: _reasons.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
                         onChanged: (v) {
                           setState(() {

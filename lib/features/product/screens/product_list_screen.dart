@@ -489,7 +489,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         child: Image.network(
                           product.imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
+                          errorBuilder: (_, _, _) =>
                               const Icon(Icons.image, color: Colors.grey),
                         ),
                       )

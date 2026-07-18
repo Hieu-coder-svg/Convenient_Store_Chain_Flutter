@@ -242,7 +242,7 @@ class HrService {
           'shiftAssignmentId': shiftAssignmentId,
           'latitude': latitude,
           'longitude': longitude,
-          if (wifiBssid != null) 'wifiBssid': wifiBssid,
+          'wifiBssid': ?wifiBssid,
         },
       );
       final data = _objectData(response.data);

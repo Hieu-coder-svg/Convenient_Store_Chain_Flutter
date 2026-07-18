@@ -148,7 +148,7 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
           child: ListView.separated(
             controller: _scrollController,
             itemCount: provider.branchItems.length + (provider.isLoadingBranch ? 1 : 0),
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == provider.branchItems.length) {
                 return const Padding(
