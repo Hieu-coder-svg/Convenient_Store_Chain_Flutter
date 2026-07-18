@@ -7,6 +7,7 @@ class AuthResponse {
   final String fullName;
   final int roleId;
   final String roleName;
+  final int? branchId;
 
   AuthResponse({
     required this.accessToken,
@@ -17,6 +18,7 @@ class AuthResponse {
     required this.fullName,
     required this.roleId,
     required this.roleName,
+    this.branchId,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,9 @@ class AuthResponse {
       fullName: json['fullName'] ?? '',
       roleId: json['roleId'] ?? 0,
       roleName: json['roleName'] ?? '',
+      branchId: json['branchId'] is int
+          ? json['branchId'] as int
+          : int.tryParse(json['branchId']?.toString() ?? ''),
     );
   }
 }

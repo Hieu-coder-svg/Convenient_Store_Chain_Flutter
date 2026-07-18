@@ -23,10 +23,7 @@ class ProductApiService {
     try {
       final response = await _dioClient.dio.post(
         '/categories',
-        data: {
-          'categoryName': name,
-          'description': description,
-        },
+        data: {'categoryName': name, 'description': description},
       );
       return CategoryModel.fromJson(response.data);
     } on DioException catch (e) {
@@ -38,10 +35,7 @@ class ProductApiService {
     try {
       await _dioClient.dio.put(
         '/categories/$id',
-        data: {
-          'categoryName': name,
-          'description': description,
-        },
+        data: {'categoryName': name, 'description': description},
       );
       return true;
     } on DioException catch (e) {
@@ -59,7 +53,10 @@ class ProductApiService {
   }
 
   // --- Product APIs ---
-  Future<List<ProductModel>> getProducts({String? search, int? categoryId}) async {
+  Future<List<ProductModel>> getProducts({
+    String? search,
+    int? categoryId,
+  }) async {
     try {
       final Map<String, dynamic> queryParams = {};
       if (search != null && search.isNotEmpty) {
@@ -69,7 +66,10 @@ class ProductApiService {
         queryParams['categoryId'] = categoryId;
       }
 
-      final response = await _dioClient.dio.get('/products', queryParameters: queryParams);
+      final response = await _dioClient.dio.get(
+        '/products',
+        queryParameters: queryParams,
+      );
       final List<dynamic> data = response.data;
       return data.map((json) => ProductModel.fromJson(json)).toList();
     } on DioException catch (e) {
@@ -123,7 +123,8 @@ class ProductApiService {
   Exception _handleError(DioException e, String defaultMessage) {
     if (e.response != null && e.response?.data != null) {
       if (e.response?.data is Map) {
-        final message = e.response?.data['message'] ?? e.response?.data['title'];
+        final message =
+            e.response?.data['message'] ?? e.response?.data['title'];
         if (message != null) {
           return Exception(message);
         }

@@ -53,7 +53,8 @@ class BranchApiService {
   Exception _handleError(DioException e, String defaultMessage) {
     if (e.response != null && e.response?.data != null) {
       if (e.response?.data is Map) {
-        final message = e.response?.data['message'] ?? e.response?.data['title'];
+        final message =
+            e.response?.data['message'] ?? e.response?.data['title'];
         if (message != null) {
           return Exception(message);
         }
