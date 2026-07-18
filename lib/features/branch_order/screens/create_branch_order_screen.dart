@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../branch/providers/branch_provider.dart';
 import '../../product/providers/product_catalog_provider.dart';
 import '../../product/models/product_model.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/branch_order_provider.dart';
 import '../widgets/order_item_card.dart';
 
@@ -276,6 +277,25 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
   Widget build(BuildContext context) {
     final branchProvider = context.watch<BranchProvider>();
     final orderProvider = context.watch<BranchOrderProvider>();
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
+
+    // Lọc chi nhánh theo role
+    var availableBranches = branchProvider.branches;
+    if (user != null && user.roleName == 'Store Manager') {
+      availableBranches = availableBranches.where((b) => b.branchId == user.branchId).toList();
+    }
+
+    // Tự động chọn nếu chỉ có 1 chi nhánh
+    if (availableBranches.length == 1 && _selectedBranchId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _selectedBranchId = availableBranches.first.branchId;
+          });
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -316,13 +336,13 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                       isExpanded: true,
                       hint: const Text('Chọn chi nhánh...'),
                       value: _selectedBranchId,
-                      items: branchProvider.branches.map((branch) {
+                      items: availableBranches.map((branch) {
                         return DropdownMenuItem<int>(
                           value: branch.branchId,
                           child: Text(branch.branchName),
                         );
                       }).toList(),
-                      onChanged: (value) {
+                      onChanged: availableBranches.length <= 1 ? null : (value) {
                         setState(() {
                           _selectedBranchId = value;
                         });
