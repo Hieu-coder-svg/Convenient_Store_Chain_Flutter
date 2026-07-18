@@ -48,9 +48,7 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
-                    if (user?.roleName.contains('Store Manager') == true ||
-                        user?.roleName.contains('Store Staff') == true ||
-                        user?.roleName.contains('StoreManager') == true ||
+                    if (user?.roleName.contains('Store Staff') == true ||
                         user?.roleName.contains('StoreStaff') == true) ...[
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(

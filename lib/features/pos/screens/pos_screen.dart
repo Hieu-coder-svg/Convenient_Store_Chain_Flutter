@@ -10,6 +10,7 @@ import '../widgets/cart_item_tile.dart';
 import '../widgets/cart_summary_bar.dart';
 import '../widgets/customer_search_dialog.dart';
 import '../../../../core/widgets/app_drawer.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'dart:async';
 
 class PosScreen extends StatefulWidget {
@@ -59,6 +60,33 @@ class _PosScreenState extends State<PosScreen>
       backgroundColor: Colors.transparent,
       builder: (context) => const CustomerSearchDialog(),
     );
+  }
+
+  void _handleBarcodeScan(String barcode, CartProvider cart) {
+    if (barcode == '-1' || barcode.isEmpty) return;
+    
+    final products = context.read<ProductCatalogProvider>().products;
+    final matchedProducts = products.where((p) => p.barcode == barcode).toList();
+    
+    if (matchedProducts.isNotEmpty) {
+      final product = matchedProducts.first;
+      cart.addItem(product);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã thêm: ${product.productName}'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Mã vạch $barcode không tồn tại trong hệ thống!'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
@@ -179,6 +207,21 @@ class _PosScreenState extends State<PosScreen>
             decoration: InputDecoration(
               hintText: 'Tìm tên hoặc mã sản phẩm...',
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.qr_code_scanner, color: AppColors.primary),
+                tooltip: 'Quét mã vạch',
+                onPressed: () async {
+                  var res = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SimpleBarcodeScannerPage(),
+                    ),
+                  );
+                  if (res is String && res != '-1' && res.isNotEmpty) {
+                     _handleBarcodeScan(res, cart);
+                  }
+                },
+              ),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -188,6 +231,10 @@ class _PosScreenState extends State<PosScreen>
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
             onChanged: _onSearchChanged,
+            onSubmitted: (value) {
+              _handleBarcodeScan(value, cart);
+              _searchController.clear();
+            },
           ),
         ),
         // Product Grid

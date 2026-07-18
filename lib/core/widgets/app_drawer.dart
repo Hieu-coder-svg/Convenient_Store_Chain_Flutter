@@ -159,9 +159,7 @@ class AppDrawer extends StatelessWidget {
 
                 // Nghiệp vụ (Branch Orders & POS)
                 _buildSectionTitle('NGHIỆP VỤ'),
-                if (user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('Store Staff') == true ||
-                    user?.roleName.contains('StoreManager') == true ||
+                if (user?.roleName.contains('Store Staff') == true ||
                     user?.roleName.contains('StoreStaff') == true)
                   _buildNavItem(
                     context,
@@ -172,15 +170,19 @@ class AppDrawer extends StatelessWidget {
                       context.go('/pos');
                     },
                   ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.local_shipping_outlined,
-                  title: 'Đơn đặt hàng nội bộ',
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    context.go('/branch-orders');
-                  },
-                ),
+                if (user?.roleName.contains('Admin') == true ||
+                    user?.roleName.contains('Director') == true ||
+                    user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.local_shipping_outlined,
+                    title: 'Đơn đặt hàng nội bộ',
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      context.go('/branch-orders');
+                    },
+                  ),
                 _buildNavItem(
                   context,
                   icon: Icons.add_box_outlined,
