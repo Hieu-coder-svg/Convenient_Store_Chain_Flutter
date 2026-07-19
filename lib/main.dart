@@ -26,6 +26,7 @@ import 'features/notification/services/notification_api_service.dart';
 import 'features/notification/providers/notification_provider.dart';
 import 'features/user_management/services/hr_service.dart';
 import 'features/user_management/providers/hr_provider.dart';
+import 'features/reports/providers/reports_provider.dart';
 
 void main() {
   runApp(const ConvenienceStoreApp());
@@ -136,6 +137,10 @@ class ConvenienceStoreApp extends StatelessWidget {
         ChangeNotifierProxyProvider<NotificationApiService, NotificationProvider>(
           create: (context) => NotificationProvider(context.read<NotificationApiService>()),
           update: (context, apiService, previous) => previous ?? NotificationProvider(apiService),
+        ),
+        ChangeNotifierProxyProvider<DioClient, ReportsProvider>(
+          create: (context) => ReportsProvider(context.read<DioClient>()),
+          update: (context, dioClient, previous) => previous ?? ReportsProvider(dioClient),
         ),
       ],
       child: MaterialApp.router(

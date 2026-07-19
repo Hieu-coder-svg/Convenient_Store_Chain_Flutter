@@ -229,6 +229,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
           ),
         ),
         backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
         actions: [
           IconButton(
