@@ -170,8 +170,7 @@ class AppDrawer extends StatelessWidget {
                       context.go('/pos');
                     },
                   ),
-                if (user?.roleName.contains('Admin') == true ||
-                    user?.roleName.contains('Director') == true ||
+                if (user?.roleName.contains('Director') == true ||
                     user?.roleName.contains('Store Manager') == true ||
                     user?.roleName.contains('StoreManager') == true ||
                     user?.roleName.contains('Warehouse Staff') == true ||
@@ -195,7 +194,9 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 if (user?.roleName.contains('Warehouse Staff') != true &&
-                    user?.roleName.contains('WarehouseStaff') != true)
+                    user?.roleName.contains('WarehouseStaff') != true &&
+                    user?.roleName.contains('Admin') != true &&
+                    user?.roleName.contains('System Admin') != true)
                   _buildNavItem(
                     context,
                     icon: Icons.receipt_long,
@@ -205,7 +206,7 @@ class AppDrawer extends StatelessWidget {
                       context.go('/invoices');
                     },
                   ),
-                if (user?.roleName.contains('Director') == true || user?.roleName.contains('Admin') == true || user?.roleName.contains('Store Manager') == true || user?.roleName.contains('StoreManager') == true)
+                if (user?.roleName.contains('Director') == true || user?.roleName.contains('Store Manager') == true || user?.roleName.contains('StoreManager') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.bar_chart,
