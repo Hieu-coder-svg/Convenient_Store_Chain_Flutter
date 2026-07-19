@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/network/dio_client.dart';
 
 class SystemConfigScreen extends StatefulWidget {
   const SystemConfigScreen({super.key});
@@ -26,18 +27,50 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
   );
 
   // Inventory & Alerts State
-  final TextEditingController _warehouseThresholdCtrl = TextEditingController(
-    text: '50',
-  );
-  final TextEditingController _branchThresholdCtrl = TextEditingController(
-    text: '10',
-  );
+  final TextEditingController _warehouseThresholdCtrl = TextEditingController();
+  final TextEditingController _branchThresholdCtrl = TextEditingController();
   bool _emailAlertEnabled = true;
 
   // Security State
   final bool _twoFactorEnabled = false;
 
   bool _isSaving = false;
+  bool _isLoading = true;
+
+  final DioClient _dioClient = DioClient();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final response = await _dioClient.dio.get('/SystemSettings');
+      final List<dynamic> data = response.data;
+      
+      for (var item in data) {
+        if (item['settingKey'] == 'WarehouseLowStockThreshold') {
+          _warehouseThresholdCtrl.text = item['settingValue'];
+        } else if (item['settingKey'] == 'BranchLowStockThreshold') {
+          _branchThresholdCtrl.text = item['settingValue'];
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lỗi tải cấu hình: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -76,32 +109,45 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
   void _handleSave() async {
     setState(() => _isSaving = true);
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final settings = {
+        'WarehouseLowStockThreshold': _warehouseThresholdCtrl.text,
+        'BranchLowStockThreshold': _branchThresholdCtrl.text,
+      };
 
-    if (!mounted) return;
-    setState(() => _isSaving = false);
+      await _dioClient.dio.put('/SystemSettings', data: settings);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Đã lưu cấu hình thành công!'),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã lưu cấu hình thành công!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi lưu cấu hình: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SingleChildScrollView(
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

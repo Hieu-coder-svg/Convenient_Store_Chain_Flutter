@@ -320,6 +320,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           ),
         ),
         backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
       ),
       body: _isSaving

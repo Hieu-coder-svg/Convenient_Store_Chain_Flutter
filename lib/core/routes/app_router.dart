@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/screens/profile_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/product/screens/product_list_screen.dart';
 import '../../features/product/screens/category_list_screen.dart';
@@ -26,6 +27,11 @@ import '../../features/user_management/screens/personal_schedule_screen.dart';
 import '../../features/user_management/screens/clock_in_screen.dart';
 import '../../features/user_management/screens/attendance_report_screen.dart';
 import '../../features/user_management/screens/shift_templates_screen.dart';
+import '../../features/reports/screens/chain_dashboard_screen.dart';
+import '../../features/reports/screens/product_sales_report_screen.dart';
+import '../../features/reports/screens/supplier_performance_screen.dart';
+import '../../features/reports/screens/low_stock_alerts_screen.dart';
+
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
@@ -34,6 +40,10 @@ class AppRouter {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
       GoRoute(
@@ -107,6 +117,22 @@ class AppRouter {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: '/reports/chain-dashboard',
+        builder: (context, state) => const ChainDashboardScreen(),
+      ),
+      GoRoute(
+        path: '/reports/top-products',
+        builder: (context, state) => const ProductSalesReportScreen(),
+      ),
+      GoRoute(
+        path: '/reports/supplier-performance',
+        builder: (context, state) => const SupplierPerformanceScreen(),
+      ),
+      GoRoute(
+        path: '/reports/low-stock-alerts',
+        builder: (context, state) => const LowStockAlertsScreen(),
       ),
       GoRoute(
         path: '/checkout',
