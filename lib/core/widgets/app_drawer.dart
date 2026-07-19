@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/user_management/providers/hr_provider.dart';
 import '../constants/app_colors.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -10,6 +11,10 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
+
+    if (_isStoreManager(user?.roleName)) {
+      return _buildManagerDrawer(context, user);
+    }
 
     return Drawer(
       child: Column(
@@ -87,19 +92,22 @@ class AppDrawer extends StatelessWidget {
                 const Divider(),
 
                 // Cửa hàng & Sản phẩm
-                _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
-                _buildNavItem(
-                  context,
-                  icon: Icons.inventory_2_outlined,
-                  title: 'Sản phẩm',
-                  onTap: () => context.go('/products'),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.category_outlined,
-                  title: 'Danh mục',
-                  onTap: () => context.go('/categories'),
-                ),
+                if (user?.roleName != 'System Admin') ...[
+                  _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Sản phẩm',
+                    onTap: () => context.go('/products'),
+                  ),
+                  if (user?.roleName == 'Chain Director')
+                    _buildNavItem(
+                      context,
+                      icon: Icons.category_outlined,
+                      title: 'Danh mục',
+                      onTap: () => context.go('/categories'),
+                    ),
+                ],
                 _buildNavItem(
                   context,
                   icon: Icons.warehouse_outlined,
@@ -118,22 +126,23 @@ class AppDrawer extends StatelessWidget {
                     context.go('/branch-inventory');
                   },
                 ),
-                
 
                 // Đối tác & Chi nhánh
-                _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
-                _buildNavItem(
-                  context,
-                  icon: Icons.business_outlined,
-                  title: 'Nhà cung cấp',
-                  onTap: () => context.go('/suppliers'),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.storefront_outlined,
-                  title: 'Chi nhánh',
-                  onTap: () => context.go('/branches'),
-                ),
+                if (user?.roleName == 'Chain Director') ...[
+                  _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.business_outlined,
+                    title: 'Nhà cung cấp',
+                    onTap: () => context.go('/suppliers'),
+                  ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.storefront_outlined,
+                    title: 'Chi nhánh',
+                    onTap: () => context.go('/branches'),
+                  ),
+                ],
 
                 // NHÂN SỰ & CA LÀM
                 _buildSectionTitle('NHÂN SỰ & CA LÀM'),
@@ -197,6 +206,16 @@ class AppDrawer extends StatelessWidget {
                     title: 'Chấm công (Check-in/out)',
                     onTap: () => context.go('/clock-in'),
                   ),
+                if (user?.roleName.contains('Store Staff') == true ||
+                    user?.roleName.contains('StoreStaff') == true ||
+                    user?.roleName.contains('Warehouse Staff') == true ||
+                    user?.roleName.contains('WarehouseStaff') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.history_outlined,
+                    title: 'Lịch sử làm việc',
+                    onTap: () => context.go('/work-history'),
+                  ),
 
                 // Nghiệp vụ (Branch Orders & POS)
                 _buildSectionTitle('NGHIỆP VỤ'),
@@ -211,8 +230,7 @@ class AppDrawer extends StatelessWidget {
                       context.go('/pos');
                     },
                   ),
-                if (user?.roleName.contains('Admin') == true ||
-                    user?.roleName.contains('Director') == true ||
+                if (user?.roleName.contains('Director') == true ||
                     user?.roleName.contains('Store Manager') == true ||
                     user?.roleName.contains('StoreManager') == true ||
                     user?.roleName.contains('Warehouse Staff') == true ||
@@ -236,7 +254,9 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 if (user?.roleName.contains('Warehouse Staff') != true &&
-                    user?.roleName.contains('WarehouseStaff') != true)
+                    user?.roleName.contains('WarehouseStaff') != true &&
+                    user?.roleName.contains('Admin') != true &&
+                    user?.roleName.contains('System Admin') != true)
                   _buildNavItem(
                     context,
                     icon: Icons.receipt_long,
@@ -246,7 +266,7 @@ class AppDrawer extends StatelessWidget {
                       context.go('/invoices');
                     },
                   ),
-                if (user?.roleName.contains('Director') == true || user?.roleName.contains('Admin') == true || user?.roleName.contains('Store Manager') == true || user?.roleName.contains('StoreManager') == true)
+                if (user?.roleName.contains('Director') == true || user?.roleName.contains('Store Manager') == true || user?.roleName.contains('StoreManager') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.bar_chart,
@@ -269,6 +289,7 @@ class AppDrawer extends StatelessWidget {
             ),
             onTap: () async {
               Navigator.pop(context); // Close drawer first
+              context.read<HrProvider>().clearSessionData();
               await context.read<AuthProvider>().logout();
               if (context.mounted) {
                 context.go('/login');
@@ -276,6 +297,88 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  bool _isStoreManager(String? roleName) {
+    final normalized = roleName?.replaceAll(' ', '').toLowerCase();
+    return normalized == 'storemanager';
+  }
+
+  Widget _buildManagerDrawer(BuildContext context, dynamic user) {
+    return Drawer(
+      child: Column(
+        children: [
+          _buildHeader(user),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.business_outlined,
+                  title: 'Nhà cung cấp',
+                  onTap: () => context.go('/suppliers'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.storefront_outlined,
+                  title: 'Chi nhánh',
+                  onTap: () => context.go('/branches'),
+                ),
+                _buildSectionTitle('NHÂN SỰ & CA LÀM'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.people_outline,
+                  title: 'Quản lý nhân viên',
+                  onTap: () => context.go('/employee-management'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.calendar_month_outlined,
+                  title: 'Xếp lịch làm việc',
+                  onTap: () => context.go('/store-schedule'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.history_outlined,
+                  title: 'Lịch sử làm việc',
+                  onTap: () => context.go('/work-history'),
+                ),
+                _buildSectionTitle('NGHIỆP VỤ'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.point_of_sale_outlined,
+                  title: 'Máy tính tiền (POS)',
+                  onTap: () => context.go('/pos'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.local_shipping_outlined,
+                  title: 'Đơn đặt hàng nội bộ',
+                  onTap: () => context.go('/branch-orders'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text(
+              'Đăng xuất',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            onTap: () async {
+              Navigator.pop(context);
+              context.read<HrProvider>().clearSessionData();
+              await context.read<AuthProvider>().logout();
+              if (context.mounted) context.go('/login');
+            },
+          ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -316,7 +419,7 @@ class AppDrawer extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(

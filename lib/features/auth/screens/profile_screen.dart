@@ -13,12 +13,12 @@ class ProfileScreen extends StatelessWidget {
     final user = context.watch<AuthProvider>().currentUser;
 
     if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Chưa đăng nhập')),
-      );
+      return const Scaffold(body: Center(child: Text('Chưa đăng nhập')));
     }
 
-    final String initial = user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U';
+    final String initial = user.fullName.isNotEmpty
+        ? user.fullName[0].toUpperCase()
+        : 'U';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -99,7 +99,10 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.secondaryFixed,
                       borderRadius: BorderRadius.circular(16),
@@ -153,9 +156,9 @@ class ProfileScreen extends StatelessWidget {
                       title: 'Nơi làm việc',
                       value: 'Văn phòng Tổng',
                     ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // Action Buttons
                   const Text(
                     'Tùy chọn',
@@ -204,7 +207,9 @@ class ProfileScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         children: [
@@ -263,7 +268,9 @@ class ProfileScreen extends StatelessWidget {
             color: isDestructive ? color.withValues(alpha: 0.1) : Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDestructive ? color.withValues(alpha: 0.3) : AppColors.outlineVariant.withValues(alpha: 0.3),
+              color: isDestructive
+                  ? color.withValues(alpha: 0.3)
+                  : AppColors.outlineVariant.withValues(alpha: 0.3),
             ),
           ),
           child: Row(

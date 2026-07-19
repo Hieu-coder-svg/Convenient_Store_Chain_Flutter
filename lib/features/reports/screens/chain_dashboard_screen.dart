@@ -38,7 +38,13 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Bảng điều khiển Kinh doanh', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Bảng điều khiển Kinh doanh',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
@@ -55,12 +61,20 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
       ),
       body: Consumer<ReportsProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoadingRevenue || provider.isLoadingBranchPerformance) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+          if (provider.isLoadingRevenue ||
+              provider.isLoadingBranchPerformance) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
           }
 
           if (provider.error != null) {
-            return Center(child: Text('Lỗi: ${provider.error}', style: const TextStyle(color: Colors.red)));
+            return Center(
+              child: Text(
+                'Lỗi: ${provider.error}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
           }
 
           final revenue = provider.chainRevenue;
@@ -71,13 +85,30 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildSummaryCards(revenue?.totalRevenuePeriod ?? 0, revenue?.totalOrdersPeriod ?? 0),
+                _buildSummaryCards(
+                  revenue?.totalRevenuePeriod ?? 0,
+                  revenue?.totalOrdersPeriod ?? 0,
+                ),
                 const SizedBox(height: 24),
-                const Text('Biểu đồ Doanh thu', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                const Text(
+                  'Biểu đồ Doanh thu',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 _buildRevenueChart(revenue?.dataPoints ?? []),
                 const SizedBox(height: 32),
-                const Text('Xếp hạng Chi nhánh', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                const Text(
+                  'Xếp hạng Chi nhánh',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 _buildBranchList(branches),
               ],
@@ -112,7 +143,12 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
     );
   }
 
-  Widget _buildCard({required String title, required String value, required IconData icon, required Color color}) {
+  Widget _buildCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -133,15 +169,33 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, color: color, size: 24),
               ),
               const SizedBox(width: 8),
-              Expanded(child: Text(title, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14))),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -154,7 +208,9 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
 
     List<FlSpot> spots = [];
     for (int i = 0; i < dataPoints.length; i++) {
-      spots.add(FlSpot(i.toDouble(), dataPoints[i].totalRevenue / 1000000)); // Hiển thị theo triệu
+      spots.add(
+        FlSpot(i.toDouble(), dataPoints[i].totalRevenue / 1000000),
+      ); // Hiển thị theo triệu
     }
 
     return Container(
@@ -176,13 +232,22 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
           gridData: FlGridData(show: true, drawVerticalLine: false),
           titlesData: FlTitlesData(
             leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, reservedSize: 40, getTitlesWidget: (value, meta) => Text('${value.toInt()}M', style: const TextStyle(fontSize: 10))),
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 40,
+                getTitlesWidget: (value, meta) => Text(
+                  '${value.toInt()}M',
+                  style: const TextStyle(fontSize: 10),
+                ),
+              ),
             ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
-                showTitles: true, 
+                showTitles: true,
                 reservedSize: 30,
-                interval: dataPoints.length > 10 ? (dataPoints.length / 5).ceilToDouble() : 1,
+                interval: dataPoints.length > 10
+                    ? (dataPoints.length / 5).ceilToDouble()
+                    : 1,
                 getTitlesWidget: (value, meta) {
                   final index = value.toInt();
                   if (index >= 0 && index < dataPoints.length) {
@@ -191,13 +256,16 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        dateLabel, 
-                        style: const TextStyle(fontSize: 10, color: Colors.grey),
+                        dateLabel,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey,
+                        ),
                       ),
                     );
                   }
                   return const SizedBox.shrink();
-                }
+                },
               ),
             ),
             rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -212,7 +280,10 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
               barWidth: 3,
               isStrokeCapRound: true,
               dotData: FlDotData(show: false),
-              belowBarData: BarAreaData(show: true, color: AppColors.primary.withOpacity(0.1)),
+              belowBarData: BarAreaData(
+                show: true,
+                color: AppColors.primary.withOpacity(0.1),
+              ),
             ),
           ],
         ),
@@ -246,25 +317,53 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
                 height: 32,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: branch.rank == 1 ? Colors.amber : (branch.rank == 2 ? Colors.grey[400] : (branch.rank == 3 ? Colors.brown[300] : Colors.blueGrey[100])),
+                  color: branch.rank == 1
+                      ? Colors.amber
+                      : (branch.rank == 2
+                            ? Colors.grey[400]
+                            : (branch.rank == 3
+                                  ? Colors.brown[300]
+                                  : Colors.blueGrey[100])),
                   shape: BoxShape.circle,
                 ),
-                child: Text('${branch.rank}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: Text(
+                  '${branch.rank}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(branch.branchName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      branch.branchName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('${branch.totalOrders} đơn hàng', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                    Text(
+                      '${branch.totalOrders} đơn hàng',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Text(
                 currencyFormat.format(branch.totalRevenue),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 16),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  fontSize: 16,
+                ),
               ),
             ],
           ),

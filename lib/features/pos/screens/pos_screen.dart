@@ -64,10 +64,12 @@ class _PosScreenState extends State<PosScreen>
 
   void _handleBarcodeScan(String barcode, CartProvider cart) {
     if (barcode == '-1' || barcode.isEmpty) return;
-    
+
     final products = context.read<ProductCatalogProvider>().products;
-    final matchedProducts = products.where((p) => p.barcode == barcode).toList();
-    
+    final matchedProducts = products
+        .where((p) => p.barcode == barcode)
+        .toList();
+
     if (matchedProducts.isNotEmpty) {
       final product = matchedProducts.first;
       cart.addItem(product);
@@ -101,7 +103,10 @@ class _PosScreenState extends State<PosScreen>
       appBar: AppBar(
         title: const Text(
           'Máy tính tiền POS',
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -113,7 +118,10 @@ class _PosScreenState extends State<PosScreen>
               child: Badge(
                 label: Text('${cart.totalQuantity}'),
                 isLabelVisible: cart.totalQuantity > 0,
-                child: const Icon(Icons.shopping_cart, color: AppColors.textSecondary),
+                child: const Icon(
+                  Icons.shopping_cart,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
           ),
@@ -208,7 +216,10 @@ class _PosScreenState extends State<PosScreen>
               hintText: 'Tìm tên hoặc mã sản phẩm...',
               prefixIcon: const Icon(Icons.search),
               suffixIcon: IconButton(
-                icon: const Icon(Icons.qr_code_scanner, color: AppColors.primary),
+                icon: const Icon(
+                  Icons.qr_code_scanner,
+                  color: AppColors.primary,
+                ),
                 tooltip: 'Quét mã vạch',
                 onPressed: () async {
                   var res = await Navigator.push(
@@ -218,7 +229,7 @@ class _PosScreenState extends State<PosScreen>
                     ),
                   );
                   if (res is String && res != '-1' && res.isNotEmpty) {
-                     _handleBarcodeScan(res, cart);
+                    _handleBarcodeScan(res, cart);
                   }
                 },
               ),

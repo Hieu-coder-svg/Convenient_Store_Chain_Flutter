@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/forgot_password_screen.dart';
 import '../../features/auth/screens/profile_screen.dart';
@@ -6,6 +7,7 @@ import '../../features/home/screens/home_screen.dart';
 import '../../features/product/screens/product_list_screen.dart';
 import '../../features/product/screens/category_list_screen.dart';
 import '../../features/product/screens/add_edit_product_screen.dart';
+import '../../features/product/screens/product_detail_screen.dart';
 import '../../features/supplier/screens/supplier_list_screen.dart';
 import '../../features/branch/screens/branch_list_screen.dart';
 import '../../features/branch_order/screens/branch_order_list_screen.dart';
@@ -26,11 +28,14 @@ import '../../features/user_management/screens/store_schedule_builder_screen.dar
 import '../../features/user_management/screens/personal_schedule_screen.dart';
 import '../../features/user_management/screens/clock_in_screen.dart';
 import '../../features/user_management/screens/attendance_report_screen.dart';
+import '../../features/user_management/screens/work_history_screen.dart';
 import '../../features/user_management/screens/shift_templates_screen.dart';
+import '../../features/auth/providers/auth_provider.dart';
 import '../../features/reports/screens/chain_dashboard_screen.dart';
 import '../../features/reports/screens/product_sales_report_screen.dart';
 import '../../features/reports/screens/supplier_performance_screen.dart';
 import '../../features/reports/screens/low_stock_alerts_screen.dart';
+
 
 class AppRouter {
   static final router = GoRouter(
@@ -49,14 +54,43 @@ class AppRouter {
       GoRoute(
         path: '/products',
         builder: (context, state) => const ProductListScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          if (role == 'System Admin') {
+            return '/home';
+          }
+          return null;
+        },
       ),
       GoRoute(
         path: '/categories',
         builder: (context, state) => const CategoryListScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          if (role != 'Chain Director') {
+            return '/home';
+          }
+          return null;
+        },
       ),
       GoRoute(
         path: '/products/add',
         builder: (context, state) => const AddEditProductScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          if (role != 'Chain Director') {
+            return '/home';
+          }
+          return null;
+        },
+      ),
+      GoRoute(
+        path: '/products/detail/:id',
+        builder: (context, state) {
+          final idString = state.pathParameters['id'];
+          final id = int.tryParse(idString ?? '') ?? 0;
+          return ProductDetailScreen(productId: id);
+        },
       ),
       GoRoute(
         path: '/products/edit/:id',
@@ -65,14 +99,35 @@ class AppRouter {
           final id = int.tryParse(idString ?? '') ?? 0;
           return AddEditProductScreen(productId: id);
         },
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          if (role != 'Chain Director') {
+            return '/home';
+          }
+          return null;
+        },
       ),
       GoRoute(
         path: '/suppliers',
         builder: (context, state) => const SupplierListScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          if (role != 'Chain Director') {
+            return '/home';
+          }
+          return null;
+        },
       ),
       GoRoute(
         path: '/branches',
         builder: (context, state) => const BranchListScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          if (role != 'Chain Director') {
+            return '/home';
+          }
+          return null;
+        },
       ),
       GoRoute(
         path: '/branch-orders',
@@ -90,10 +145,7 @@ class AppRouter {
           return BranchOrderDetailScreen(orderId: id);
         },
       ),
-      GoRoute(
-        path: '/pos',
-        builder: (context, state) => const PosScreen(),
-      ),
+      GoRoute(path: '/pos', builder: (context, state) => const PosScreen()),
       GoRoute(
         path: '/warehouse-inventory',
         builder: (context, state) => const WarehouseInventoryScreen(),
@@ -154,12 +206,34 @@ class AppRouter {
         path: '/daily-summary',
         builder: (context, state) => const DailySummaryScreen(),
       ),
-      GoRoute(path: '/employee-management', builder: (context, state) => const EmployeeManagementScreen()),
-      GoRoute(path: '/store-schedule', builder: (context, state) => const StoreScheduleBuilderScreen()),
-      GoRoute(path: '/personal-schedule', builder: (context, state) => const PersonalScheduleScreen()),
-      GoRoute(path: '/clock-in', builder: (context, state) => const ClockInScreen()),
-      GoRoute(path: '/attendance-report', builder: (context, state) => const AttendanceReportScreen()),
-      GoRoute(path: '/shift-templates', builder: (context, state) => const ShiftTemplatesScreen()),
+      GoRoute(
+        path: '/employee-management',
+        builder: (context, state) => const EmployeeManagementScreen(),
+      ),
+      GoRoute(
+        path: '/store-schedule',
+        builder: (context, state) => const StoreScheduleBuilderScreen(),
+      ),
+      GoRoute(
+        path: '/personal-schedule',
+        builder: (context, state) => const PersonalScheduleScreen(),
+      ),
+      GoRoute(
+        path: '/clock-in',
+        builder: (context, state) => const ClockInScreen(),
+      ),
+      GoRoute(
+        path: '/attendance-report',
+        builder: (context, state) => const AttendanceReportScreen(),
+      ),
+      GoRoute(
+        path: '/work-history',
+        builder: (context, state) => const WorkHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/shift-templates',
+        builder: (context, state) => const ShiftTemplatesScreen(),
+      ),
     ],
   );
 }

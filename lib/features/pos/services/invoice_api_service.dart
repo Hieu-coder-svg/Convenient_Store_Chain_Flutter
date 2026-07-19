@@ -39,7 +39,11 @@ class InvoiceApiService {
     }
   }
 
-  Future<List<InvoiceModel>> getInvoices({int? branchId, String? fromDate, String? toDate}) async {
+  Future<List<InvoiceModel>> getInvoices({
+    int? branchId,
+    String? fromDate,
+    String? toDate,
+  }) async {
     try {
       final queryParams = <String, dynamic>{};
       if (branchId != null) queryParams['branchId'] = branchId;
@@ -50,7 +54,7 @@ class InvoiceApiService {
         ApiConstants.invoices,
         queryParameters: queryParams,
       );
-      
+
       if (response.data != null && response.data['data'] != null) {
         final List<dynamic> list = response.data['data'];
         return list.map((e) => InvoiceModel.fromJson(e)).toList();
@@ -63,7 +67,10 @@ class InvoiceApiService {
     }
   }
 
-  Future<Map<String, dynamic>> getDailySummary(int branchId, String date) async {
+  Future<Map<String, dynamic>> getDailySummary(
+    int branchId,
+    String date,
+  ) async {
     try {
       final response = await _dioClient.dio.get(
         '${ApiConstants.invoices}/summary/daily',
@@ -83,7 +90,9 @@ class InvoiceApiService {
   Exception _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response?.data;
-      final message = data is Map ? data['message'] : 'Error: ${e.response?.statusCode}';
+      final message = data is Map
+          ? data['message']
+          : 'Error: ${e.response?.statusCode}';
       return Exception(message ?? 'Unknown server error');
     } else {
       return Exception('Network error or server unreachable');

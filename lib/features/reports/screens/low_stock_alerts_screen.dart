@@ -32,7 +32,7 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
     try {
       final response = await _dioClient.dio.get('/SystemSettings');
       final List<dynamic> data = response.data;
-      
+
       for (var item in data) {
         if (item['settingKey'] == 'WarehouseLowStockThreshold') {
           _warehouseThresholdCtrl.text = item['settingValue'];
@@ -59,7 +59,7 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
         'BranchLowStockThreshold': _branchThresholdCtrl.text,
       };
       await _dioClient.dio.put('/SystemSettings', data: settings);
-      
+
       if (mounted) {
         setState(() => _isSavingConfig = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,7 +125,10 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
                 children: [
                   const Icon(Icons.error_outline, color: Colors.red, size: 48),
                   const SizedBox(height: 16),
-                  Text('Lỗi: ${provider.error}', style: const TextStyle(color: Colors.red)),
+                  Text(
+                    'Lỗi: ${provider.error}',
+                    style: const TextStyle(color: Colors.red),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => provider.fetchLowStockAlerts(),
@@ -138,8 +141,10 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
 
           final alerts = provider.lowStockAlerts;
           final user = context.watch<AuthProvider>().currentUser;
-          final isDirector = user?.roleName.contains('Director') == true || user?.roleName == 'SystemAdmin';
-          
+          final isDirector =
+              user?.roleName.contains('Director') == true ||
+              user?.roleName == 'SystemAdmin';
+
           Widget configWidget = const SizedBox.shrink();
           if (isDirector) {
             configWidget = _buildThresholdConfig();
@@ -154,11 +159,18 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle_outline, color: Colors.green[400], size: 64),
+                        Icon(
+                          Icons.check_circle_outline,
+                          color: Colors.green[400],
+                          size: 64,
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           'Không có mặt hàng nào sắp hết.',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
@@ -176,73 +188,85 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
                   padding: const EdgeInsets.all(16),
                   itemCount: alerts.length,
                   itemBuilder: (context, index) {
-              final alert = alerts[index];
-              final isCritical = alert.currentStock == 0;
-              
-              return Card(
-                elevation: 0,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: isCritical ? Colors.red.withOpacity(0.3) : Colors.orange.withOpacity(0.3),
-                  ),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: CircleAvatar(
-                    backgroundColor: isCritical ? Colors.red[50] : Colors.orange[50],
-                    child: Icon(
-                      isCritical ? Icons.warning : Icons.inventory_2_outlined,
-                      color: isCritical ? Colors.red : Colors.orange,
-                    ),
-                  ),
-                  title: Text(
-                    alert.productName,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 4),
-                      Text('Danh mục: ${alert.categoryName}'),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Vị trí: ${alert.locationName} (${alert.locationType})',
-                        style: TextStyle(
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w500,
+                    final alert = alerts[index];
+                    final isCritical = alert.currentStock == 0;
+
+                    return Card(
+                      elevation: 0,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isCritical
+                              ? Colors.red.withOpacity(0.3)
+                              : Colors.orange.withOpacity(0.3),
                         ),
                       ),
-                    ],
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Tồn: ${alert.currentStock}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isCritical ? Colors.red : Colors.orange,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        leading: CircleAvatar(
+                          backgroundColor: isCritical
+                              ? Colors.red[50]
+                              : Colors.orange[50],
+                          child: Icon(
+                            isCritical
+                                ? Icons.warning
+                                : Icons.inventory_2_outlined,
+                            color: isCritical ? Colors.red : Colors.orange,
+                          ),
+                        ),
+                        title: Text(
+                          alert.productName,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text('Danh mục: ${alert.categoryName}'),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Vị trí: ${alert.locationName} (${alert.locationType})',
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Tồn: ${alert.currentStock}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isCritical ? Colors.red : Colors.orange,
+                              ),
+                            ),
+                            Text(
+                              'Định mức: ${alert.minimumThreshold}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        'Định mức: ${alert.minimumThreshold}',
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  },
-),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -296,12 +320,18 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Icon(Icons.save),
                   label: const Text('Lưu'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                   ),
                 ),
               ],

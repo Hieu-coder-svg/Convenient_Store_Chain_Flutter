@@ -6,6 +6,7 @@ import '../../../core/widgets/app_drawer.dart';
 import '../providers/product_catalog_provider.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -206,6 +207,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProductCatalogProvider>();
+    final role = context.watch<AuthProvider>().currentUser?.roleName;
     // Lọc theo trạng thái local nếu backend chưa trả về dữ liệu tương ứng
     final products = provider.products.where((p) {
       if (_selectedStatus != null && p.isActive != _selectedStatus) {
@@ -303,15 +305,17 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       onTap: _showStatusFilterSheet,
                       isActive: _selectedStatus != null,
                     ),
-                    const SizedBox(width: 8),
-                    _buildFilterChip(
-                      label: 'Categories Admin',
-                      icon: Icons.edit_note,
-                      onTap: () {
-                        context.go('/categories');
-                      },
-                      isActive: false,
-                    ),
+                    if (role == 'Chain Director') ...[
+                      const SizedBox(width: 8),
+                      _buildFilterChip(
+                        label: 'Categories Admin',
+                        icon: Icons.edit_note,
+                        onTap: () {
+                          context.go('/categories');
+                        },
+                        isActive: false,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -360,7 +364,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   itemCount: products.length,
                   itemBuilder: (context, index) {
                     final product = products[index];
-                    return _buildProductCard(product);
+                    return _buildProductCard(product, role);
                   },
                 ),
               const SizedBox(height: 80), // Spacer for bottom bar
@@ -368,13 +372,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        onPressed: () {
-          context.go('/products/add');
-        },
-        child: const Icon(Icons.add, color: Colors.white, size: 28),
-      ),
+      floatingActionButton: (role == 'Chain Director')
+          ? FloatingActionButton(
+              backgroundColor: AppColors.primary,
+              onPressed: () {
+                context.go('/products/add');
+              },
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
+            )
+          : null,
       bottomNavigationBar: Container(
         height: 72,
         decoration: BoxDecoration(
@@ -449,225 +455,244 @@ class _ProductListScreenState extends State<ProductListScreen> {
     );
   }
 
-  Widget _buildProductCard(ProductModel product) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border(
-          top: BorderSide(
-            color: product.isActive ? AppColors.primary : AppColors.error,
-            width: 4,
-          ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Product Image
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: product.imageUrl != null && product.imageUrl!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          product.imageUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) =>
-                              const Icon(Icons.image, color: Colors.grey),
-                        ),
-                      )
-                    : const Icon(Icons.image, color: Colors.grey),
-              ),
-              const SizedBox(width: 12),
-
-              // Title and SKU
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product.productName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'SKU: ${product.barcode ?? 'N/A'}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Quy cách: 1 ${product.importUnit ?? 'Thùng'} = ${product.conversionFactor} ${product.unit ?? 'Cái'}',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Status Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: product.isActive
-                      ? Colors.green.shade50
-                      : AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: product.isActive
-                            ? Colors.green
-                            : AppColors.error,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      product.isActive ? 'Active' : 'Inactive',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: product.isActive
-                            ? Colors.green.shade800
-                            : AppColors.error,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-
-          // Prices Grid
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Giá bán lẻ (Retail)',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    Text(
-                      '${product.sellingPrice.toStringAsFixed(0)} VND',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Giá nhập (Cost)',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    Text(
-                      '${product.costPrice.toStringAsFixed(0)} VND',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Category and actions
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(8),
+  Widget _buildProductCard(ProductModel product, String? role) {
+    return GestureDetector(
+      onTap: () {
+        context.push('/products/detail/${product.productId}');
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border(
+            top: BorderSide(
+              color: product.isActive ? AppColors.primary : AppColors.error,
+              width: 4,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Danh mục: ${product.categoryName}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
+                // Product Image
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            product.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) =>
+                                const Icon(Icons.image, color: Colors.grey),
+                          ),
+                        )
+                      : const Icon(Icons.image, color: Colors.grey),
+                ),
+                const SizedBox(width: 12),
+
+                // Title and SKU
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.productName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'SKU: ${product.barcode ?? 'N/A'}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Quy cách: 1 ${product.importUnit ?? 'Thùng'} = ${product.conversionFactor} ${product.unit ?? 'Cái'}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        context.go('/products/edit/${product.productId}');
-                      },
-                      child: const Icon(
-                        Icons.edit,
-                        color: AppColors.primary,
-                        size: 18,
+
+                // Status Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: product.isActive
+                        ? Colors.green.shade50
+                        : AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: product.isActive
+                              ? Colors.green
+                              : AppColors.error,
+                          shape: BoxShape.circle,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: () => _confirmDeleteProduct(product),
-                      child: const Icon(
-                        Icons.delete,
-                        color: AppColors.error,
-                        size: 18,
+                      const SizedBox(width: 6),
+                      Text(
+                        product.isActive ? 'Active' : 'Inactive',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: product.isActive
+                              ? Colors.green.shade800
+                              : AppColors.error,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+            const Spacer(),
+
+            // Prices Grid
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Giá bán lẻ (Retail)',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        '${product.sellingPrice.toStringAsFixed(0)} VND',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (role == 'Chain Director' || role == 'Warehouse Staff')
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Giá nhập (Cost)',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        Text(
+                          '${product.costPrice.toStringAsFixed(0)} VND',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Category and actions
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Danh mục: ${product.categoryName}',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          context.push('/products/detail/${product.productId}');
+                        },
+                        child: const Icon(
+                          Icons.visibility,
+                          color: AppColors.primary,
+                          size: 18,
+                        ),
+                      ),
+                      if (role == 'Chain Director') ...[
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: () {
+                            context.push('/products/edit/${product.productId}');
+                          },
+                          child: const Icon(
+                            Icons.edit,
+                            color: AppColors.primary,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        GestureDetector(
+                          onTap: () => _confirmDeleteProduct(product),
+                          child: const Icon(
+                            Icons.delete,
+                            color: AppColors.error,
+                            size: 18,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

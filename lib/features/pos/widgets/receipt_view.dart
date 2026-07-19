@@ -9,7 +9,10 @@ class ReceiptView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+    );
     final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
 
     return Container(
@@ -22,7 +25,7 @@ class ReceiptView extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Column(
@@ -46,55 +49,91 @@ class ReceiptView extends StatelessWidget {
           _buildInfoRow('Hóa đơn số:', '#${invoice.invoiceId}'),
           _buildInfoRow('Ngày:', dateFormatter.format(invoice.invoiceDate)),
           _buildInfoRow('Thu ngân:', invoice.staffName),
-          if (invoice.customerName != null) _buildInfoRow('Khách hàng:', invoice.customerName!),
+          if (invoice.customerName != null)
+            _buildInfoRow('Khách hàng:', invoice.customerName!),
           const SizedBox(height: 16),
           const _DashedLine(),
           const SizedBox(height: 16),
-          
+
           // Items Header
           const Row(
             children: [
-              Expanded(flex: 2, child: Text('Sản phẩm', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 1, child: Text('SL', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Thành tiền', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  'Sản phẩm',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Text(
+                  'SL',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  'Thành tiền',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
-          
+
           // Items List
-          ...invoice.items.map((item) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: Text(item.productName, style: const TextStyle(fontSize: 13)),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(item.quantity.toString(), textAlign: TextAlign.center, style: const TextStyle(fontSize: 13)),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
-                    currencyFormatter.format(item.subTotal),
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(fontSize: 13),
+          ...invoice.items.map(
+            (item) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      item.productName,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                   ),
-                ),
-              ],
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      item.quantity.toString(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      currencyFormatter.format(item.subTotal),
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          )),
-          
+          ),
+
           const SizedBox(height: 16),
           const _DashedLine(),
           const SizedBox(height: 16),
-          
+
           // Totals
-          _buildTotalRow('Cộng tiền hàng:', currencyFormatter.format(invoice.totalAmount)),
+          _buildTotalRow(
+            'Cộng tiền hàng:',
+            currencyFormatter.format(invoice.totalAmount),
+          ),
           if (invoice.discountAmount > 0)
-            _buildTotalRow('Giảm giá (Điểm):', '-${currencyFormatter.format(invoice.discountAmount)}'),
+            _buildTotalRow(
+              'Giảm giá (Điểm):',
+              '-${currencyFormatter.format(invoice.discountAmount)}',
+            ),
           const SizedBox(height: 8),
           _buildTotalRow(
             'TỔNG THANH TOÁN:',
@@ -104,9 +143,10 @@ class ReceiptView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _buildInfoRow('Hình thức:', invoice.paymentMethod),
-          
+
           // Points
-          if (invoice.loyaltyPointsEarned != null && invoice.loyaltyPointsEarned! > 0) ...[
+          if (invoice.loyaltyPointsEarned != null &&
+              invoice.loyaltyPointsEarned! > 0) ...[
             const SizedBox(height: 16),
             const _DashedLine(),
             const SizedBox(height: 16),
@@ -116,11 +156,17 @@ class ReceiptView extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            _buildInfoRow('Điểm tích lũy lần này:', '+${invoice.loyaltyPointsEarned}'),
+            _buildInfoRow(
+              'Điểm tích lũy lần này:',
+              '+${invoice.loyaltyPointsEarned}',
+            ),
             if (invoice.customerLoyaltyBalance != null)
-              _buildInfoRow('Tổng điểm hiện có:', '${invoice.customerLoyaltyBalance}'),
+              _buildInfoRow(
+                'Tổng điểm hiện có:',
+                '${invoice.customerLoyaltyBalance}',
+              ),
           ],
-          
+
           const SizedBox(height: 24),
           const Text(
             'Cảm ơn quý khách và hẹn gặp lại!',
@@ -146,7 +192,12 @@ class ReceiptView extends StatelessWidget {
     );
   }
 
-  Widget _buildTotalRow(String label, String value, {bool isBold = false, double size = 14}) {
+  Widget _buildTotalRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    double size = 14,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -187,7 +238,9 @@ class _DashedLine extends StatelessWidget {
             return const SizedBox(
               width: 3,
               height: 1,
-              child: DecoratedBox(decoration: BoxDecoration(color: Colors.grey)),
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: Colors.grey),
+              ),
             );
           }),
         );

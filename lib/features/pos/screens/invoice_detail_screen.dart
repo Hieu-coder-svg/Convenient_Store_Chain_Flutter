@@ -31,7 +31,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   Future<void> _loadInvoice() async {
     final provider = context.read<InvoiceProvider>();
     final invoice = await provider.getInvoiceById(widget.invoiceId);
-    
+
     if (mounted) {
       setState(() {
         _invoice = invoice;
@@ -47,8 +47,13 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(
-          _invoice != null ? 'Hóa đơn #INV-${_invoice!.invoiceId.toString().padLeft(6, '0')}' : 'Chi tiết hóa đơn',
-          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          _invoice != null
+              ? 'Hóa đơn #INV-${_invoice!.invoiceId.toString().padLeft(6, '0')}'
+              : 'Chi tiết hóa đơn',
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -69,14 +74,18 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               icon: const Icon(Icons.print, color: AppColors.textSecondary),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đang gửi lệnh in đến máy in...')),
+                  const SnackBar(
+                    content: Text('Đang gửi lệnh in đến máy in...'),
+                  ),
                 );
               },
             ),
         ],
       ),
       body: _buildBody(),
-      bottomNavigationBar: _invoice != null ? _buildBottomActions(context) : null,
+      bottomNavigationBar: _invoice != null
+          ? _buildBottomActions(context)
+          : null,
     );
   }
 
@@ -92,7 +101,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            Text(_error ?? 'Không tìm thấy hóa đơn', style: const TextStyle(fontSize: 16)),
+            Text(
+              _error ?? 'Không tìm thấy hóa đơn',
+              style: const TextStyle(fontSize: 16),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadInvoice,
@@ -135,7 +147,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                 onPressed: () {
                   // TODO: Implement actual printing via ESC/POS or Bluetooth printer
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Đang gửi lệnh in đến máy in...')),
+                    const SnackBar(
+                      content: Text('Đang gửi lệnh in đến máy in...'),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.print),
@@ -153,7 +167,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   context.go('/pos');
                 },
                 icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
-                label: const Text('ĐƠN MỚI', style: TextStyle(color: Colors.white)),
+                label: const Text(
+                  'ĐƠN MỚI',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),

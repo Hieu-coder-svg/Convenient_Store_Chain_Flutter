@@ -95,3 +95,62 @@ class AttendanceReportItem {
   String get attendanceRate =>
       totalShifts > 0 ? '$totalPresent/$totalShifts ngày' : '-';
 }
+
+class WorkHistoryItem {
+  final int attendanceId;
+  final int shiftAssignmentId;
+  final int employeeId;
+  final String employeeName;
+  final String shiftName;
+  final DateTime workDate;
+  final String scheduledStartTime;
+  final String scheduledEndTime;
+  final DateTime? checkInTime;
+  final DateTime? checkOutTime;
+  final int lateMinutes;
+  final int earlyMinutes;
+  final String workStatus;
+
+  const WorkHistoryItem({
+    required this.attendanceId,
+    required this.shiftAssignmentId,
+    required this.employeeId,
+    required this.employeeName,
+    required this.shiftName,
+    required this.workDate,
+    required this.scheduledStartTime,
+    required this.scheduledEndTime,
+    this.checkInTime,
+    this.checkOutTime,
+    required this.lateMinutes,
+    required this.earlyMinutes,
+    required this.workStatus,
+  });
+
+  factory WorkHistoryItem.fromJson(Map<String, dynamic> json) {
+    return WorkHistoryItem(
+      attendanceId: json['attendanceId'] ?? 0,
+      shiftAssignmentId: json['shiftAssignmentId'] ?? 0,
+      employeeId: json['employeeId'] ?? 0,
+      employeeName: json['employeeName'] ?? 'Nhân viên',
+      shiftName: json['shiftName'] ?? 'Ca làm việc',
+      workDate: DateTime.parse(json['workDate']),
+      scheduledStartTime: json['scheduledStartTime'] ?? '00:00:00',
+      scheduledEndTime: json['scheduledEndTime'] ?? '00:00:00',
+      checkInTime: json['checkInTime'] == null
+          ? null
+          : DateTime.parse(json['checkInTime']),
+      checkOutTime: json['checkOutTime'] == null
+          ? null
+          : DateTime.parse(json['checkOutTime']),
+      lateMinutes: json['lateMinutes'] ?? 0,
+      earlyMinutes: json['earlyMinutes'] ?? 0,
+      workStatus: json['workStatus'] ?? 'Upcoming',
+    );
+  }
+
+  bool get isAbsent => workStatus == 'Absent';
+  bool get isLate => workStatus.contains('Late');
+  bool get isEarlyLeave => workStatus.contains('EarlyLeave');
+  bool get isWorking => workStatus == 'Working' || workStatus == 'LateWorking';
+}
