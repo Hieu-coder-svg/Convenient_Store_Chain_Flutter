@@ -479,35 +479,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
         onPressed: () => _showAddEditSupplierDialog(),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
-      bottomNavigationBar: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomNavItem(Icons.inventory, 'Inventory', false, () {
-              context.go('/products');
-            }),
-            _buildBottomNavItem(Icons.receipt_long, 'Sales', false, () {
-              context.go('/home');
-            }),
-            _buildBottomNavItem(Icons.badge, 'Staff', true, () {}),
-            _buildBottomNavItem(Icons.settings, 'Settings', false, () {}),
-          ],
-        ),
-      ),
+
     );
   }
 
@@ -535,46 +507,5 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
     );
   }
 
-  Widget _buildBottomNavItem(
-    IconData icon,
-    String label,
-    bool isSelected,
-    VoidCallback onTap,
-  ) {
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: isSelected
-                ? BoxDecoration(
-                    color: AppColors.secondaryFixed,
-                    borderRadius: BorderRadius.circular(16),
-                  )
-                : null,
-            child: Icon(
-              icon,
-              color: isSelected
-                  ? AppColors.onSecondaryFixed
-                  : AppColors.textSecondary,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              color: isSelected
-                  ? AppColors.onSecondaryFixed
-                  : AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 }

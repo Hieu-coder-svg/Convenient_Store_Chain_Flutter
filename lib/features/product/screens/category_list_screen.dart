@@ -217,11 +217,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
     final rawCategories = provider.categories;
     final products = provider.products;
 
-    // Tính toán số lượng sản phẩm động trên Frontend
-    final List<CategoryModel> categories = rawCategories.map((c) {
-      final count = products.where((p) => p.categoryId == c.categoryId).length;
-      return c.copyWith(productCount: count);
-    }).toList();
+    // Dữ liệu category đã bao gồm số lượng sản phẩm từ backend
+    final List<CategoryModel> categories = List.from(rawCategories);
 
     // Sắp xếp theo cấu hình
     if (_sortOrder == 'az') {
@@ -234,11 +231,8 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
       categories.sort((a, b) => a.productCount.compareTo(b.productCount));
     }
 
-    // Tổng số sản phẩm đã phân loại (tổng hợp từ số lượng sản phẩm của các danh mục)
-    int totalProducts = categories.fold(
-      0,
-      (sum, item) => sum + item.productCount,
-    );
+    // Tổng số sản phẩm đã phân loại (lấy từ totalCount của API phân trang)
+    int totalProducts = provider.totalCount;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -571,33 +565,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         onPressed: () => _showAddEditCategoryDialog(),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
-      bottomNavigationBar: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomNavItem(Icons.inventory, 'Inventory', true, () {}),
-            _buildBottomNavItem(Icons.receipt_long, 'Sales', false, () {
-              context.go('/home');
-            }),
-            _buildBottomNavItem(Icons.badge, 'Staff', false, () {}),
-            _buildBottomNavItem(Icons.settings, 'Settings', false, () {}),
-          ],
-        ),
-      ),
+
     );
   }
 

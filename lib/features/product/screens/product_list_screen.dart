@@ -398,34 +398,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             )
           : null,
-      bottomNavigationBar: Container(
-        height: 72,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildBottomNavItem(Icons.home, 'Home', false, () {
-              context.go('/home');
-            }),
-            _buildBottomNavItem(Icons.person, 'Staff', false, () {}),
-            _buildBottomNavItem(Icons.schedule, 'Shifts', false, () {}),
-            _buildBottomNavItem(Icons.warehouse, 'Stock', true, () {}),
-            _buildBottomNavItem(Icons.shopping_cart, 'Orders', false, () {}),
-          ],
-        ),
-      ),
+
     );
   }
 
