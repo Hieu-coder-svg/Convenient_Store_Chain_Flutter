@@ -24,7 +24,7 @@ class InventoryApiService {
       return response.data;
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data['message'] ?? 'Lỗi tải danh sách kho tổng',
+        _getErrorMessage(e) ?? 'Lỗi tải danh sách kho tổng',
       );
     }
   }
@@ -48,7 +48,7 @@ class InventoryApiService {
       return response.data;
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data['message'] ?? 'Lỗi tải danh sách kho chi nhánh',
+        _getErrorMessage(e) ?? 'Lỗi tải danh sách kho chi nhánh',
       );
     }
   }
@@ -64,7 +64,7 @@ class InventoryApiService {
         data: {'items': items},
       );
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Lỗi điều chỉnh tồn kho chi nhánh');
+      throw Exception(_getErrorMessage(e) ?? 'Lỗi điều chỉnh tồn kho chi nhánh');
     }
   }
 
@@ -78,7 +78,7 @@ class InventoryApiService {
         data: {'items': items},
       );
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Lỗi điều chỉnh tồn kho tổng');
+      throw Exception(_getErrorMessage(e) ?? 'Lỗi điều chỉnh tồn kho tổng');
     }
   }
 
@@ -87,7 +87,16 @@ class InventoryApiService {
     try {
       await _dioClient.dio.post('/goods-receipts', data: receiptData);
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Lỗi tạo phiếu nhận hàng');
+      throw Exception(_getErrorMessage(e) ?? 'Lỗi tạo phiếu nhận hàng');
     }
+  }
+
+  String? _getErrorMessage(DioException e) {
+    if (e.response?.data is Map<String, dynamic>) {
+      return e.response?.data['message'] ?? e.response?.data['Message'] ?? e.response?.data['title'];
+    } else if (e.response?.data is String) {
+      return e.response?.data as String;
+    }
+    return null;
   }
 }
