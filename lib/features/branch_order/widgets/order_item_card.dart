@@ -111,6 +111,17 @@ class OrderItemCard extends StatelessWidget {
                       fontSize: 13,
                     ),
                   ),
+                  if ((product.conversionFactor ?? 1) > 1 && product.importUnit != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '(~ ${quantity ~/ (product.conversionFactor ?? 1)} ${product.importUnit} ${quantity % (product.conversionFactor ?? 1)} ${product.unit ?? ""})',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

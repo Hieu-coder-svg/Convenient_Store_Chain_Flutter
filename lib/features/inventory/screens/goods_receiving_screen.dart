@@ -135,7 +135,7 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Số lượng', isDense: true),
+                          decoration: const InputDecoration(labelText: 'Số lượng (Thùng/Hộp)', isDense: true),
                           keyboardType: TextInputType.number,
                           onChanged: (v) => item['quantityReceived'] = int.tryParse(v),
                         ),

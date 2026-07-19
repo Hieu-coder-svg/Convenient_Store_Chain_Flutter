@@ -136,6 +136,13 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
 
               final item = provider.warehouseItems[index];
               final bool isLowStock = item.quantity <= 10; // Threshold
+              
+              String secondaryText = '';
+              if (item.conversionFactor > 1 && item.importUnit != null) {
+                int boxes = item.quantity ~/ item.conversionFactor;
+                int pieces = item.quantity % item.conversionFactor;
+                secondaryText = '(~ $boxes ${item.importUnit} $pieces ${item.unit ?? ""})';
+              }
 
               return ListTile(
                 title: Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -145,13 +152,15 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${item.quantity}',
+                      '${item.quantity} ${item.unit ?? ""}',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: isLowStock ? Colors.red : AppColors.primary,
                       ),
                     ),
+                    if (secondaryText.isNotEmpty)
+                      Text(secondaryText, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     if (isLowStock)
                       const Text('Sắp hết', style: TextStyle(color: Colors.red, fontSize: 10)),
                   ],
