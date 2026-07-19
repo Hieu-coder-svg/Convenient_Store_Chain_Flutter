@@ -20,7 +20,7 @@ class HrProvider extends ChangeNotifier {
 
   // Attendance
   AttendanceRecord? _todayAttendance;
-  List<AttendanceRecord> _myRecentAttendance = [];
+  final List<AttendanceRecord> _myRecentAttendance = [];
   List<AttendanceReportItem> _branchReport = [];
   List<AttendanceRecord> _attendanceHistory = [];
   List<ShiftAssignment> _attendanceAssignments = [];
@@ -47,6 +47,26 @@ class HrProvider extends ChangeNotifier {
 
   void clearError() {
     _error = null;
+    notifyListeners();
+  }
+
+  void clearSessionData() {
+    _error = null;
+    _isLoading = false;
+    _shiftTemplates = [];
+    _storeSchedule = [];
+    _mySchedule = [];
+    _employees = [];
+    _todayAttendance = null;
+    _branchReport = [];
+    _attendanceHistory = [];
+    _attendanceAssignments = [];
+    final now = DateTime.now();
+    _weekStart = DateTime(
+      now.year,
+      now.month,
+      now.day,
+    ).subtract(Duration(days: now.weekday - 1));
     notifyListeners();
   }
 
@@ -118,16 +138,7 @@ class HrProvider extends ChangeNotifier {
         startDate: start,
         endDate: end,
       );
-      // Find today's attendance record
-      final today = DateTime.now();
-      _todayAttendance = null;
-      for (final a in _mySchedule) {
-        if (a.workDate.year == today.year &&
-            a.workDate.month == today.month &&
-            a.workDate.day == today.day) {
-          break;
-        }
-      }
+      _todayAttendance = await _hrService.getTodayAttendance();
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -391,7 +402,6 @@ class HrProvider extends ChangeNotifier {
           .where((assignment) => assignment.employeeId == employeeId)
           .toList();
     } catch (e) {
-      _attendanceHistory = [];
       _error = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoading = false;
@@ -413,6 +423,7 @@ class HrProvider extends ChangeNotifier {
         checkInTime: checkInTime,
         checkOutTime: checkOutTime,
       );
+      _todayAttendance = saved;
       final index = _attendanceHistory.indexWhere(
         (record) => record.attendanceId == saved.attendanceId,
       );

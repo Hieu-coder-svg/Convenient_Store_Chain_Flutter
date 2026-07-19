@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/user_management/providers/hr_provider.dart';
 import '../constants/app_colors.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -10,6 +11,10 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
+
+    if (_isStoreManager(user?.roleName)) {
+      return _buildManagerDrawer(context, user);
+    }
 
     return Drawer(
       child: Column(
@@ -166,6 +171,7 @@ class AppDrawer extends StatelessWidget {
             ),
             onTap: () async {
               Navigator.pop(context); // Close drawer first
+              context.read<HrProvider>().clearSessionData();
               await context.read<AuthProvider>().logout();
               if (context.mounted) {
                 context.go('/login');
@@ -173,6 +179,82 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  bool _isStoreManager(String? roleName) {
+    final normalized = roleName?.replaceAll(' ', '').toLowerCase();
+    return normalized == 'storemanager';
+  }
+
+  Widget _buildManagerDrawer(BuildContext context, dynamic user) {
+    return Drawer(
+      child: Column(
+        children: [
+          _buildHeader(user),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.business_outlined,
+                  title: 'Nhà cung cấp',
+                  onTap: () => context.go('/suppliers'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.storefront_outlined,
+                  title: 'Chi nhánh',
+                  onTap: () => context.go('/branches'),
+                ),
+                _buildSectionTitle('NHÂN SỰ & CA LÀM'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.people_outline,
+                  title: 'Quản lý nhân viên',
+                  onTap: () => context.go('/employee-management'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.calendar_month_outlined,
+                  title: 'Xếp lịch làm việc',
+                  onTap: () => context.go('/store-schedule'),
+                ),
+                _buildSectionTitle('NGHIỆP VỤ'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.point_of_sale_outlined,
+                  title: 'Máy tính tiền (POS)',
+                  onTap: () => context.go('/pos'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.local_shipping_outlined,
+                  title: 'Đơn đặt hàng nội bộ',
+                  onTap: () => context.go('/branch-orders'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text(
+              'Đăng xuất',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            onTap: () async {
+              Navigator.pop(context);
+              context.read<HrProvider>().clearSessionData();
+              await context.read<AuthProvider>().logout();
+              if (context.mounted) context.go('/login');
+            },
+          ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -213,7 +295,7 @@ class AppDrawer extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(

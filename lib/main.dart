@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routes/app_router.dart';
@@ -111,6 +112,13 @@ class ConvenienceStoreApp extends StatelessWidget {
       child: MaterialApp.router(
         title: 'Convenience Store POS',
         theme: AppTheme.lightTheme,
+        locale: const Locale('vi', 'VN'),
+        supportedLocales: const [Locale('vi', 'VN'), Locale('en', 'US')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         routerConfig: AppRouter.router,
         debugShowCheckedModeBanner: false,
       ),

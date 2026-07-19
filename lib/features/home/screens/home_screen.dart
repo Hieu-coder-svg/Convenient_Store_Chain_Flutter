@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_drawer.dart';
 import '../../user_management/screens/system_admin_dashboard.dart';
+import 'manager_home_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -16,6 +17,11 @@ class HomeScreen extends StatelessWidget {
     if (user?.roleName.contains('Admin') == true ||
         user?.roleName.contains('Director') == true) {
       return const SystemAdminDashboard();
+    }
+
+    final normalizedRole = user?.roleName.replaceAll(' ', '').toLowerCase();
+    if (normalizedRole == 'storemanager') {
+      return const ManagerHomeScreen();
     }
 
     return Scaffold(
