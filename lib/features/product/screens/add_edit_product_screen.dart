@@ -288,7 +288,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           ),
         ),
       );
-      context.go('/products'); // Quay lại màn hình sản phẩm
+      if (context.canPop()) {
+        context.pop(); // Quay lại màn hình trước đó (List hoặc Detail)
+      } else {
+        context.go('/products');
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -309,7 +313,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () {
-            context.go('/products');
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/products');
+            }
           },
         ),
         title: Text(
