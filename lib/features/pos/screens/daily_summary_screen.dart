@@ -29,17 +29,21 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = context.read<AuthProvider>().currentUser;
       if (user != null) {
-        if (user.roleName.toLowerCase().contains('director') || user.roleName.toLowerCase().contains('admin')) {
-          _branchId = 1; // Default to branch 1 so they have to select or we just load it
+        if (user.roleName.toLowerCase().contains('director') ||
+            user.roleName.toLowerCase().contains('admin')) {
+          _branchId =
+              1; // Default to branch 1 so they have to select or we just load it
           _canFilterBranch = true;
           context.read<BranchProvider>().fetchBranches().then((_) {
             final branches = context.read<BranchProvider>().branches;
             if (branches.isNotEmpty && _branchId == null) {
-              setState(() { _branchId = branches.first.branchId; });
+              setState(() {
+                _branchId = branches.first.branchId;
+              });
             }
           });
         } else {
-          _branchId = user.branchId; 
+          _branchId = user.branchId;
           _canFilterBranch = false;
         }
       }
@@ -51,7 +55,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
 
   Future<void> _fetchSummary() async {
     if (_branchId == null) return;
-    
+
     setState(() {
       _isFetching = true;
       _error = null;
@@ -92,7 +96,10 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       appBar: AppBar(
         title: const Text(
           'Báo cáo doanh thu',
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -120,7 +127,10 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                     children: [
                       const Icon(Icons.store, size: 20, color: Colors.grey),
                       const SizedBox(width: 8),
-                      const Text('Chi nhánh: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Chi nhánh: ',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       Expanded(
                         child: _canFilterBranch
                             ? Consumer<BranchProvider>(
@@ -133,10 +143,14 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                     value: _branchId,
                                     hint: const Text('Chọn chi nhánh'),
                                     underline: const SizedBox(),
-                                    items: branchProvider.branches.map((b) => DropdownMenuItem<int?>(
-                                      value: b.branchId,
-                                      child: Text(b.branchName),
-                                    )).toList(),
+                                    items: branchProvider.branches
+                                        .map(
+                                          (b) => DropdownMenuItem<int?>(
+                                            value: b.branchId,
+                                            child: Text(b.branchName),
+                                          ),
+                                        )
+                                        .toList(),
                                     onChanged: (val) {
                                       setState(() {
                                         _branchId = val;
@@ -145,26 +159,42 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                                   );
                                 },
                               )
-                            : Text(_branchId != null ? 'CN $_branchId' : 'Không xác định'),
+                            : Text(
+                                _branchId != null
+                                    ? 'CN $_branchId'
+                                    : 'Không xác định',
+                              ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(width: 8),
-                      const Text('Ngày: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Ngày: ',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       Expanded(
                         child: InkWell(
                           onTap: () => _selectDate(context),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
                             decoration: BoxDecoration(
                               border: Border.all(color: Colors.grey.shade300),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
+                            child: Text(
+                              DateFormat('dd/MM/yyyy').format(_selectedDate),
+                            ),
                           ),
                         ),
                       ),
@@ -174,11 +204,23 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: (_branchId == null || _isFetching) ? null : _fetchSummary,
-                      icon: _isFetching 
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      onPressed: (_branchId == null || _isFetching)
+                          ? null
+                          : _fetchSummary,
+                      icon: _isFetching
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Icon(Icons.bar_chart, color: Colors.white),
-                      label: const Text('XEM BÁO CÁO', style: TextStyle(color: Colors.white)),
+                      label: const Text(
+                        'XEM BÁO CÁO',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -189,11 +231,9 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               ),
             ),
           ),
-          
+
           // Result section
-          Expanded(
-            child: _buildResult(),
-          ),
+          Expanded(child: _buildResult()),
         ],
       ),
     );
@@ -213,7 +253,11 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
@@ -222,7 +266,10 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
 
     if (_summary == null) {
       return const Center(
-        child: Text('Chưa có dữ liệu báo cáo', style: TextStyle(color: Colors.grey, fontSize: 16)),
+        child: Text(
+          'Chưa có dữ liệu báo cáo',
+          style: TextStyle(color: Colors.grey, fontSize: 16),
+        ),
       );
     }
 
@@ -238,11 +285,17 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
-                const Icon(Icons.insert_chart, color: AppColors.primary, size: 32),
+                const Icon(
+                  Icons.insert_chart,
+                  color: AppColors.primary,
+                  size: 32,
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -250,7 +303,11 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                     children: [
                       Text(
                         'BÁO CÁO NGÀY ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                          fontSize: 16,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text('Chi nhánh: CN $_branchId'),
@@ -278,21 +335,27 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               ),
               _buildStatCard(
                 title: 'Doanh thu',
-                value: formatCurrency.format(_summary!.totalRevenue).replaceAll(' đ', ''),
+                value: formatCurrency
+                    .format(_summary!.totalRevenue)
+                    .replaceAll(' đ', ''),
                 unit: 'VNĐ',
                 icon: Icons.monetization_on,
                 color: Colors.orange,
               ),
               _buildStatCard(
                 title: 'Giảm giá',
-                value: formatCurrency.format(_summary!.totalDiscount).replaceAll(' đ', ''),
+                value: formatCurrency
+                    .format(_summary!.totalDiscount)
+                    .replaceAll(' đ', ''),
                 unit: 'VNĐ',
                 icon: Icons.local_offer,
                 color: Colors.red,
               ),
               _buildStatCard(
                 title: 'Doanh thu ròng',
-                value: formatCurrency.format(_summary!.netRevenue).replaceAll(' đ', ''),
+                value: formatCurrency
+                    .format(_summary!.netRevenue)
+                    .replaceAll(' đ', ''),
                 unit: 'VNĐ',
                 icon: Icons.trending_up,
                 color: Colors.green,
@@ -317,7 +380,9 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       elevation: isHighlight ? 4 : 1,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: isHighlight ? BorderSide(color: color, width: 2) : BorderSide.none,
+        side: isHighlight
+            ? BorderSide(color: color, width: 2)
+            : BorderSide.none,
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -334,7 +399,9 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade700,
-                    fontWeight: isHighlight ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isHighlight
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                 ),
               ],
@@ -353,10 +420,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             ),
             Text(
               unit,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade500,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
             ),
             const Spacer(),
           ],
@@ -367,12 +431,14 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
 
   void _showPrintDialog(BuildContext context) {
     final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
-    
+
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)), // Bill style
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0),
+          ), // Bill style
           backgroundColor: Colors.grey[100],
           child: Container(
             width: 350,
@@ -396,19 +462,40 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                 const SizedBox(height: 16),
                 const Text('----------------------------------------'),
                 const SizedBox(height: 16),
-                _buildPrintRow('Tổng số hóa đơn:', '${_summary!.totalInvoices} đơn'),
+                _buildPrintRow(
+                  'Tổng số hóa đơn:',
+                  '${_summary!.totalInvoices} đơn',
+                ),
                 const SizedBox(height: 8),
-                _buildPrintRow('Tổng doanh thu:', formatCurrency.format(_summary!.totalRevenue)),
+                _buildPrintRow(
+                  'Tổng doanh thu:',
+                  formatCurrency.format(_summary!.totalRevenue),
+                ),
                 const SizedBox(height: 8),
-                _buildPrintRow('Tổng giảm giá:', formatCurrency.format(_summary!.totalDiscount)),
+                _buildPrintRow(
+                  'Tổng giảm giá:',
+                  formatCurrency.format(_summary!.totalDiscount),
+                ),
                 const SizedBox(height: 16),
                 const Text('----------------------------------------'),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('DOANH THU RÒNG:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(formatCurrency.format(_summary!.netRevenue), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const Text(
+                      'DOANH THU RÒNG:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      formatCurrency.format(_summary!.netRevenue),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -421,25 +508,35 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                     onPressed: () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Đã gửi lệnh in đến máy in...')),
+                        const SnackBar(
+                          content: Text('Đã gửi lệnh in đến máy in...'),
+                        ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                     ),
-                    child: const Text('IN BÁO CÁO', style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      'IN BÁO CÁO',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('ĐÓNG', style: TextStyle(color: Colors.grey)),
+                  child: const Text(
+                    'ĐÓNG',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
               ],
             ),
           ),
         );
-      }
+      },
     );
   }
 

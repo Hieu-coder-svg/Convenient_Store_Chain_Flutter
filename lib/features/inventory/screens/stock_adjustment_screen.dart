@@ -13,11 +13,17 @@ class StockAdjustmentScreen extends StatefulWidget {
 
 class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   final List<Map<String, dynamic>> _items = [];
   bool _isSubmitting = false;
 
-  final List<String> _reasons = ['Damaged', 'Expired', 'Lost', 'Found', 'Other'];
+  final List<String> _reasons = [
+    'Damaged',
+    'Expired',
+    'Lost',
+    'Found',
+    'Other',
+  ];
 
   void _addItem() {
     setState(() {
@@ -38,7 +44,11 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng thêm ít nhất 1 sản phẩm để kiểm kê')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng thêm ít nhất 1 sản phẩm để kiểm kê'),
+        ),
+      );
       return;
     }
 
@@ -47,15 +57,32 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
     });
 
     try {
-      await context.read<InventoryProvider>().adjustStock(widget.branchId, _items);
-      
+      await context.read<InventoryProvider>().adjustStock(
+        widget.branchId,
+        _items,
+      );
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kiểm kê thành công', style: TextStyle(color: Colors.green))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Kiểm kê thành công',
+              style: TextStyle(color: Colors.green),
+            ),
+          ),
+        );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString(), style: const TextStyle(color: Colors.red))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -90,7 +117,10 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Danh sách kiểm kê', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Danh sách kiểm kê',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 TextButton.icon(
                   onPressed: _addItem,
                   icon: const Icon(Icons.add),
@@ -111,30 +141,45 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
                         children: [
                           Expanded(
                             child: TextFormField(
-                              decoration: const InputDecoration(labelText: 'Product ID', isDense: true),
+                              decoration: const InputDecoration(
+                                labelText: 'Product ID',
+                                isDense: true,
+                              ),
                               keyboardType: TextInputType.number,
-                              onChanged: (v) => item['productId'] = int.tryParse(v),
+                              onChanged: (v) =>
+                                  item['productId'] = int.tryParse(v),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextFormField(
-                              decoration: const InputDecoration(labelText: 'SL Thực tế', isDense: true),
+                              decoration: const InputDecoration(
+                                labelText: 'SL Thực tế',
+                                isDense: true,
+                              ),
                               keyboardType: TextInputType.number,
-                              onChanged: (v) => item['actualQuantity'] = int.tryParse(v),
+                              onChanged: (v) =>
+                                  item['actualQuantity'] = int.tryParse(v),
                             ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _removeItem(index),
-                          )
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(labelText: 'Lý do', isDense: true),
+                        decoration: const InputDecoration(
+                          labelText: 'Lý do',
+                          isDense: true,
+                        ),
                         initialValue: item['reason'],
-                        items: _reasons.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                        items: _reasons
+                            .map(
+                              (r) => DropdownMenuItem(value: r, child: Text(r)),
+                            )
+                            .toList(),
                         onChanged: (v) {
                           setState(() {
                             item['reason'] = v;
@@ -149,10 +194,10 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting 
+              child: _isSubmitting
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text('Hoàn Tất Kiểm Kê'),
-            )
+            ),
           ],
         ),
       ),

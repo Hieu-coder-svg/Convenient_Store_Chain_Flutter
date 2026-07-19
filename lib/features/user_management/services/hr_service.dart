@@ -9,6 +9,11 @@ class HrService {
 
   HrService(this._dioClient);
 
+  bool _isActiveAssignment(ShiftAssignment assignment) {
+    final status = assignment.status.replaceAll(' ', '').toLowerCase();
+    return status != 'cancelled' && status != 'canceled';
+  }
+
   List<dynamic> _listData(dynamic responseData) {
     final data = responseData is Map ? responseData['data'] : responseData;
     if (data == null) return [];
@@ -30,8 +35,26 @@ class HrService {
     if (data is Map) {
       final message = data['message'] ?? data['Message'] ?? data['title'];
       if (message is String && message.trim().isNotEmpty) return message;
+      final errors = data['errors'];
+      if (errors is Map) {
+        for (final value in errors.values) {
+          if (value is List && value.isNotEmpty) return value.first.toString();
+          if (value is String && value.trim().isNotEmpty) return value;
+        }
+      }
     }
     if (data is String && data.trim().isNotEmpty) return data;
+    if (error.response?.statusCode == 403) {
+      return 'Bạn không có quyền thực hiện thao tác này tại chi nhánh hiện tại.';
+    }
+    if (error.response?.statusCode == 401) {
+      return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+    }
+    if (error.type == DioExceptionType.connectionError ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.receiveTimeout) {
+      return 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối và thử lại.';
+    }
     return fallback;
   }
 
@@ -90,6 +113,7 @@ class HrService {
             (e) =>
                 ShiftAssignment.fromJson(Map<String, dynamic>.from(e as Map)),
           )
+          .where(_isActiveAssignment)
           .toList();
     } on DioException catch (e) {
       throw Exception(_errorMessage(e, 'Không thể tải lịch cửa hàng'));
@@ -115,6 +139,7 @@ class HrService {
             (e) =>
                 ShiftAssignment.fromJson(Map<String, dynamic>.from(e as Map)),
           )
+          .where(_isActiveAssignment)
           .toList();
     } on DioException catch (e) {
       throw Exception(_errorMessage(e, 'Không thể tải lịch cá nhân'));
@@ -274,6 +299,19 @@ class HrService {
     }
   }
 
+  Future<AttendanceRecord?> getTodayAttendance() async {
+    try {
+      final response = await _dioClient.dio.get(ApiConstants.attendanceToday);
+      if (response.statusCode == 204 || response.data == null) return null;
+      return AttendanceRecord.fromJson(_objectData(response.data));
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      throw Exception(
+        _errorMessage(e, 'Không thể tải trạng thái chấm công hôm nay'),
+      );
+    }
+  }
+
   /// Get attendance report for a branch
   Future<List<AttendanceReportItem>> getAttendanceReport({
     required int branchId,
@@ -324,6 +362,34 @@ class HrService {
           .toList();
     } on DioException catch (e) {
       throw Exception(_errorMessage(e, 'Không thể tải lịch sử chấm công'));
+    }
+  }
+
+  Future<List<WorkHistoryItem>> getWorkHistory({
+    int? branchId,
+    int? employeeId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    try {
+      final response = await _dioClient.dio.get(
+        ApiConstants.workHistory,
+        queryParameters: {
+          'branchId': ?branchId,
+          'employeeId': ?employeeId,
+          'startDate': startDate.toIso8601String(),
+          'endDate': endDate.toIso8601String(),
+        },
+      );
+      return _listData(response.data)
+          .map(
+            (item) => WorkHistoryItem.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(_errorMessage(e, 'Không thể tải lịch sử làm việc'));
     }
   }
 

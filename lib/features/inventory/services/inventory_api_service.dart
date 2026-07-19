@@ -7,7 +7,11 @@ class InventoryApiService {
   InventoryApiService(this._dioClient);
 
   // WAREHOUSE INVENTORY
-  Future<Map<String, dynamic>> getWarehouseInventory({int page = 1, int pageSize = 20, String? search}) async {
+  Future<Map<String, dynamic>> getWarehouseInventory({
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+  }) async {
     try {
       final response = await _dioClient.dio.get(
         '/warehouse-inventory',
@@ -19,12 +23,19 @@ class InventoryApiService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Lỗi tải danh sách kho tổng');
+      throw Exception(
+        e.response?.data['message'] ?? 'Lỗi tải danh sách kho tổng',
+      );
     }
   }
 
   // BRANCH INVENTORY
-  Future<Map<String, dynamic>> getBranchInventory(int branchId, {int page = 1, int pageSize = 20, String? search}) async {
+  Future<Map<String, dynamic>> getBranchInventory(
+    int branchId, {
+    int page = 1,
+    int pageSize = 20,
+    String? search,
+  }) async {
     try {
       final response = await _dioClient.dio.get(
         '/branches/$branchId/inventory',
@@ -36,12 +47,17 @@ class InventoryApiService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Lỗi tải danh sách kho chi nhánh');
+      throw Exception(
+        e.response?.data['message'] ?? 'Lỗi tải danh sách kho chi nhánh',
+      );
     }
   }
 
   // STOCK ADJUSTMENT
-  Future<void> adjustStock(int branchId, List<Map<String, dynamic>> items) async {
+  Future<void> adjustStock(
+    int branchId,
+    List<Map<String, dynamic>> items,
+  ) async {
     try {
       await _dioClient.dio.post(
         '/branches/$branchId/inventory/adjust',
@@ -51,14 +67,11 @@ class InventoryApiService {
       throw Exception(e.response?.data['message'] ?? 'Lỗi điều chỉnh tồn kho');
     }
   }
-  
+
   // GOODS RECEIVING
   Future<void> receiveGoods(Map<String, dynamic> receiptData) async {
     try {
-      await _dioClient.dio.post(
-        '/goods-receipts',
-        data: receiptData,
-      );
+      await _dioClient.dio.post('/goods-receipts', data: receiptData);
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Lỗi tạo phiếu nhận hàng');
     }

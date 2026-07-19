@@ -139,29 +139,44 @@ class _LoginScreenState extends State<LoginScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: _rememberMe,
-                                activeColor: AppColors.primary,
-                                side: const BorderSide(
-                                  color: AppColors.outlineVariant,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Checkbox(
+                                  value: _rememberMe,
+                                  activeColor: AppColors.primary,
+                                  visualDensity: VisualDensity.compact,
+                                  side: const BorderSide(
+                                    color: AppColors.outlineVariant,
+                                  ),
+                                  onChanged: (value) {
+                                    setState(
+                                      () => _rememberMe = value ?? false,
+                                    );
+                                  },
                                 ),
-                                onChanged: (value) {
-                                  setState(() => _rememberMe = value ?? false);
-                                },
-                              ),
-                              const Text(
-                                'Ghi nhớ đăng nhập',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
+                                const Flexible(
+                                  child: Text(
+                                    'Ghi nhớ đăng nhập',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           TextButton(
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 8,
+                              ),
+                            ),
                             onPressed: () {
                               context.push('/forgot-password');
                             },

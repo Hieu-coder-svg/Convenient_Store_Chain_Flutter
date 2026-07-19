@@ -9,7 +9,8 @@ class WarehouseInventoryScreen extends StatefulWidget {
   const WarehouseInventoryScreen({super.key});
 
   @override
-  State<WarehouseInventoryScreen> createState() => _WarehouseInventoryScreenState();
+  State<WarehouseInventoryScreen> createState() =>
+      _WarehouseInventoryScreenState();
 }
 
 class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
@@ -38,15 +39,17 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
       _currentPage = 1;
     }
     context.read<InventoryProvider>().fetchWarehouseInventory(
-          page: _currentPage,
-          search: _searchController.text,
-        );
+      page: _currentPage,
+      search: _searchController.text,
+    );
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<InventoryProvider>();
-      if (!provider.isLoadingWarehouse && provider.warehouseItems.length < provider.warehouseTotalCount) {
+      if (!provider.isLoadingWarehouse &&
+          provider.warehouseItems.length < provider.warehouseTotalCount) {
         _currentPage++;
         _loadData();
       }
@@ -72,7 +75,7 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => _loadData(refresh: true),
-          )
+          ),
         ],
       ),
       body: Column(
@@ -111,9 +114,15 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
         if (provider.isLoadingWarehouse && _currentPage == 1) {
           return const Center(child: CircularProgressIndicator());
         }
-        
-        if (provider.warehouseError != null && provider.warehouseItems.isEmpty) {
-          return Center(child: Text(provider.warehouseError!, style: const TextStyle(color: Colors.red)));
+
+        if (provider.warehouseError != null &&
+            provider.warehouseItems.isEmpty) {
+          return Center(
+            child: Text(
+              provider.warehouseError!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         }
 
         if (provider.warehouseItems.isEmpty) {
@@ -124,7 +133,9 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
           onRefresh: () async => _loadData(refresh: true),
           child: ListView.separated(
             controller: _scrollController,
-            itemCount: provider.warehouseItems.length + (provider.isLoadingWarehouse ? 1 : 0),
+            itemCount:
+                provider.warehouseItems.length +
+                (provider.isLoadingWarehouse ? 1 : 0),
             separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == provider.warehouseItems.length) {
@@ -138,8 +149,13 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
               final bool isLowStock = item.quantity <= 10; // Threshold
 
               return ListTile(
-                title: Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}'),
+                title: Text(
+                  item.productName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}',
+                ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -153,7 +169,10 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
                       ),
                     ),
                     if (isLowStock)
-                      const Text('Sắp hết', style: TextStyle(color: Colors.red, fontSize: 10)),
+                      const Text(
+                        'Sắp hết',
+                        style: TextStyle(color: Colors.red, fontSize: 10),
+                      ),
                   ],
                 ),
               );

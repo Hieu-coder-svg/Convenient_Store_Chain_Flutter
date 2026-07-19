@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_drawer.dart';
 import '../../user_management/screens/system_admin_dashboard.dart';
+import '../../reports/screens/chain_dashboard_screen.dart';
+import 'manager_home_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,9 +15,18 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().currentUser;
 
-    if (user?.roleName.contains('Admin') == true ||
-        user?.roleName.contains('Director') == true) {
+    if (user?.roleName == 'System Admin' ||
+        user?.roleName == 'SystemAdmin') {
       return const SystemAdminDashboard();
+    }
+
+    if (user?.roleName.contains('Director') == true) {
+      return const ChainDashboardScreen();
+    }
+
+    final normalizedRole = user?.roleName.replaceAll(' ', '').toLowerCase();
+    if (normalizedRole == 'storemanager') {
+      return const ManagerHomeScreen();
     }
 
     return Scaffold(
@@ -84,51 +95,53 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.secondary,
-                        minimumSize: const Size(double.infinity, 50),
+                    if (user?.roleName == 'Chain Director') ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondary,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          context.go('/categories');
+                        },
+                        icon: const Icon(Icons.inventory, color: Colors.white),
+                        label: const Text(
+                          'Quản lý danh mục',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
-                      onPressed: () {
-                        context.go('/categories');
-                      },
-                      icon: const Icon(Icons.inventory, color: Colors.white),
-                      label: const Text(
-                        'Quản lý danh mục',
-                        style: TextStyle(color: Colors.white),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          context.go('/suppliers');
+                        },
+                        icon: const Icon(Icons.business, color: Colors.white),
+                        label: const Text(
+                          'Quản lý nhà cung cấp',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        minimumSize: const Size(double.infinity, 50),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange.shade800,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          context.go('/branches');
+                        },
+                        icon: const Icon(Icons.storefront, color: Colors.white),
+                        label: const Text(
+                          'Quản lý chi nhánh',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
-                      onPressed: () {
-                        context.go('/suppliers');
-                      },
-                      icon: const Icon(Icons.business, color: Colors.white),
-                      label: const Text(
-                        'Quản lý nhà cung cấp',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade800,
-                        minimumSize: const Size(double.infinity, 50),
-                      ),
-                      onPressed: () {
-                        context.go('/branches');
-                      },
-                      icon: const Icon(Icons.storefront, color: Colors.white),
-                      label: const Text(
-                        'Quản lý chi nhánh',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
 
                     if (user?.roleName.contains('Store Manager') == true ||
                         user?.roleName.contains('StoreManager') == true) ...[
@@ -222,6 +235,24 @@ class HomeScreen extends StatelessWidget {
                         ),
                         label: const Text(
                           'Chấm công (Check-in/out)',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (user?.roleName.contains('Store Staff') == true ||
+                        user?.roleName.contains('StoreStaff') == true ||
+                        user?.roleName.contains('Warehouse Staff') == true ||
+                        user?.roleName.contains('WarehouseStaff') == true) ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade700,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () => context.go('/work-history'),
+                        icon: const Icon(Icons.history, color: Colors.white),
+                        label: const Text(
+                          'Lịch sử làm việc',
                           style: TextStyle(color: Colors.white),
                         ),
                       ),

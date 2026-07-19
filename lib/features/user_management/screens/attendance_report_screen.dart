@@ -215,10 +215,13 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
 
   Duration _workedDuration(Iterable<AttendanceRecord> records) {
     return records.fold(Duration.zero, (total, record) {
-      if (record.checkInTime == null || record.checkOutTime == null) {
-        return total;
-      }
-      final duration = record.checkOutTime!.difference(record.checkInTime!);
+      final checkIn = record.checkInTime;
+      if (checkIn == null) return total;
+      final effectiveCheckOut =
+          record.checkOutTime ??
+          (_sameDay(record.workDate, _now) ? _now : null);
+      if (effectiveCheckOut == null) return total;
+      final duration = effectiveCheckOut.difference(checkIn);
       return duration.isNegative ? total : total + duration;
     });
   }
@@ -341,10 +344,27 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
         .where((item) => _sameDay(item.workDate, _now))
         .toList();
     final assignment = todayAssignments.isEmpty ? null : todayAssignments.first;
-    final attendance = todayRecords.isEmpty ? null : todayRecords.first;
+    final matchingRecords = assignment == null
+        ? <AttendanceRecord>[]
+        : todayRecords
+              .where(
+                (record) => record.shiftAssignmentId == assignment.assignmentId,
+              )
+              .toList();
+    final liveAttendance = provider.todayAttendance;
+    final attendance = matchingRecords.isNotEmpty
+        ? matchingRecords.first
+        : liveAttendance?.shiftAssignmentId == assignment?.assignmentId
+        ? liveAttendance
+        : null;
     final checkedIn = attendance?.checkInTime != null;
     final checkedOut = attendance?.checkOutTime != null;
-    final statusLabel = checkedIn && !checkedOut
+    final canCheckIn = assignment != null && !checkedIn && !provider.isLoading;
+    final canCheckOut =
+        assignment != null && checkedIn && !checkedOut && !provider.isLoading;
+    final statusLabel = assignment == null
+        ? 'CHƯA ĐƯỢC PHÂN CA'
+        : checkedIn && !checkedOut
         ? 'ĐANG LÀM VIỆC'
         : checkedOut
         ? 'ĐÃ TAN CA'
@@ -392,9 +412,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                     child: FilledButton.icon(
                       style: FilledButton.styleFrom(
                         backgroundColor: AppTheme.successGreen,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        disabledForegroundColor: Colors.grey.shade600,
                       ),
-                      onPressed:
-                          assignment != null && (!checkedIn || checkedOut)
+                      onPressed: canCheckIn
                           ? () => _checkInNow(provider, assignment)
                           : null,
                       icon: const Icon(Icons.login),
@@ -406,8 +427,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                     child: FilledButton.icon(
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.red,
+                        disabledBackgroundColor: Colors.grey.shade300,
+                        disabledForegroundColor: Colors.grey.shade600,
                       ),
-                      onPressed: assignment != null && checkedIn && !checkedOut
+                      onPressed: canCheckOut
                           ? () =>
                                 _checkOutNow(provider, assignment, attendance!)
                           : null,
@@ -417,6 +440,37 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
                   ),
                 ],
               ),
+              if (assignment == null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF7ED),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFED7AA)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Color(0xFFC2410C),
+                        size: 18,
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Nhân viên chưa được phân ca hôm nay nên không thể chấm công.',
+                          style: TextStyle(
+                            color: Color(0xFF9A3412),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -468,7 +522,19 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       shiftAssignmentId: assignment.assignmentId,
       checkInTime: _now,
     );
-    if (success) await _loadHistory();
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã chấm công vào ca thành công.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      await _showAttendanceError(
+        provider.error ?? 'Không thể chấm công vào ca. Vui lòng thử lại.',
+      );
+    }
   }
 
   Future<void> _checkOutNow(
@@ -481,7 +547,48 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       checkInTime: attendance.checkInTime!,
       checkOutTime: _now,
     );
-    if (success) await _loadHistory();
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đã chấm công tan ca thành công.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else {
+      await _showAttendanceError(
+        provider.error ?? 'Không thể chấm công tan ca. Vui lòng thử lại.',
+      );
+    }
+  }
+
+  Future<void> _showAttendanceError(String message) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEE2E2),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(
+            Icons.error_outline_rounded,
+            color: Color(0xFFDC2626),
+            size: 30,
+          ),
+        ),
+        title: const Text('Không thể chấm công', textAlign: TextAlign.center),
+        content: Text(message, textAlign: TextAlign.center),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Đã hiểu'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildFilters(HrProvider provider) {
@@ -491,7 +598,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
       child: Column(
         children: [
           DropdownButtonFormField<int>(
-            initialValue:
+            value:
                 provider.employees.any(
                   (employee) => employee['userId'] == _selectedEmployeeId,
                 )
@@ -537,11 +644,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen> {
   }
 
   Widget _buildSummary(List<AttendanceRecord> history) {
-    final completed = history
-        .where((item) => item.checkInTime != null && item.checkOutTime != null)
-        .toList();
-    final total = _workedDuration(completed);
-    final days = completed
+    final started = history.where((item) => item.checkInTime != null).toList();
+    final total = _workedDuration(started);
+    final days = started
         .map(
           (item) => DateTime(
             item.workDate.year,

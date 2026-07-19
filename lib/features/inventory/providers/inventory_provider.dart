@@ -36,11 +36,14 @@ class InventoryProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = await _apiService.getWarehouseInventory(page: page, search: search);
+      final data = await _apiService.getWarehouseInventory(
+        page: page,
+        search: search,
+      );
       final items = (data['items'] as List)
           .map((item) => WarehouseInventoryModel.fromJson(item))
           .toList();
-      
+
       if (page == 1) {
         _warehouseItems = items;
       } else {
@@ -55,17 +58,25 @@ class InventoryProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchBranchInventory(int branchId, {int page = 1, String? search}) async {
+  Future<void> fetchBranchInventory(
+    int branchId, {
+    int page = 1,
+    String? search,
+  }) async {
     _isLoadingBranch = true;
     _branchError = null;
     notifyListeners();
 
     try {
-      final data = await _apiService.getBranchInventory(branchId, page: page, search: search);
+      final data = await _apiService.getBranchInventory(
+        branchId,
+        page: page,
+        search: search,
+      );
       final items = (data['items'] as List)
           .map((item) => BranchInventoryModel.fromJson(item))
           .toList();
-      
+
       if (page == 1) {
         _branchItems = items;
       } else {
@@ -80,7 +91,10 @@ class InventoryProvider with ChangeNotifier {
     }
   }
 
-  Future<void> adjustStock(int branchId, List<Map<String, dynamic>> items) async {
+  Future<void> adjustStock(
+    int branchId,
+    List<Map<String, dynamic>> items,
+  ) async {
     await _apiService.adjustStock(branchId, items);
     // Refresh branch inventory after adjustment
     await fetchBranchInventory(branchId);

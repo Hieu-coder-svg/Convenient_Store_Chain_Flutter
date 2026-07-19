@@ -136,6 +136,7 @@ class _UserFormScreenState extends State<UserFormScreen> {
       appBar: AppBar(
         title: Text(isUpdate ? 'Cập nhật Người dùng' : 'Thêm Người dùng mới'),
         backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black87),
         foregroundColor: Colors.black87,
         elevation: 0,
       ),

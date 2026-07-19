@@ -1,6 +1,7 @@
 import 'package:convenient_store_chain_flutter/features/pos/providers/invoice_provider.dart';
 import 'package:convenient_store_chain_flutter/features/pos/services/invoice_api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/routes/app_router.dart';
@@ -26,6 +27,7 @@ import 'features/notification/services/notification_api_service.dart';
 import 'features/notification/providers/notification_provider.dart';
 import 'features/user_management/services/hr_service.dart';
 import 'features/user_management/providers/hr_provider.dart';
+import 'features/reports/providers/reports_provider.dart';
 
 void main() {
   runApp(const ConvenienceStoreApp());
@@ -137,10 +139,21 @@ class ConvenienceStoreApp extends StatelessWidget {
           create: (context) => NotificationProvider(context.read<NotificationApiService>()),
           update: (context, apiService, previous) => previous ?? NotificationProvider(apiService),
         ),
+        ChangeNotifierProxyProvider<DioClient, ReportsProvider>(
+          create: (context) => ReportsProvider(context.read<DioClient>()),
+          update: (context, dioClient, previous) => previous ?? ReportsProvider(dioClient),
+        ),
       ],
       child: MaterialApp.router(
         title: 'Convenience Store POS',
         theme: AppTheme.lightTheme,
+        locale: const Locale('vi', 'VN'),
+        supportedLocales: const [Locale('vi', 'VN'), Locale('en', 'US')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         routerConfig: AppRouter.router,
         debugShowCheckedModeBanner: false,
       ),
