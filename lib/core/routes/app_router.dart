@@ -25,7 +25,9 @@ import '../../features/user_management/screens/store_schedule_builder_screen.dar
 import '../../features/user_management/screens/personal_schedule_screen.dart';
 import '../../features/user_management/screens/clock_in_screen.dart';
 import '../../features/user_management/screens/attendance_report_screen.dart';
+import '../../features/user_management/screens/work_history_screen.dart';
 import '../../features/user_management/screens/shift_templates_screen.dart';
+
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
@@ -80,10 +82,7 @@ class AppRouter {
           return BranchOrderDetailScreen(orderId: id);
         },
       ),
-      GoRoute(
-        path: '/pos',
-        builder: (context, state) => const PosScreen(),
-      ),
+      GoRoute(path: '/pos', builder: (context, state) => const PosScreen()),
       GoRoute(
         path: '/warehouse-inventory',
         builder: (context, state) => const WarehouseInventoryScreen(),
@@ -128,12 +127,34 @@ class AppRouter {
         path: '/daily-summary',
         builder: (context, state) => const DailySummaryScreen(),
       ),
-      GoRoute(path: '/employee-management', builder: (context, state) => const EmployeeManagementScreen()),
-      GoRoute(path: '/store-schedule', builder: (context, state) => const StoreScheduleBuilderScreen()),
-      GoRoute(path: '/personal-schedule', builder: (context, state) => const PersonalScheduleScreen()),
-      GoRoute(path: '/clock-in', builder: (context, state) => const ClockInScreen()),
-      GoRoute(path: '/attendance-report', builder: (context, state) => const AttendanceReportScreen()),
-      GoRoute(path: '/shift-templates', builder: (context, state) => const ShiftTemplatesScreen()),
+      GoRoute(
+        path: '/employee-management',
+        builder: (context, state) => const EmployeeManagementScreen(),
+      ),
+      GoRoute(
+        path: '/store-schedule',
+        builder: (context, state) => const StoreScheduleBuilderScreen(),
+      ),
+      GoRoute(
+        path: '/personal-schedule',
+        builder: (context, state) => const PersonalScheduleScreen(),
+      ),
+      GoRoute(
+        path: '/clock-in',
+        builder: (context, state) => const ClockInScreen(),
+      ),
+      GoRoute(
+        path: '/attendance-report',
+        builder: (context, state) => const AttendanceReportScreen(),
+      ),
+      GoRoute(
+        path: '/work-history',
+        builder: (context, state) => const WorkHistoryScreen(),
+      ),
+      GoRoute(
+        path: '/shift-templates',
+        builder: (context, state) => const ShiftTemplatesScreen(),
+      ),
     ],
   );
 }

@@ -24,6 +24,7 @@ class HrProvider extends ChangeNotifier {
   List<AttendanceReportItem> _branchReport = [];
   List<AttendanceRecord> _attendanceHistory = [];
   List<ShiftAssignment> _attendanceAssignments = [];
+  List<WorkHistoryItem> _workHistory = [];
 
   // Current week
   DateTime _weekStart = DateTime.now().subtract(
@@ -42,6 +43,7 @@ class HrProvider extends ChangeNotifier {
   List<AttendanceReportItem> get branchReport => _branchReport;
   List<AttendanceRecord> get attendanceHistory => _attendanceHistory;
   List<ShiftAssignment> get attendanceAssignments => _attendanceAssignments;
+  List<WorkHistoryItem> get workHistory => _workHistory;
   DateTime get weekStart => _weekStart;
   DateTime get weekEnd => _weekStart.add(const Duration(days: 6));
 
@@ -61,6 +63,7 @@ class HrProvider extends ChangeNotifier {
     _branchReport = [];
     _attendanceHistory = [];
     _attendanceAssignments = [];
+    _workHistory = [];
     final now = DateTime.now();
     _weekStart = DateTime(
       now.year,
@@ -436,6 +439,31 @@ class HrProvider extends ChangeNotifier {
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadWorkHistory({
+    int? branchId,
+    int? employeeId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      _workHistory = await _hrService.getWorkHistory(
+        branchId: branchId,
+        employeeId: employeeId,
+        startDate: startDate,
+        endDate: endDate,
+      );
+    } catch (e) {
+      _workHistory = [];
+      _error = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoading = false;
       notifyListeners();

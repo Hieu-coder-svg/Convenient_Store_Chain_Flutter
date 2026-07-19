@@ -39,6 +39,13 @@ class ManagerHomeScreen extends StatelessWidget {
       color: Color(0xFF4F46E5),
     ),
     _ManagerMenuItem(
+      title: 'Lịch sử làm việc',
+      subtitle: 'Tình trạng đi làm nhân viên',
+      icon: Icons.history_outlined,
+      route: '/work-history',
+      color: Color(0xFFB45309),
+    ),
+    _ManagerMenuItem(
       title: 'Máy tính tiền',
       subtitle: 'Bán hàng tại quầy',
       icon: Icons.point_of_sale_outlined,

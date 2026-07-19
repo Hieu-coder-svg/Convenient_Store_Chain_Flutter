@@ -365,6 +365,34 @@ class HrService {
     }
   }
 
+  Future<List<WorkHistoryItem>> getWorkHistory({
+    int? branchId,
+    int? employeeId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    try {
+      final response = await _dioClient.dio.get(
+        ApiConstants.workHistory,
+        queryParameters: {
+          'branchId': ?branchId,
+          'employeeId': ?employeeId,
+          'startDate': startDate.toIso8601String(),
+          'endDate': endDate.toIso8601String(),
+        },
+      );
+      return _listData(response.data)
+          .map(
+            (item) => WorkHistoryItem.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(_errorMessage(e, 'Không thể tải lịch sử làm việc'));
+    }
+  }
+
   Future<AttendanceRecord> saveManualAttendance({
     required int shiftAssignmentId,
     required DateTime checkInTime,

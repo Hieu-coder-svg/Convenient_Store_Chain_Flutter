@@ -160,6 +160,16 @@ class AppDrawer extends StatelessWidget {
                     title: 'Chấm công (Check-in/out)',
                     onTap: () => context.go('/clock-in'),
                   ),
+                if (user?.roleName.contains('Store Staff') == true ||
+                    user?.roleName.contains('StoreStaff') == true ||
+                    user?.roleName.contains('Warehouse Staff') == true ||
+                    user?.roleName.contains('WarehouseStaff') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.history_outlined,
+                    title: 'Lịch sử làm việc',
+                    onTap: () => context.go('/work-history'),
+                  ),
 
                 // Nghiệp vụ (Branch Orders & POS)
                 _buildSectionTitle('NGHIỆP VỤ'),
@@ -287,6 +297,12 @@ class AppDrawer extends StatelessWidget {
                   icon: Icons.calendar_month_outlined,
                   title: 'Xếp lịch làm việc',
                   onTap: () => context.go('/store-schedule'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.history_outlined,
+                  title: 'Lịch sử làm việc',
+                  onTap: () => context.go('/work-history'),
                 ),
                 _buildSectionTitle('NGHIỆP VỤ'),
                 _buildNavItem(

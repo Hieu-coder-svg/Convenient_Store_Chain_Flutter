@@ -43,6 +43,7 @@ class ApiConstants {
   static const String attendanceToday = '/Attendances/my-today';
   static const String attendanceReport = '/Attendances/report';
   static const String attendanceHistory = '/Attendances/history';
+  static const String workHistory = '/Attendances/work-history';
 
   // Branch Order endpoints (Task 4.1)
   static const String branchOrders = '/BranchOrder';

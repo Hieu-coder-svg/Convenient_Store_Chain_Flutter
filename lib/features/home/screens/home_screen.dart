@@ -233,6 +233,24 @@ class HomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                     ],
+                    if (user?.roleName.contains('Store Staff') == true ||
+                        user?.roleName.contains('StoreStaff') == true ||
+                        user?.roleName.contains('Warehouse Staff') == true ||
+                        user?.roleName.contains('WarehouseStaff') == true) ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade700,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () => context.go('/work-history'),
+                        icon: const Icon(Icons.history, color: Colors.white),
+                        label: const Text(
+                          'Lịch sử làm việc',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ],
                 ),
               ),
