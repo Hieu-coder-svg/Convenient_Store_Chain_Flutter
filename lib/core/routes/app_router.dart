@@ -38,6 +38,7 @@ import '../../features/reports/screens/chain_dashboard_screen.dart';
 import '../../features/reports/screens/product_sales_report_screen.dart';
 import '../../features/reports/screens/supplier_performance_screen.dart';
 import '../../features/reports/screens/low_stock_alerts_screen.dart';
+import '../../features/user_management/screens/roles_screen.dart';
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
@@ -226,6 +227,10 @@ class AppRouter {
       GoRoute(
         path: '/employee-management',
         builder: (context, state) => const EmployeeManagementScreen(),
+      ),
+      GoRoute(
+        path: '/roles',
+        builder: (context, state) => const RolesScreen(),
       ),
       GoRoute(
         path: '/store-schedule',

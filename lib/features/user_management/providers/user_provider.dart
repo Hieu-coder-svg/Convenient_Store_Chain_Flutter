@@ -163,6 +163,18 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> deleteUser(int id) async {
+    try {
+      await _userService.deleteUser(id);
+      await loadUsers(branchId: _forcedBranchId);
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<String?> resetPassword(int id) async {
     try {
       return await _userService.resetPassword(id);

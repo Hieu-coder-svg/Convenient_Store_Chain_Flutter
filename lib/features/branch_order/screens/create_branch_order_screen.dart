@@ -118,11 +118,22 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                           );
                         }
 
+                        // Only show active products
+                        final activeProducts = provider.products
+                            .where((p) => p.isActive)
+                            .toList();
+
+                        if (activeProducts.isEmpty) {
+                          return const Center(
+                            child: Text('Không có sản phẩm nào đang kinh doanh.'),
+                          );
+                        }
+
                         return ListView.builder(
                           controller: controller,
-                          itemCount: provider.products.length,
+                          itemCount: activeProducts.length,
                           itemBuilder: (context, index) {
-                            final product = provider.products[index];
+                            final product = activeProducts[index];
                             return Container(
                               margin: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -281,7 +292,9 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
     final user = authProvider.currentUser;
 
     // Lọc chi nhánh theo role
-    var availableBranches = branchProvider.branches;
+    var availableBranches = branchProvider.branches
+        .where((b) => b.isActive)
+        .toList();
     if (user != null && user.roleName == 'Store Manager') {
       availableBranches = availableBranches.where((b) => b.branchId == user.branchId).toList();
     }

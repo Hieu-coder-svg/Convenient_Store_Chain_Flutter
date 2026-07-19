@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
+import 'package:convenient_store_chain_flutter/core/models/paged_result.dart';
 import '../models/supplier_model.dart';
 
 class SupplierApiService {
@@ -7,11 +8,22 @@ class SupplierApiService {
 
   SupplierApiService(this._dioClient);
 
-  Future<List<SupplierModel>> getSuppliers() async {
+  Future<PagedResult<SupplierModel>> getSuppliers({
+    int page = 1,
+    int pageSize = 10,
+  }) async {
     try {
-      final response = await _dioClient.dio.get('/suppliers');
-      final List<dynamic> data = response.data;
-      return data.map((json) => SupplierModel.fromJson(json)).toList();
+      final response = await _dioClient.dio.get(
+        '/suppliers',
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+        },
+      );
+      return PagedResult<SupplierModel>.fromJson(
+        response.data,
+        (json) => SupplierModel.fromJson(json),
+      );
     } on DioException catch (e) {
       throw _handleError(e, 'Không thể tải danh sách nhà cung cấp');
     }

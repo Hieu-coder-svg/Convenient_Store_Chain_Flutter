@@ -31,7 +31,16 @@ class AppDrawer extends StatelessWidget {
                     title: 'Bảng điều khiển',
                     onTap: () => context.go('/home'),
                   ),
-                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
+                if (user?.roleName == 'System Admin' || user?.roleName == 'SystemAdmin')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.admin_panel_settings_outlined,
+                    title: 'Vai trò & Quyền',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/roles');
+                    },
+                  ),
                   _buildNavItem(
                     context,
                     icon: Icons.bar_chart_outlined,
@@ -174,15 +183,7 @@ class AppDrawer extends StatelessWidget {
                     onTap: () => context.go('/store-schedule'),
                   ),
                 ],
-                if (user?.roleName.contains('Store Staff') == true ||
-                    user?.roleName.contains('StoreStaff') == true) ...[
-                  _buildNavItem(
-                    context,
-                    icon: Icons.timer_outlined,
-                    title: 'Chấm công nhân viên',
-                    onTap: () => context.go('/attendance-report'),
-                  ),
-                ],
+
                 if (user?.roleName.contains('Store Staff') == true ||
                     user?.roleName.contains('StoreStaff') == true) ...[
                   _buildNavItem(

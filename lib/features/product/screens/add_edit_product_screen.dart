@@ -76,14 +76,32 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     setState(() => _isLoadingSuppliers = true);
     try {
       final dioClient = context.read<DioClient>();
-      final response = await dioClient.dio.get('/suppliers');
-      if (response.data is List) {
+      final response = await dioClient.dio.get('/suppliers?pageSize=1000');
+      
+      List<dynamic> items = [];
+      final rawData = response.data;
+      
+      if (rawData is List) {
+        items = rawData;
+      } else if (rawData is Map && rawData.containsKey('items')) {
+        items = rawData['items'] as List;
+      } else if (rawData is Map && rawData.containsKey('data')) {
+        final innerData = rawData['data'];
+        if (innerData is List) {
+          items = innerData;
+        } else if (innerData is Map && innerData.containsKey('items')) {
+          items = innerData['items'] as List;
+        }
+      }
+
+      if (mounted) {
         setState(() {
-          _suppliers = (response.data as List)
+          _suppliers = items
               .map(
                 (item) => {
                   'id': item['supplierId'] as int,
                   'name': item['supplierName'] as String,
+                  'isActive': item['isActive'] as bool? ?? true,
                 },
               )
               .toList();
@@ -508,7 +526,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       child: Column(
                         children: [
                           DropdownButtonFormField<int>(
-                            initialValue: _selectedCategoryId,
+                            initialValue: categories.any((c) => c.categoryId == _selectedCategoryId) 
+                                ? _selectedCategoryId 
+                                : null,
                             decoration: const InputDecoration(
                               labelText: 'Danh mục sản phẩm *',
                             ),
@@ -537,14 +557,31 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                   ),
                                 )
                               : DropdownButtonFormField<int>(
-                                  initialValue: _selectedSupplierId,
+                                  initialValue: _suppliers.any((s) => s['id'] == _selectedSupplierId)
+                                      ? _selectedSupplierId
+                                      : null,
                                   decoration: const InputDecoration(
                                     labelText: 'Nhà cung cấp',
                                   ),
-                                  items: _suppliers.map((sup) {
+                                  items: _suppliers
+                                      .where((sup) =>
+                                          (sup['isActive'] as bool? ?? true) ||
+                                          sup['id'] == _selectedSupplierId)
+                                      .map((sup) {
+                                    final isActive =
+                                        sup['isActive'] as bool? ?? true;
+                                    final label = isActive
+                                        ? sup['name'] as String
+                                        : '${sup['name']} (Ngưng hợp tác)';
                                     return DropdownMenuItem<int>(
                                       value: sup['id'] as int,
-                                      child: Text(sup['name'] as String),
+                                      child: Text(
+                                        label,
+                                        style: TextStyle(
+                                          color:
+                                              isActive ? null : Colors.grey,
+                                        ),
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (val) {

@@ -94,10 +94,21 @@ class UserService {
 
   Future<void> deactivateUser(int id) async {
     try {
-      await _dioClient.dio.delete('${ApiConstants.users}/$id');
+      await _dioClient.dio.put('${ApiConstants.users}/$id/deactivate');
     } on DioException catch (e) {
       if (e.response != null && e.response?.data != null) {
         throw Exception(_errorMessage(e, 'Khóa tài khoản thất bại'));
+      }
+      throw Exception('Không thể kết nối đến máy chủ.');
+    }
+  }
+
+  Future<void> deleteUser(int id) async {
+    try {
+      await _dioClient.dio.delete('${ApiConstants.users}/$id');
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.data != null) {
+        throw Exception(_errorMessage(e, 'Xóa tài khoản thất bại'));
       }
       throw Exception('Không thể kết nối đến máy chủ.');
     }

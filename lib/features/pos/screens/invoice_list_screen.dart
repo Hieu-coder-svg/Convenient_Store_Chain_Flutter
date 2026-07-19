@@ -134,7 +134,16 @@ class _InvoiceListScreenState extends State<InvoiceListScreen> {
                                       ...branchProvider.branches.map(
                                         (b) => DropdownMenuItem<int?>(
                                           value: b.branchId,
-                                          child: Text(b.branchName),
+                                          child: Text(
+                                            b.isActive
+                                                ? b.branchName
+                                                : '${b.branchName} (Ngưng hoạt động)',
+                                            style: TextStyle(
+                                              color: b.isActive
+                                                  ? null
+                                                  : Colors.grey,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],

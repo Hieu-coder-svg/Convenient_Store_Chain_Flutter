@@ -136,10 +136,59 @@ class _UsersScreenState extends State<UsersScreen> {
                     }
                   },
                 ),
+              ListTile(
+                leading: const Icon(Icons.delete, color: Colors.red),
+                title: const Text('Xóa tài khoản'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showDeleteConfirmDialog(context, user);
+                },
+              ),
             ],
           ),
         );
       },
+    );
+  }
+
+  void _showDeleteConfirmDialog(BuildContext context, User user) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xác nhận xóa'),
+        content: Text(
+            'Bạn có chắc chắn muốn xóa tài khoản ${user.fullName}?\n\nLưu ý: Nếu người này đã có dữ liệu liên quan (chấm công, hóa đơn...), hệ thống sẽ chặn xóa. Lúc đó bạn chỉ có thể Khóa tài khoản.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final provider = context.read<UserProvider>();
+              final success = await provider.deleteUser(user.userId);
+              if (!mounted) return;
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Xóa tài khoản thành công'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(provider.error ?? 'Đã xảy ra lỗi'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
     );
   }
 
