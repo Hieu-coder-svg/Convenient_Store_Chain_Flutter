@@ -24,19 +24,60 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                _buildNavItem(
-                  context,
-                  icon: Icons.dashboard_outlined,
-                  title: 'Bảng điều khiển',
-                  onTap: () => context.go('/home'),
-                ),
+                if (user?.roleName == 'System Admin' || user?.roleName == 'SystemAdmin')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.dashboard_outlined,
+                    title: 'Bảng điều khiển',
+                    onTap: () => context.go('/home'),
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.bar_chart_outlined,
+                    title: 'Doanh thu Toàn chuỗi',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/chain-dashboard');
+                    },
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.pie_chart_outline,
+                    title: 'Báo cáo Sản phẩm',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/top-products');
+                    },
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.local_shipping_outlined,
+                    title: 'Đánh giá Nhà cung cấp',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/supplier-performance');
+                    },
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector' || user?.roleName == 'System Admin' || user?.roleName == 'SystemAdmin')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.warning_amber_rounded,
+                    title: 'Cảnh báo Tồn kho',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/low-stock-alerts');
+                    },
+                  ),
                 _buildNavItem(
                   context,
                   icon: Icons.person_outline,
                   title: 'Thông tin cá nhân',
                   onTap: () {
-                    // TODO: Implement Profile Screen
                     Navigator.pop(context); // Close drawer
+                    context.go('/profile');
                   },
                 ),
                 _buildNavItem(
@@ -51,19 +92,22 @@ class AppDrawer extends StatelessWidget {
                 const Divider(),
 
                 // Cửa hàng & Sản phẩm
-                _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
-                _buildNavItem(
-                  context,
-                  icon: Icons.inventory_2_outlined,
-                  title: 'Sản phẩm',
-                  onTap: () => context.go('/products'),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.category_outlined,
-                  title: 'Danh mục',
-                  onTap: () => context.go('/categories'),
-                ),
+                if (user?.roleName != 'System Admin') ...[
+                  _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Sản phẩm',
+                    onTap: () => context.go('/products'),
+                  ),
+                  if (user?.roleName == 'Chain Director')
+                    _buildNavItem(
+                      context,
+                      icon: Icons.category_outlined,
+                      title: 'Danh mục',
+                      onTap: () => context.go('/categories'),
+                    ),
+                ],
                 _buildNavItem(
                   context,
                   icon: Icons.warehouse_outlined,
@@ -84,19 +128,21 @@ class AppDrawer extends StatelessWidget {
                 ),
 
                 // Đối tác & Chi nhánh
-                _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
-                _buildNavItem(
-                  context,
-                  icon: Icons.business_outlined,
-                  title: 'Nhà cung cấp',
-                  onTap: () => context.go('/suppliers'),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.storefront_outlined,
-                  title: 'Chi nhánh',
-                  onTap: () => context.go('/branches'),
-                ),
+                if (user?.roleName == 'Chain Director') ...[
+                  _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.business_outlined,
+                    title: 'Nhà cung cấp',
+                    onTap: () => context.go('/suppliers'),
+                  ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.storefront_outlined,
+                    title: 'Chi nhánh',
+                    onTap: () => context.go('/branches'),
+                  ),
+                ],
 
                 // NHÂN SỰ & CA LÀM
                 _buildSectionTitle('NHÂN SỰ & CA LÀM'),
@@ -226,7 +272,7 @@ class AppDrawer extends StatelessWidget {
                   _buildNavItem(
                     context,
                     icon: Icons.bar_chart,
-                    title: 'Báo cáo doanh thu',
+                    title: 'Doanh thu Chi nhánh',
                     onTap: () {
                       Navigator.pop(context); // Close drawer
                       context.go('/daily-summary');

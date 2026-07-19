@@ -17,13 +17,11 @@ class _SystemAdminDashboardState extends State<SystemAdminDashboard> {
   final List<Widget> _screens = [
     const UsersScreen(),
     const RolesScreen(),
-    const SystemConfigScreen(),
   ];
 
   final List<String> _titles = [
     'Quản lý người dùng',
     'Vai trò & Quyền',
-    'Cấu hình hệ thống',
   ];
 
   @override
@@ -69,11 +67,6 @@ class _SystemAdminDashboardState extends State<SystemAdminDashboard> {
               icon: Icon(Icons.security_outlined),
               activeIcon: Icon(Icons.security),
               label: 'Roles',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Config',
             ),
           ],
         ),
