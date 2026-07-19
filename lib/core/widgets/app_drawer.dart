@@ -108,24 +108,28 @@ class AppDrawer extends StatelessWidget {
                       onTap: () => context.go('/categories'),
                     ),
                 ],
-                _buildNavItem(
-                  context,
-                  icon: Icons.warehouse_outlined,
-                  title: 'Kho tổng (Warehouse)',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/warehouse-inventory');
-                  },
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.store_mall_directory_outlined,
-                  title: 'Kho chi nhánh (Branch)',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/branch-inventory');
-                  },
-                ),
+                if (user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true ||
+                    user?.roleName.contains('Warehouse') == true) ...[
+                  _buildNavItem(
+                    context,
+                    icon: Icons.warehouse_outlined,
+                    title: 'Kho tổng (Warehouse)',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/warehouse-inventory');
+                    },
+                  ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.store_mall_directory_outlined,
+                    title: 'Kho chi nhánh (Branch)',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/branch-inventory');
+                    },
+                  ),
+                ],
 
                 // Đối tác & Chi nhánh
                 if (user?.roleName == 'Chain Director') ...[
@@ -146,76 +150,51 @@ class AppDrawer extends StatelessWidget {
 
                 // NHÂN SỰ & CA LÀM
                 _buildSectionTitle('NHÂN SỰ & CA LÀM'),
-                if (user?.roleName.contains('Admin') == true ||
-                    user?.roleName.contains('Director') == true ||
-                    user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('StoreManager') == true)
+                if (user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true) ...[
                   _buildNavItem(
                     context,
                     icon: Icons.people_outline,
                     title: 'Quản lý nhân viên',
                     onTap: () => context.go('/employee-management'),
                   ),
-                if (user?.roleName.contains('Admin') == true ||
-                    user?.roleName.contains('Director') == true ||
-                    user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('StoreManager') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.calendar_month_outlined,
                     title: 'Xếp lịch làm việc',
                     onTap: () => context.go('/store-schedule'),
                   ),
-                if (user?.roleName.contains('Admin') == true ||
-                    user?.roleName.contains('Director') == true ||
-                    user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('StoreManager') == true)
+                ],
+                if (user?.roleName.contains('Store Staff') == true ||
+                    user?.roleName.contains('StoreStaff') == true) ...[
                   _buildNavItem(
                     context,
                     icon: Icons.timer_outlined,
                     title: 'Chấm công nhân viên',
                     onTap: () => context.go('/attendance-report'),
                   ),
-                if (user?.roleName.contains('Admin') == true ||
-                    user?.roleName.contains('Director') == true ||
-                    user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('StoreManager') == true)
-                  _buildNavItem(
-                    context,
-                    icon: Icons.schedule_outlined,
-                    title: 'Mẫu ca làm việc',
-                    onTap: () => context.go('/shift-templates'),
-                  ),
+                ],
                 if (user?.roleName.contains('Store Staff') == true ||
-                    user?.roleName.contains('StoreStaff') == true ||
-                    user?.roleName.contains('Warehouse Staff') == true ||
-                    user?.roleName.contains('WarehouseStaff') == true)
+                    user?.roleName.contains('StoreStaff') == true) ...[
                   _buildNavItem(
                     context,
                     icon: Icons.event_available_outlined,
                     title: 'Lịch cá nhân',
                     onTap: () => context.go('/personal-schedule'),
                   ),
-                if (user?.roleName.contains('Store Staff') == true ||
-                    user?.roleName.contains('StoreStaff') == true ||
-                    user?.roleName.contains('Warehouse Staff') == true ||
-                    user?.roleName.contains('WarehouseStaff') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.access_time,
                     title: 'Chấm công (Check-in/out)',
                     onTap: () => context.go('/clock-in'),
                   ),
-                if (user?.roleName.contains('Store Staff') == true ||
-                    user?.roleName.contains('StoreStaff') == true ||
-                    user?.roleName.contains('Warehouse Staff') == true ||
-                    user?.roleName.contains('WarehouseStaff') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.history_outlined,
                     title: 'Lịch sử làm việc',
                     onTap: () => context.go('/work-history'),
                   ),
+                ],
 
                 // Nghiệp vụ (Branch Orders & POS)
                 _buildSectionTitle('NGHIỆP VỤ'),
@@ -244,15 +223,16 @@ class AppDrawer extends StatelessWidget {
                       context.go('/branch-orders');
                     },
                   ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.add_box_outlined,
-                  title: 'Nhận hàng (Goods Receipt)',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/goods-receiving');
-                  },
-                ),
+                if (user?.roleName.contains('Warehouse') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.add_box_outlined,
+                    title: 'Nhận hàng (Goods Receipt)',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/goods-receiving');
+                    },
+                  ),
                 if (user?.roleName.contains('Warehouse Staff') != true &&
                     user?.roleName.contains('WarehouseStaff') != true &&
                     user?.roleName.contains('Admin') != true &&
@@ -316,18 +296,38 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
                 _buildNavItem(
                   context,
-                  icon: Icons.business_outlined,
-                  title: 'Nhà cung cấp',
-                  onTap: () => context.go('/suppliers'),
+                  icon: Icons.person_outline,
+                  title: 'Thông tin cá nhân',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/profile');
+                  },
                 ),
                 _buildNavItem(
                   context,
-                  icon: Icons.storefront_outlined,
-                  title: 'Chi nhánh',
-                  onTap: () => context.go('/branches'),
+                  icon: Icons.notifications_outlined,
+                  title: 'Thông báo',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/notifications');
+                  },
+                ),
+                const Divider(),
+                
+                _buildSectionTitle('KHO & TỒN KHO'),
+                _buildNavItem(
+                  context,
+                  icon: Icons.warehouse_outlined,
+                  title: 'Kho tổng (Warehouse)',
+                  onTap: () => context.go('/warehouse-inventory'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.store_mall_directory_outlined,
+                  title: 'Kho chi nhánh (Branch)',
+                  onTap: () => context.go('/branch-inventory'),
                 ),
                 _buildSectionTitle('NHÂN SỰ & CA LÀM'),
                 _buildNavItem(
@@ -351,15 +351,21 @@ class AppDrawer extends StatelessWidget {
                 _buildSectionTitle('NGHIỆP VỤ'),
                 _buildNavItem(
                   context,
-                  icon: Icons.point_of_sale_outlined,
-                  title: 'Máy tính tiền (POS)',
-                  onTap: () => context.go('/pos'),
-                ),
-                _buildNavItem(
-                  context,
                   icon: Icons.local_shipping_outlined,
                   title: 'Đơn đặt hàng nội bộ',
                   onTap: () => context.go('/branch-orders'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.receipt_long,
+                  title: 'Lịch sử hóa đơn',
+                  onTap: () => context.go('/invoices'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.bar_chart,
+                  title: 'Doanh thu Chi nhánh',
+                  onTap: () => context.go('/daily-summary'),
                 ),
               ],
             ),
