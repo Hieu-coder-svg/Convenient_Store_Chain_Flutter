@@ -86,6 +86,16 @@ class AppDrawer extends StatelessWidget {
                   title: 'Nhà cung cấp',
                   onTap: () => context.go('/suppliers'),
                 ),
+                if (user?.roleName != 'Store Manager' && user?.roleName != 'Store Staff')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.assignment_outlined,
+                    title: 'Đơn đặt hàng (PO)',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/purchase-orders');
+                    },
+                  ),
                 _buildNavItem(
                   context,
                   icon: Icons.storefront_outlined,

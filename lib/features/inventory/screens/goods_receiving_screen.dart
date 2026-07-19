@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/inventory_provider.dart';
+import '../../product/providers/product_catalog_provider.dart';
+import '../../purchase_order/providers/purchase_order_provider.dart';
 
 class GoodsReceivingScreen extends StatefulWidget {
   const GoodsReceivingScreen({super.key});
@@ -13,25 +15,43 @@ class GoodsReceivingScreen extends StatefulWidget {
 
 class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _poIdController = TextEditingController();
+  int? _selectedPoId;
   final _notesController = TextEditingController();
   
   List<Map<String, dynamic>> _items = [];
   bool _isSubmitting = false;
 
-  void _addItem() {
-    setState(() {
-      _items.add({
-        'productId': null,
-        'quantityReceived': null,
-        'price': null,
-      });
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.read<ProductCatalogProvider>().products.isEmpty) {
+        context.read<ProductCatalogProvider>().fetchProducts();
+      }
+      if (context.read<PurchaseOrderProvider>().orders.isEmpty) {
+        context.read<PurchaseOrderProvider>().fetchOrders();
+      }
     });
   }
 
-  void _removeItem(int index) {
+  void _onPoChanged(int? newPoId) {
     setState(() {
-      _items.removeAt(index);
+      _selectedPoId = newPoId;
+      _items.clear();
+      
+      if (newPoId != null) {
+        final provider = context.read<PurchaseOrderProvider>();
+        final order = provider.orders.firstWhere((o) => o.poId == newPoId);
+        
+        for (var item in order.items) {
+          _items.add({
+            'productId': item.productId,
+            'productName': item.productName,
+            'quantityReceived': null,
+            'orderedQuantity': item.quantity,
+          });
+        }
+      }
     });
   }
 
@@ -48,16 +68,23 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
 
     try {
       final request = {
-        'purchaseOrderId': int.parse(_poIdController.text),
+        'poId': _selectedPoId ?? 0,
         'notes': _notesController.text,
-        'items': _items,
+        'items': _items.map((i) => {
+          'productId': i['productId'],
+          'quantityReceived': i['quantityReceived'] ?? 0
+        }).toList(),
       };
 
       await context.read<InventoryProvider>().receiveGoods(request);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nhận hàng thành công', style: TextStyle(color: Colors.green))));
-        Navigator.pop(context);
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/home');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -74,6 +101,8 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final pendingOrders = context.watch<PurchaseOrderProvider>().orders.where((o) => o.status == 'Pending').toList();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -93,11 +122,16 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextFormField(
-              controller: _poIdController,
-              decoration: const InputDecoration(labelText: 'Mã đơn đặt hàng (Purchase Order ID)'),
-              keyboardType: TextInputType.number,
-              validator: (v) => v == null || v.isEmpty ? 'Không được để trống' : null,
+            DropdownButtonFormField<int>(
+              decoration: const InputDecoration(labelText: 'Chọn Đơn Đặt Hàng (Pending)', isDense: true),
+              value: _selectedPoId,
+              isExpanded: true,
+              items: pendingOrders.map((o) => DropdownMenuItem<int>(
+                value: o.poId,
+                child: Text('PO #${o.poId} - ${o.supplierName} (${o.items.length} SP)', overflow: TextOverflow.ellipsis),
+              )).toList(),
+              onChanged: _onPoChanged,
+              validator: (v) => v == null ? 'Vui lòng chọn đơn đặt hàng' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -106,53 +140,39 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
               maxLines: 3,
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Danh sách sản phẩm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                TextButton.icon(
-                  onPressed: _addItem,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Thêm SP'),
-                ),
-              ],
-            ),
+            const Text('Danh sách sản phẩm từ Đơn hàng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
+            if (_selectedPoId == null)
+               const Text('Vui lòng chọn Đơn đặt hàng ở trên để hiển thị sản phẩm', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)),
+            
             ...List.generate(_items.length, (index) {
               final item = _items[index];
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: Row(
                     children: [
                       Expanded(
-                        child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Product ID', isDense: true),
-                          keyboardType: TextInputType.number,
-                          onChanged: (v) => item['productId'] = int.tryParse(v),
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(item['productName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                            const SizedBox(height: 4),
+                            Text('SL đã đặt: ${item['orderedQuantity']}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Số lượng', isDense: true),
+                          decoration: const InputDecoration(labelText: 'SL Thực nhận', isDense: true),
                           keyboardType: TextInputType.number,
                           onChanged: (v) => item['quantityReceived'] = int.tryParse(v),
+                          validator: (v) => (v == null || v.isEmpty || int.tryParse(v) == null) ? 'Nhập SL' : null,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Giá', isDense: true),
-                          keyboardType: TextInputType.number,
-                          onChanged: (v) => item['price'] = double.tryParse(v),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _removeItem(index),
-                      )
                     ],
                   ),
                 ),

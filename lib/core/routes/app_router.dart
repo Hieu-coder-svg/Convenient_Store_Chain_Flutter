@@ -16,6 +16,9 @@ import '../../features/inventory/screens/goods_receiving_screen.dart';
 import '../../features/inventory/screens/branch_inventory_screen.dart';
 import '../../features/inventory/screens/stock_adjustment_screen.dart';
 import '../../features/notification/screens/notification_screen.dart';
+import '../../features/purchase_order/screens/purchase_order_list_screen.dart';
+import '../../features/purchase_order/screens/create_purchase_order_screen.dart';
+import '../../features/purchase_order/screens/purchase_order_detail_screen.dart';
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
@@ -59,6 +62,21 @@ class AppRouter {
       GoRoute(
         path: '/branches',
         builder: (context, state) => const BranchListScreen(),
+      ),
+      GoRoute(
+        path: '/purchase-orders',
+        builder: (context, state) => const PurchaseOrderListScreen(),
+      ),
+      GoRoute(
+        path: '/purchase-orders/create',
+        builder: (context, state) => const CreatePurchaseOrderScreen(),
+      ),
+      GoRoute(
+        path: '/purchase-orders/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+          return PurchaseOrderDetailScreen(poId: id);
+        },
       ),
       GoRoute(
         path: '/branch-orders',

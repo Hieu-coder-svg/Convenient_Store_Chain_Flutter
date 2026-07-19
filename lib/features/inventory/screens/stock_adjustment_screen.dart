@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/inventory_provider.dart';
+import '../../product/providers/product_catalog_provider.dart';
 
 class StockAdjustmentScreen extends StatefulWidget {
   final int branchId;
@@ -18,6 +19,16 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
   bool _isSubmitting = false;
 
   final List<String> _reasons = ['Damaged', 'Expired', 'Lost', 'Found', 'Other'];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.read<ProductCatalogProvider>().products.isEmpty) {
+        context.read<ProductCatalogProvider>().fetchProducts();
+      }
+    });
+  }
 
   void _addItem() {
     setState(() {
@@ -68,6 +79,7 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final products = context.watch<ProductCatalogProvider>().products;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -110,10 +122,19 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: TextFormField(
-                              decoration: const InputDecoration(labelText: 'Product ID', isDense: true),
-                              keyboardType: TextInputType.number,
-                              onChanged: (v) => item['productId'] = int.tryParse(v),
+                            child: DropdownButtonFormField<int>(
+                              decoration: const InputDecoration(labelText: 'Sản phẩm', isDense: true),
+                              value: item['productId'],
+                              isExpanded: true,
+                              items: products.map((p) => DropdownMenuItem<int>(
+                                value: p.productId,
+                                child: Text(p.productName, overflow: TextOverflow.ellipsis),
+                              )).toList(),
+                              onChanged: (v) {
+                                setState(() {
+                                  item['productId'] = v;
+                                });
+                              },
                             ),
                           ),
                           const SizedBox(width: 8),

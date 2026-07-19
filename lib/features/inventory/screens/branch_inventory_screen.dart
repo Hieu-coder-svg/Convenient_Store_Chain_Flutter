@@ -99,7 +99,9 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Navigate to Stock Adjustment
+          if (_branchId != null) {
+            context.push('/stock-adjustment', extra: {'branchId': _branchId});
+          }
         },
         icon: const Icon(Icons.edit_note),
         label: const Text('Kiểm Kê'),

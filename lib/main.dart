@@ -22,6 +22,8 @@ import 'features/inventory/services/inventory_api_service.dart';
 import 'features/inventory/providers/inventory_provider.dart';
 import 'features/notification/services/notification_api_service.dart';
 import 'features/notification/providers/notification_provider.dart';
+import 'features/purchase_order/services/purchase_order_api_service.dart';
+import 'features/purchase_order/providers/purchase_order_provider.dart';
 
 void main() {
   runApp(const ConvenienceStoreApp());
@@ -102,6 +104,13 @@ class ConvenienceStoreApp extends StatelessWidget {
         ChangeNotifierProxyProvider<NotificationApiService, NotificationProvider>(
           create: (context) => NotificationProvider(context.read<NotificationApiService>()),
           update: (context, apiService, previous) => previous ?? NotificationProvider(apiService),
+        ),
+        ProxyProvider<DioClient, PurchaseOrderApiService>(
+          update: (context, dioClient, previous) => previous ?? PurchaseOrderApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<PurchaseOrderApiService, PurchaseOrderProvider>(
+          create: (context) => PurchaseOrderProvider(context.read<PurchaseOrderApiService>()),
+          update: (context, apiService, previous) => previous ?? PurchaseOrderProvider(apiService),
         ),
       ],
       child: MaterialApp.router(
