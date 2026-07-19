@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/widgets/pagination_control.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_drawer.dart';
@@ -18,14 +19,14 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool?
-  _filterActive; // null = Tất cả, true = Đang hợp tác, false = Ngừng cung cấp
+      _filterActive; // null = Tất cả, true = Đang hợp tác, false = Ngừng cung cấp
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
       if (!mounted) return;
-      context.read<SupplierProvider>().fetchSuppliers();
+      context.read<SupplierProvider>().fetchSuppliers(page: 1);
     });
   }
 
@@ -152,7 +153,7 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
       body: provider.isLoading && provider.suppliers.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () => provider.fetchSuppliers(),
+              onRefresh: () => provider.fetchSuppliers(page: provider.currentPage),
               child: Column(
                 children: [
                   // Sticky Search Bar Section
@@ -246,214 +247,228 @@ class _SupplierListScreenState extends State<SupplierListScreen> {
                               ),
                             ),
                           )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: filteredSuppliers.length,
-                            itemBuilder: (context, index) {
-                              final supplier = filteredSuppliers[index];
-                              final icon = _getSupplierIcon(
-                                supplier.supplierName,
-                              );
-
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: AppColors.outlineVariant.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.02,
-                                      ),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                                child: Padding(
+                        : Column(
+                            children: [
+                              Expanded(
+                                child: ListView.builder(
                                   padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            width: 48,
-                                            height: 48,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primary
-                                                  .withValues(alpha: 0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Icon(
-                                              icon,
-                                              color: AppColors.primary,
-                                              size: 24,
-                                            ),
+                                  itemCount: filteredSuppliers.length,
+                                  itemBuilder: (context, index) {
+                                    final supplier = filteredSuppliers[index];
+                                    final icon = _getSupplierIcon(
+                                      supplier.supplierName,
+                                    );
+
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppColors.outlineVariant.withValues(
+                                            alpha: 0.2,
                                           ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.02,
+                                            ),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 1),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                Text(
-                                                  supplier.supplierName,
-                                                  style: const TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        AppColors.textPrimary,
+                                                Container(
+                                                  width: 48,
+                                                  height: 48,
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.primary
+                                                        .withValues(alpha: 0.1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(8),
+                                                  ),
+                                                  child: Icon(
+                                                    icon,
+                                                    color: AppColors.primary,
+                                                    size: 24,
                                                   ),
                                                 ),
-                                                if (supplier.phone != null &&
-                                                    supplier
-                                                        .phone!
-                                                        .isNotEmpty) ...[
-                                                  const SizedBox(height: 6),
-                                                  Row(
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
                                                     children: [
-                                                      const Icon(
-                                                        Icons.call,
-                                                        size: 14,
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                      ),
-                                                      const SizedBox(width: 6),
                                                       Text(
-                                                        supplier.phone!,
+                                                        supplier.supplierName,
                                                         style: const TextStyle(
-                                                          fontSize: 13,
-                                                          color: AppColors
-                                                              .textSecondary,
+                                                          fontSize: 15,
+                                                          fontWeight: FontWeight.bold,
+                                                          color:
+                                                              AppColors.textPrimary,
                                                         ),
                                                       ),
+                                                      if (supplier.phone != null &&
+                                                          supplier
+                                                              .phone!
+                                                              .isNotEmpty) ...[
+                                                        const SizedBox(height: 6),
+                                                        Row(
+                                                          children: [
+                                                            const Icon(
+                                                              Icons.call,
+                                                              size: 14,
+                                                              color: AppColors
+                                                                  .textSecondary,
+                                                            ),
+                                                            const SizedBox(width: 6),
+                                                            Text(
+                                                              supplier.phone!,
+                                                              style: const TextStyle(
+                                                                fontSize: 13,
+                                                                color: AppColors
+                                                                    .textSecondary,
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                      if (supplier.address != null &&
+                                                          supplier
+                                                              .address!
+                                                              .isNotEmpty) ...[
+                                                        const SizedBox(height: 4),
+                                                        Row(
+                                                          children: [
+                                                            const Icon(
+                                                              Icons.location_on,
+                                                              size: 14,
+                                                              color: AppColors
+                                                                  .textSecondary,
+                                                            ),
+                                                            const SizedBox(width: 6),
+                                                            Expanded(
+                                                              child: Text(
+                                                                supplier.address!,
+                                                                maxLines: 1,
+                                                                overflow: TextOverflow
+                                                                    .ellipsis,
+                                                                style: const TextStyle(
+                                                                  fontSize: 13,
+                                                                  color: AppColors
+                                                                      .textSecondary,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
                                                     ],
                                                   ),
-                                                ],
-                                                if (supplier.address != null &&
-                                                    supplier
-                                                        .address!
-                                                        .isNotEmpty) ...[
-                                                  const SizedBox(height: 4),
-                                                  Row(
-                                                    children: [
-                                                      const Icon(
-                                                        Icons.location_on,
-                                                        size: 14,
-                                                        color: AppColors
-                                                            .textSecondary,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.edit,
+                                                        color: AppColors.primary,
+                                                        size: 20,
                                                       ),
-                                                      const SizedBox(width: 6),
-                                                      Expanded(
-                                                        child: Text(
-                                                          supplier.address!,
-                                                          maxLines: 1,
-                                                          overflow: TextOverflow
-                                                              .ellipsis,
-                                                          style: const TextStyle(
-                                                            fontSize: 13,
-                                                            color: AppColors
-                                                                .textSecondary,
+                                                      onPressed: () =>
+                                                          _showAddEditSupplierDialog(
+                                                            supplier: supplier,
                                                           ),
-                                                        ),
+                                                    ),
+                                                    IconButton(
+                                                      icon: const Icon(
+                                                        Icons.delete,
+                                                        color: AppColors.error,
+                                                        size: 20,
                                                       ),
-                                                    ],
-                                                  ),
-                                                ],
+                                                      onPressed: () =>
+                                                          _confirmDeleteSupplier(
+                                                            supplier,
+                                                          ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ],
                                             ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.edit,
-                                                  color: AppColors.primary,
-                                                  size: 20,
+                                            const SizedBox(height: 12),
+                                            const Divider(
+                                              height: 1,
+                                              color: Colors.grey,
+                                              thickness: 0.1,
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: supplier.isActive
+                                                        ? Colors.green.shade50
+                                                        : AppColors.error.withValues(
+                                                            alpha: 0.1,
+                                                          ),
+                                                    borderRadius:
+                                                        BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    supplier.isActive
+                                                        ? 'Đang hợp tác'
+                                                        : 'Ngừng cung cấp',
+                                                    style: TextStyle(
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.bold,
+                                                      color: supplier.isActive
+                                                          ? Colors.green.shade800
+                                                          : AppColors.error,
+                                                    ),
+                                                  ),
                                                 ),
-                                                onPressed: () =>
-                                                    _showAddEditSupplierDialog(
-                                                      supplier: supplier,
-                                                    ),
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(
-                                                  Icons.delete,
-                                                  color: AppColors.error,
-                                                  size: 20,
+                                                Text(
+                                                  'Mã: ${supplier.formattedCode}',
+                                                  style: const TextStyle(
+                                                    fontSize: 12,
+                                                    color: AppColors.outline,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                                 ),
-                                                onPressed: () =>
-                                                    _confirmDeleteSupplier(
-                                                      supplier,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      const SizedBox(height: 12),
-                                      const Divider(
-                                        height: 1,
-                                        color: Colors.grey,
-                                        thickness: 0.1,
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: supplier.isActive
-                                                  ? Colors.green.shade50
-                                                  : AppColors.error.withValues(
-                                                      alpha: 0.1,
-                                                    ),
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              supplier.isActive
-                                                  ? 'Đang hợp tác'
-                                                  : 'Ngừng cung cấp',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.bold,
-                                                color: supplier.isActive
-                                                    ? Colors.green.shade800
-                                                    : AppColors.error,
-                                              ),
-                                            ),
-                                          ),
-                                          Text(
-                                            'Mã: ${supplier.formattedCode}',
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: AppColors.outline,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                    );
+                                  },
                                 ),
-                              );
-                            },
+                              ),
+                              if (filteredSuppliers.isNotEmpty)
+                                PaginationControl(
+                                  currentPage: provider.currentPage,
+                                  totalPages: provider.totalPages,
+                                  onPageChanged: (page) {
+                                    provider.fetchSuppliers(page: page);
+                                  },
+                                ),
+                            ],
                           ),
                   ),
                 ],

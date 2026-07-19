@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/widgets/pagination_control.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_drawer.dart';
@@ -27,7 +28,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       if (!mounted) return;
       final provider = context.read<ProductCatalogProvider>();
       provider.fetchCategories();
-      provider.fetchProducts();
+      provider.fetchProducts(page: 1);
     });
   }
 
@@ -41,6 +42,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
     context.read<ProductCatalogProvider>().fetchProducts(
       search: query,
       categoryId: _selectedCategoryId,
+      page: 1,
     );
   }
 
@@ -72,6 +74,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       context.read<ProductCatalogProvider>().fetchProducts(
                         search: _searchController.text,
                         categoryId: null,
+                        page: 1,
                       );
                       Navigator.pop(context);
                     },
@@ -89,6 +92,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         context.read<ProductCatalogProvider>().fetchProducts(
                           search: _searchController.text,
                           categoryId: _selectedCategoryId,
+                          page: 1,
                         );
                         Navigator.pop(context);
                       },
@@ -239,8 +243,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
       drawer: const AppDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
+          final provider = context.read<ProductCatalogProvider>();
           await provider.fetchCategories();
-          await provider.fetchProducts();
+          await provider.fetchProducts(page: provider.currentPage);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -365,6 +370,18 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   itemBuilder: (context, index) {
                     final product = products[index];
                     return _buildProductCard(product, role);
+                  },
+                ),
+              if (products.isNotEmpty)
+                PaginationControl(
+                  currentPage: provider.currentPage,
+                  totalPages: provider.totalPages,
+                  onPageChanged: (page) {
+                    provider.fetchProducts(
+                      search: _searchController.text,
+                      categoryId: _selectedCategoryId,
+                      page: page,
+                    );
                   },
                 ),
               const SizedBox(height: 80), // Spacer for bottom bar

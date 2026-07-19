@@ -11,12 +11,19 @@ class ProductCatalogProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _totalCount = 0;
+
   ProductCatalogProvider(this._apiService);
 
   List<CategoryModel> get categories => _categories;
   List<ProductModel> get products => _products;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  int get currentPage => _currentPage;
+  int get totalPages => _totalPages;
+  int get totalCount => _totalCount;
 
   // --- Category Handlers ---
   Future<void> fetchCategories() async {
@@ -114,17 +121,25 @@ class ProductCatalogProvider extends ChangeNotifier {
   }
 
   // --- Product Handlers ---
-  Future<void> fetchProducts({String? search, int? categoryId}) async {
+  Future<void> fetchProducts({String? search, int? categoryId, int page = 1}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final list = await _apiService.getProducts(
+      final pagedResult = await _apiService.getProducts(
         search: search,
         categoryId: categoryId,
+        page: page,
+        pageSize: 10,
       );
-      _products = list;
+      
+      _products = pagedResult.items;
+      _currentPage = pagedResult.pageNumber;
+      _totalCount = pagedResult.totalCount;
+      _totalPages = (pagedResult.totalCount / 10).ceil();
+      if (_totalPages == 0) _totalPages = 1;
+      
       _isLoading = false;
       notifyListeners();
     } catch (e) {

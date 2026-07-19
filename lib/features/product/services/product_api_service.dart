@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../../core/network/dio_client.dart';
+import 'package:convenient_store_chain_flutter/core/models/paged_result.dart';
 import '../models/category_model.dart';
 import '../models/product_model.dart';
 
@@ -53,12 +54,17 @@ class ProductApiService {
   }
 
   // --- Product APIs ---
-  Future<List<ProductModel>> getProducts({
+  Future<PagedResult<ProductModel>> getProducts({
     String? search,
     int? categoryId,
+    int page = 1,
+    int pageSize = 10,
   }) async {
     try {
-      final Map<String, dynamic> queryParams = {};
+      final Map<String, dynamic> queryParams = {
+        'page': page,
+        'pageSize': pageSize,
+      };
       if (search != null && search.isNotEmpty) {
         queryParams['search'] = search;
       }
@@ -70,8 +76,10 @@ class ProductApiService {
         '/products',
         queryParameters: queryParams,
       );
-      final List<dynamic> data = response.data;
-      return data.map((json) => ProductModel.fromJson(json)).toList();
+      return PagedResult<ProductModel>.fromJson(
+        response.data,
+        (json) => ProductModel.fromJson(json),
+      );
     } on DioException catch (e) {
       throw _handleError(e, 'Không thể tải danh sách sản phẩm');
     }

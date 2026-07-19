@@ -8,21 +8,37 @@ class SupplierProvider extends ChangeNotifier {
   List<SupplierModel> _suppliers = [];
   bool _isLoading = false;
   String? _error;
+  
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _totalCount = 0;
 
   SupplierProvider(this._apiService);
 
   List<SupplierModel> get suppliers => _suppliers;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  int get currentPage => _currentPage;
+  int get totalPages => _totalPages;
+  int get totalCount => _totalCount;
 
-  Future<void> fetchSuppliers() async {
+  Future<void> fetchSuppliers({int page = 1}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final list = await _apiService.getSuppliers();
-      _suppliers = list;
+      final pagedResult = await _apiService.getSuppliers(
+        page: page,
+        pageSize: 10,
+      );
+      
+      _suppliers = pagedResult.items;
+      _currentPage = pagedResult.pageNumber;
+      _totalCount = pagedResult.totalCount;
+      _totalPages = (pagedResult.totalCount / 10).ceil();
+      if (_totalPages == 0) _totalPages = 1;
+      
       _isLoading = false;
       notifyListeners();
     } catch (e) {
