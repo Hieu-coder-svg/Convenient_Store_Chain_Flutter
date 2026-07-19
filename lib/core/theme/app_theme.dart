@@ -23,7 +23,6 @@ class AppTheme {
         primary: primaryBlue,
         secondary: accentAmber,
         surface: surfaceWhite,
-        background: backgroundGrey,
         error: dangerRed,
       ),
       scaffoldBackgroundColor: backgroundGrey,

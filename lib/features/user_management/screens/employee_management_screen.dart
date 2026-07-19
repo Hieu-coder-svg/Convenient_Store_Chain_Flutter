@@ -9,7 +9,7 @@ import '../../auth/providers/auth_provider.dart';
 import 'user_form_screen.dart';
 
 class EmployeeManagementScreen extends StatefulWidget {
-  const EmployeeManagementScreen({Key? key}) : super(key: key);
+  const EmployeeManagementScreen({super.key});
 
   @override
   State<EmployeeManagementScreen> createState() =>

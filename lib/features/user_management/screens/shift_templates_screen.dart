@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 
 class ShiftTemplatesScreen extends StatefulWidget {
-  const ShiftTemplatesScreen({Key? key}) : super(key: key);
+  const ShiftTemplatesScreen({super.key});
 
   @override
   State<ShiftTemplatesScreen> createState() => _ShiftTemplatesScreenState();
@@ -246,7 +246,7 @@ class _ShiftTemplatesScreenState extends State<ShiftTemplatesScreen> {
                       template["isActive"] = val;
                     });
                   },
-                  activeColor: AppTheme.primaryBlue,
+                  activeThumbColor: AppTheme.primaryBlue,
                 ),
                 IconButton(
                   icon: const Icon(

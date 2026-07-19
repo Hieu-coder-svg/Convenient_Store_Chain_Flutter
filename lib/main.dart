@@ -1,3 +1,5 @@
+import 'package:convenient_store_chain_flutter/features/pos/providers/invoice_provider.dart';
+import 'package:convenient_store_chain_flutter/features/pos/services/invoice_api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +21,10 @@ import 'features/branch_order/providers/branch_order_provider.dart';
 import 'features/pos/services/customer_api_service.dart';
 import 'features/pos/providers/customer_provider.dart';
 import 'features/pos/providers/cart_provider.dart';
+import 'features/inventory/services/inventory_api_service.dart';
+import 'features/inventory/providers/inventory_provider.dart';
+import 'features/notification/services/notification_api_service.dart';
+import 'features/notification/providers/notification_provider.dart';
 import 'features/user_management/services/hr_service.dart';
 import 'features/user_management/providers/hr_provider.dart';
 
@@ -107,6 +113,30 @@ class ConvenienceStoreApp extends StatelessWidget {
           create: (context) => HrProvider(context.read<HrService>()),
           update: (context, hrService, previous) =>
               previous ?? HrProvider(hrService),
+        ),
+        ProxyProvider<DioClient, InvoiceApiService>(
+          update: (context, dioClient, previous) =>
+              previous ?? InvoiceApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<InvoiceApiService, InvoiceProvider>(
+          create: (context) =>
+              InvoiceProvider(context.read<InvoiceApiService>()),
+          update: (context, apiService, previous) =>
+              previous ?? InvoiceProvider(apiService),
+        ),
+        ProxyProvider<DioClient, InventoryApiService>(
+          update: (context, dioClient, previous) => previous ?? InventoryApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<InventoryApiService, InventoryProvider>(
+          create: (context) => InventoryProvider(context.read<InventoryApiService>()),
+          update: (context, apiService, previous) => previous ?? InventoryProvider(apiService),
+        ),
+        ProxyProvider<DioClient, NotificationApiService>(
+          update: (context, dioClient, previous) => previous ?? NotificationApiService(dioClient),
+        ),
+        ChangeNotifierProxyProvider<NotificationApiService, NotificationProvider>(
+          create: (context) => NotificationProvider(context.read<NotificationApiService>()),
+          update: (context, apiService, previous) => previous ?? NotificationProvider(apiService),
         ),
       ],
       child: MaterialApp.router(

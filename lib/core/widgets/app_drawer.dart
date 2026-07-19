@@ -39,6 +39,15 @@ class AppDrawer extends StatelessWidget {
                     Navigator.pop(context); // Close drawer
                   },
                 ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.notifications_outlined,
+                  title: 'Thông báo',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/notifications');
+                  },
+                ),
                 const Divider(),
 
                 // Cửa hàng & Sản phẩm
@@ -54,6 +63,24 @@ class AppDrawer extends StatelessWidget {
                   icon: Icons.category_outlined,
                   title: 'Danh mục',
                   onTap: () => context.go('/categories'),
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.warehouse_outlined,
+                  title: 'Kho tổng (Warehouse)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/warehouse-inventory');
+                  },
+                ),
+                _buildNavItem(
+                  context,
+                  icon: Icons.store_mall_directory_outlined,
+                  title: 'Kho chi nhánh (Branch)',
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.go('/branch-inventory');
+                  },
                 ),
 
                 // Đối tác & Chi nhánh
@@ -136,9 +163,7 @@ class AppDrawer extends StatelessWidget {
 
                 // Nghiệp vụ (Branch Orders & POS)
                 _buildSectionTitle('NGHIỆP VỤ'),
-                if (user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('Store Staff') == true ||
-                    user?.roleName.contains('StoreManager') == true ||
+                if (user?.roleName.contains('Store Staff') == true ||
                     user?.roleName.contains('StoreStaff') == true)
                   _buildNavItem(
                     context,
@@ -149,15 +174,54 @@ class AppDrawer extends StatelessWidget {
                       context.go('/pos');
                     },
                   ),
+                if (user?.roleName.contains('Admin') == true ||
+                    user?.roleName.contains('Director') == true ||
+                    user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true ||
+                    user?.roleName.contains('Warehouse Staff') == true ||
+                    user?.roleName.contains('WarehouseStaff') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.local_shipping_outlined,
+                    title: 'Đơn đặt hàng nội bộ',
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      context.go('/branch-orders');
+                    },
+                  ),
                 _buildNavItem(
                   context,
-                  icon: Icons.local_shipping_outlined,
-                  title: 'Đơn đặt hàng nội bộ',
+                  icon: Icons.add_box_outlined,
+                  title: 'Nhận hàng (Goods Receipt)',
                   onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    context.go('/branch-orders');
+                    Navigator.pop(context);
+                    context.go('/goods-receiving');
                   },
                 ),
+                if (user?.roleName.contains('Warehouse Staff') != true &&
+                    user?.roleName.contains('WarehouseStaff') != true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.receipt_long,
+                    title: 'Lịch sử hóa đơn',
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      context.go('/invoices');
+                    },
+                  ),
+                if (user?.roleName.contains('Director') == true ||
+                    user?.roleName.contains('Admin') == true ||
+                    user?.roleName.contains('Store Manager') == true ||
+                    user?.roleName.contains('StoreManager') == true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.bar_chart,
+                    title: 'Báo cáo doanh thu',
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      context.go('/daily-summary');
+                    },
+                  ),
               ],
             ),
           ),

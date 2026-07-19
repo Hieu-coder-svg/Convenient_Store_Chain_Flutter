@@ -6,7 +6,7 @@ import '../models/shift.dart';
 import '../providers/hr_provider.dart';
 
 class PersonalScheduleScreen extends StatefulWidget {
-  const PersonalScheduleScreen({Key? key}) : super(key: key);
+  const PersonalScheduleScreen({super.key});
 
   @override
   State<PersonalScheduleScreen> createState() => _PersonalScheduleScreenState();

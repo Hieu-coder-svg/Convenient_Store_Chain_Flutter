@@ -9,6 +9,8 @@ import '../widgets/product_search_tile.dart';
 import '../widgets/cart_item_tile.dart';
 import '../widgets/cart_summary_bar.dart';
 import '../widgets/customer_search_dialog.dart';
+import '../../../../core/widgets/app_drawer.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'dart:async';
 
 class PosScreen extends StatefulWidget {
@@ -28,6 +30,9 @@ class _PosScreenState extends State<PosScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductCatalogProvider>().fetchProducts();
     });
@@ -57,6 +62,35 @@ class _PosScreenState extends State<PosScreen>
     );
   }
 
+  void _handleBarcodeScan(String barcode, CartProvider cart) {
+    if (barcode == '-1' || barcode.isEmpty) return;
+
+    final products = context.read<ProductCatalogProvider>().products;
+    final matchedProducts = products
+        .where((p) => p.barcode == barcode)
+        .toList();
+
+    if (matchedProducts.isNotEmpty) {
+      final product = matchedProducts.first;
+      cart.addItem(product);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã thêm: ${product.productName}'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Mã vạch $barcode không tồn tại trong hệ thống!'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
@@ -65,20 +99,18 @@ class _PosScreenState extends State<PosScreen>
         MediaQuery.of(context).size.width >= 768; // Simple responsive check
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(
-          tooltip: 'Quay lại',
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/home');
-            }
-          },
+        title: const Text(
+          'Máy tính tiền POS',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        title: const Text('Máy tính tiền POS'),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
         actions: [
           Center(
             child: Padding(
@@ -86,7 +118,10 @@ class _PosScreenState extends State<PosScreen>
               child: Badge(
                 label: Text('${cart.totalQuantity}'),
                 isLabelVisible: cart.totalQuantity > 0,
-                child: const Icon(Icons.shopping_cart),
+                child: const Icon(
+                  Icons.shopping_cart,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
           ),
@@ -94,9 +129,9 @@ class _PosScreenState extends State<PosScreen>
         bottom: !isTablet
             ? TabBar(
                 controller: _tabController,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                indicatorColor: Colors.white,
+                labelColor: AppColors.primary,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.primary,
                 tabs: const [
                   Tab(icon: Icon(Icons.inventory_2), text: 'Sản phẩm'),
                   Tab(icon: Icon(Icons.shopping_bag), text: 'Giỏ hàng'),
@@ -104,6 +139,7 @@ class _PosScreenState extends State<PosScreen>
               )
             : null,
       ),
+      drawer: const AppDrawer(),
       body: isTablet
           ? _buildTabletLayout(cart, customerProvider)
           : _buildMobileLayout(cart, customerProvider),
@@ -179,6 +215,24 @@ class _PosScreenState extends State<PosScreen>
             decoration: InputDecoration(
               hintText: 'Tìm tên hoặc mã sản phẩm...',
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                icon: const Icon(
+                  Icons.qr_code_scanner,
+                  color: AppColors.primary,
+                ),
+                tooltip: 'Quét mã vạch',
+                onPressed: () async {
+                  var res = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SimpleBarcodeScannerPage(),
+                    ),
+                  );
+                  if (res is String && res != '-1' && res.isNotEmpty) {
+                    _handleBarcodeScan(res, cart);
+                  }
+                },
+              ),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -188,6 +242,10 @@ class _PosScreenState extends State<PosScreen>
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
             onChanged: _onSearchChanged,
+            onSubmitted: (value) {
+              _handleBarcodeScan(value, cart);
+              _searchController.clear();
+            },
           ),
         ),
         // Product Grid
