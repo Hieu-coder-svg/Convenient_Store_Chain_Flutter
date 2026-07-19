@@ -34,7 +34,7 @@ class _PosScreenState extends State<PosScreen>
       setState(() {});
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductCatalogProvider>().fetchProducts();
+      context.read<ProductCatalogProvider>().fetchProducts(page: 1);
     });
   }
 
@@ -49,7 +49,7 @@ class _PosScreenState extends State<PosScreen>
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      context.read<ProductCatalogProvider>().fetchProducts(search: query);
+      context.read<ProductCatalogProvider>().fetchProducts(search: query, page: 1);
     });
   }
 
@@ -72,6 +72,19 @@ class _PosScreenState extends State<PosScreen>
 
     if (matchedProducts.isNotEmpty) {
       final product = matchedProducts.first;
+
+      // Check if product is still active
+      if (!product.isActive) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sản phẩm này đã ngừng kinh doanh!'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
       cart.addItem(product);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -306,6 +319,9 @@ class _PosScreenState extends State<PosScreen>
                   int crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
                   if (constraints.maxWidth > 900) crossAxisCount = 5;
 
+                  // Only show active products at POS
+                  final activeProducts = provider.products.where((p) => p.isActive).toList();
+
                   return GridView.builder(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -317,9 +333,9 @@ class _PosScreenState extends State<PosScreen>
                       crossAxisSpacing: 16,
                       mainAxisSpacing: 16,
                     ),
-                    itemCount: provider.products.length,
+                    itemCount: activeProducts.length,
                     itemBuilder: (context, index) {
-                      final product = provider.products[index];
+                      final product = activeProducts[index];
                       return ProductSearchTile(
                         product: product,
                         onAdd: () {

@@ -237,16 +237,25 @@ class _UserFormScreenState extends State<UserFormScreen> {
 
               const SizedBox(height: 16),
 
-              // Dropdown Chi nhánh (Động)
+              // Dropdown Chi nhánh (Động) - Chỉ hiển thị chi nhánh active
+              // (hoặc chi nhánh hiện tại của user khi sửa dù đã deactive)
               Consumer<BranchProvider>(
                 builder: (context, branchProvider, _) {
+                  final availableBranches = branchProvider.branches
+                      .where((b) =>
+                          b.isActive || b.branchId == widget.user?.branchId)
+                      .toList();
+
                   return DropdownButtonFormField<int>(
                     initialValue: _selectedBranchId,
                     decoration: _inputDecoration('Chi nhánh (Tùy chọn)'),
-                    items: branchProvider.branches.map((branch) {
+                    items: availableBranches.map((branch) {
+                      final label = branch.isActive
+                          ? branch.branchName
+                          : '${branch.branchName} (Ngừng hoạt động)';
                       return DropdownMenuItem<int>(
                         value: branch.branchId,
-                        child: Text(branch.branchName),
+                        child: Text(label),
                       );
                     }).toList(),
                     onChanged: isManager

@@ -84,6 +84,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                 (item) => {
                   'id': item['supplierId'] as int,
                   'name': item['supplierName'] as String,
+                  'isActive': item['isActive'] as bool? ?? true,
                 },
               )
               .toList();
@@ -541,10 +542,25 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                   decoration: const InputDecoration(
                                     labelText: 'Nhà cung cấp',
                                   ),
-                                  items: _suppliers.map((sup) {
+                                  items: _suppliers
+                                      .where((sup) =>
+                                          (sup['isActive'] as bool? ?? true) ||
+                                          sup['id'] == _selectedSupplierId)
+                                      .map((sup) {
+                                    final isActive =
+                                        sup['isActive'] as bool? ?? true;
+                                    final label = isActive
+                                        ? sup['name'] as String
+                                        : '${sup['name']} (Ngưng hợp tác)';
                                     return DropdownMenuItem<int>(
                                       value: sup['id'] as int,
-                                      child: Text(sup['name'] as String),
+                                      child: Text(
+                                        label,
+                                        style: TextStyle(
+                                          color:
+                                              isActive ? null : Colors.grey,
+                                        ),
+                                      ),
                                     );
                                   }).toList(),
                                   onChanged: (val) {
