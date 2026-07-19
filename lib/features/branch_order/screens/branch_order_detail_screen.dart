@@ -321,21 +321,36 @@ class _BranchOrderDetailScreenState extends State<BranchOrderDetailScreen> {
                                   ],
                                 ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.background,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Text(
-                                  'SL: ${item.quantity}',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.background,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Text(
+                                      'SL: ${item.quantity} ${item.unit ?? ""}',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  if (item.conversionFactor > 1 && item.importUnit != null) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '(~ ${item.quantity ~/ item.conversionFactor} ${item.importUnit} ${item.quantity % item.conversionFactor} ${item.unit ?? ""})',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ],
                           ),

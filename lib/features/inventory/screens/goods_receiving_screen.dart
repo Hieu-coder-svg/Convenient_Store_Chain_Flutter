@@ -157,7 +157,7 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
                       Expanded(
                         child: TextFormField(
                           decoration: const InputDecoration(
-                            labelText: 'Số lượng',
+                            labelText: 'Số lượng (Thùng/Hộp)',
                             isDense: true,
                           ),
                           keyboardType: TextInputType.number,

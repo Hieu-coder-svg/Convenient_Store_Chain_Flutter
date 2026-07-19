@@ -3,6 +3,7 @@ import 'package:signalr_netcore/signalr_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/notification_model.dart';
 import '../services/notification_api_service.dart';
+import '../../../core/constants/api_constants.dart';
 
 class NotificationProvider with ChangeNotifier {
   final NotificationApiService _apiService;
@@ -105,9 +106,10 @@ class NotificationProvider with ChangeNotifier {
 
     if (token == null) return;
 
-    // TODO: Change to real backend URL
-    const serverUrl =
-        "https://10.0.2.2:5001/hubs/inventory"; // 10.0.2.2 is local for Android emulator
+    final baseUrl = ApiConstants.baseUrl;
+    final serverUrl = baseUrl.endsWith('/api')
+        ? '${baseUrl.substring(0, baseUrl.length - 4)}/hubs/inventory'
+        : '$baseUrl/hubs/inventory';
 
     _hubConnection = HubConnectionBuilder()
         .withUrl(
