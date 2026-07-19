@@ -122,6 +122,14 @@ class _StoreScheduleBuilderScreenState
                       );
                 if (success && dialogContext.mounted) {
                   Navigator.pop(dialogContext);
+                } else if (mounted) {
+                  await _showOperationError(
+                    title: shift == null
+                        ? 'Không thể tạo ca'
+                        : 'Không thể cập nhật ca',
+                    message:
+                        provider.error ?? 'Có lỗi xảy ra. Vui lòng thử lại.',
+                  );
                 }
               },
               child: Text(shift == null ? 'Tạo ca' : 'Lưu thay đổi'),
@@ -142,19 +150,96 @@ class _StoreScheduleBuilderScreenState
     );
   }
 
+  DateTime _dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
+
+  Future<void> _showOperationError({
+    required String title,
+    required String message,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        icon: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFEE2E2),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: const Icon(
+            Icons.error_outline_rounded,
+            color: Color(0xFFDC2626),
+            size: 30,
+          ),
+        ),
+        title: Text(title, textAlign: TextAlign.center),
+        content: Text(message, textAlign: TextAlign.center),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Đã hiểu'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInlineError(String message) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF2F2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFFECACA)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            color: Color(0xFFDC2626),
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFFB91C1C),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _showAssignShiftDialog() async {
     final provider = context.read<HrProvider>();
     if (provider.shiftTemplates.isEmpty || provider.employees.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cần có ca làm việc và nhân viên trước khi phân ca.'),
-        ),
+      await _showOperationError(
+        title: 'Chưa thể phân ca',
+        message: provider.shiftTemplates.isEmpty && provider.employees.isEmpty
+            ? 'Chưa có mẫu ca và nhân viên. Vui lòng tạo mẫu ca và thêm nhân viên trước.'
+            : provider.shiftTemplates.isEmpty
+            ? 'Chưa có mẫu ca làm việc. Vui lòng tạo mẫu ca trước khi phân ca.'
+            : 'Chưa có nhân viên để phân ca. Vui lòng thêm nhân viên trước.',
       );
       return;
     }
+    final today = _dateOnly(DateTime.now());
     int? employeeId;
     int? shiftId;
-    var workDate = provider.weekStart;
+    var workDate = _dateOnly(provider.weekStart).isBefore(today)
+        ? today
+        : _dateOnly(provider.weekStart);
+    String? dialogError;
+    var isSubmitting = false;
 
     await showDialog<void>(
       context: context,
@@ -166,6 +251,7 @@ class _StoreScheduleBuilderScreenState
             children: [
               DropdownButtonFormField<int>(
                 decoration: const InputDecoration(labelText: 'Nhân viên'),
+                isExpanded: true,
                 items: provider.employees
                     .where((e) => e['roleName'] != 'Store Manager')
                     .map(
@@ -175,11 +261,15 @@ class _StoreScheduleBuilderScreenState
                       ),
                     )
                     .toList(),
-                onChanged: (value) => employeeId = value,
+                onChanged: (value) => setDialogState(() {
+                  employeeId = value;
+                  dialogError = null;
+                }),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<int>(
                 decoration: const InputDecoration(labelText: 'Ca làm việc'),
+                isExpanded: true,
                 items: provider.shiftTemplates
                     .map(
                       (shift) => DropdownMenuItem<int>(
@@ -190,22 +280,44 @@ class _StoreScheduleBuilderScreenState
                       ),
                     )
                     .toList(),
-                onChanged: (value) => shiftId = value,
+                onChanged: (value) => setDialogState(() {
+                  shiftId = value;
+                  dialogError = null;
+                }),
               ),
               const SizedBox(height: 12),
               ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.calendar_today_outlined,
+                  color: AppTheme.primaryBlue,
+                ),
                 title: const Text('Ngày làm việc'),
-                trailing: Text(_formatDate(workDate)),
+                subtitle: const Text('Chỉ chọn hôm nay hoặc ngày tương lai'),
+                trailing: Text(
+                  _formatDate(workDate),
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
                 onTap: () async {
                   final value = await showDatePicker(
                     context: context,
                     initialDate: workDate,
-                    firstDate: provider.weekStart,
-                    lastDate: provider.weekEnd,
+                    firstDate: today,
+                    lastDate: DateTime(today.year + 5, 12, 31),
+                    locale: const Locale('vi', 'VN'),
+                    helpText: 'CHỌN NGÀY LÀM VIỆC',
+                    cancelText: 'HỦY',
+                    confirmText: 'CHỌN',
                   );
-                  if (value != null) setDialogState(() => workDate = value);
+                  if (value != null) {
+                    setDialogState(() {
+                      workDate = value;
+                      dialogError = null;
+                    });
+                  }
                 },
               ),
+              if (dialogError != null) _buildInlineError(dialogError!),
             ],
           ),
           actions: [
@@ -214,18 +326,74 @@ class _StoreScheduleBuilderScreenState
               child: const Text('Hủy'),
             ),
             FilledButton(
-              onPressed: () async {
-                if (employeeId == null || shiftId == null) return;
-                final success = await provider.assignShift(
-                  employeeId: employeeId!,
-                  shiftId: shiftId!,
-                  workDate: workDate,
-                );
-                if (success && dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                }
-              },
-              child: const Text('Phân ca'),
+              onPressed: isSubmitting
+                  ? null
+                  : () async {
+                      if (employeeId == null || shiftId == null) {
+                        setDialogState(() {
+                          dialogError = employeeId == null && shiftId == null
+                              ? 'Vui lòng chọn nhân viên và ca làm việc.'
+                              : employeeId == null
+                              ? 'Vui lòng chọn nhân viên.'
+                              : 'Vui lòng chọn ca làm việc.';
+                        });
+                        return;
+                      }
+                      if (_dateOnly(workDate).isBefore(today)) {
+                        setDialogState(() {
+                          dialogError =
+                              'Không thể phân ca cho ngày trong quá khứ.';
+                        });
+                        return;
+                      }
+                      setDialogState(() {
+                        isSubmitting = true;
+                        dialogError = null;
+                      });
+                      final success = await provider.assignShift(
+                        employeeId: employeeId!,
+                        shiftId: shiftId!,
+                        workDate: workDate,
+                      );
+                      if (success && dialogContext.mounted && mounted) {
+                        final branchId = this.context
+                            .read<AuthProvider>()
+                            .currentUser
+                            ?.branchId;
+                        final selectedWeekStart = _dateOnly(
+                          workDate,
+                        ).subtract(Duration(days: workDate.weekday - 1));
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Đã phân ca thành công.'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        if (branchId != null) {
+                          await provider.loadScheduleBuilder(
+                            branchId,
+                            weekStart: selectedWeekStart,
+                          );
+                        }
+                      } else if (dialogContext.mounted) {
+                        setDialogState(() {
+                          isSubmitting = false;
+                          dialogError =
+                              provider.error ?? 'Không thể phân ca làm việc.';
+                        });
+                      }
+                    },
+              child: isSubmitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text('Phân ca'),
             ),
           ],
         ),
@@ -241,78 +409,189 @@ class _StoreScheduleBuilderScreenState
       );
       return;
     }
-    final selected = await showDialog<ShiftModel>(
+    final selected = await showModalBottomSheet<ShiftModel>(
       context: context,
-      builder: (dialogContext) => SimpleDialog(
-        title: const Text('Chọn ca cần sửa'),
-        children: templates
-            .map(
-              (shift) => ListTile(
-                onTap: () => Navigator.pop(dialogContext, shift),
-                leading: const Icon(Icons.schedule),
-                title: Text(shift.shiftName),
-                subtitle: Text(shift.displayTime),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      builder: (dialogContext) => FractionallySizedBox(
+        heightFactor: .72,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 42,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFCBD5E1),
+                      borderRadius: BorderRadius.circular(99),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
                   children: [
-                    IconButton(
-                      tooltip: 'Sửa ca',
-                      icon: const Icon(Icons.edit_outlined),
-                      onPressed: () => Navigator.pop(dialogContext, shift),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue.withValues(alpha: .1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.calendar_month_outlined,
+                        color: AppTheme.primaryBlue,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Quản lý ca làm việc',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 3),
+                          Text(
+                            'Chọn một ca để chỉnh sửa hoặc xóa',
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                        ],
+                      ),
                     ),
                     IconButton(
-                      tooltip: 'Xóa ca',
-                      color: Colors.red,
+                      tooltip: 'Đóng',
+                      onPressed: () => Navigator.pop(dialogContext),
                       icon: const Icon(Icons.close),
-                      onPressed: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: dialogContext,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Xóa ca làm việc?'),
-                            content: Text(
-                              'Bạn có chắc muốn xóa “${shift.shiftName}”?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Hủy'),
-                              ),
-                              FilledButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text('Xóa'),
-                              ),
-                            ],
-                          ),
-                        );
-                        if (confirmed != true) return;
-                        final provider = context.read<HrProvider>();
-                        final success = await provider.deleteShiftTemplate(
-                          shift.shiftId,
-                        );
-                        if (!mounted) return;
-                        if (success && dialogContext.mounted) {
-                          Navigator.pop(dialogContext);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Đã xóa ca làm việc.'),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                provider.error ?? 'Không thể xóa ca làm việc',
-                              ),
-                            ),
-                          );
-                        }
-                      },
                     ),
                   ],
                 ),
-              ),
-            )
-            .toList(),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: templates.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final shift = templates[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.fromLTRB(
+                            16,
+                            8,
+                            8,
+                            8,
+                          ),
+                          onTap: () => Navigator.pop(dialogContext, shift),
+                          leading: Container(
+                            padding: const EdgeInsets.all(9),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.schedule,
+                              color: AppTheme.primaryBlue,
+                            ),
+                          ),
+                          title: Text(
+                            shift.shiftName,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 3),
+                            child: Text(shift.displayTime),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: 'Sửa ca',
+                                color: AppTheme.primaryBlue,
+                                icon: const Icon(Icons.edit_outlined),
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, shift),
+                              ),
+                              IconButton(
+                                tooltip: 'Xóa ca',
+                                color: const Color(0xFFDC2626),
+                                icon: const Icon(Icons.delete_outline),
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: dialogContext,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Xóa ca làm việc?'),
+                                      content: Text(
+                                        'Bạn có chắc muốn xóa “${shift.shiftName}”?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text('Hủy'),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text('Xóa'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed != true) return;
+                                  if (!mounted) return;
+                                  final provider = this.context
+                                      .read<HrProvider>();
+                                  final success = await provider
+                                      .deleteShiftTemplate(shift.shiftId);
+                                  if (!mounted) return;
+                                  if (success && dialogContext.mounted) {
+                                    Navigator.pop(dialogContext);
+                                    ScaffoldMessenger.of(
+                                      this.context,
+                                    ).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Đã xóa ca làm việc.'),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  } else {
+                                    await _showOperationError(
+                                      title: 'Không thể xóa ca',
+                                      message:
+                                          provider.error ??
+                                          'Ca này chưa thể xóa. Vui lòng thử lại.',
+                                    );
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
     if (selected != null && mounted) await _showCreateShiftDialog(selected);
@@ -343,55 +622,107 @@ class _StoreScheduleBuilderScreenState
               if (value != null) setDialogState(() => employeeId = value);
             },
           ),
+          actionsPadding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+          buttonPadding: EdgeInsets.zero,
           actions: [
-            TextButton.icon(
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              onPressed: () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Xóa nhân viên khỏi ca?'),
-                    content: Text(
-                      'Xóa ${assignment.employeeName ?? 'nhân viên'} khỏi ${assignment.shiftName ?? 'ca này'}?',
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFDC2626),
+                      side: const BorderSide(color: Color(0xFFDC2626)),
+                      minimumSize: const Size(0, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Hủy'),
-                      ),
-                      FilledButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Xóa'),
-                      ),
-                    ],
+                    onPressed: () async {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Xóa nhân viên khỏi ca?'),
+                          content: Text(
+                            'Xóa ${assignment.employeeName ?? 'nhân viên'} khỏi ${assignment.shiftName ?? 'ca này'}?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Hủy'),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(context, true),
+                              child: const Text('Xóa'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
+                      final success = await provider.deleteAssignment(
+                        assignment.assignmentId,
+                      );
+                      if (success && dialogContext.mounted && mounted) {
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(this.context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Đã xóa nhân viên khỏi ca.'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      } else if (mounted) {
+                        await _showOperationError(
+                          title: 'Không thể xóa khỏi ca',
+                          message:
+                              provider.error ??
+                              'Không thể xóa nhân viên khỏi ca. Vui lòng thử lại.',
+                        );
+                      }
+                    },
+                    child: const Text('Xóa khỏi ca'),
                   ),
-                );
-                if (confirmed != true) return;
-                final success = await provider.deleteAssignment(
-                  assignment.assignmentId,
-                );
-                if (success && dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                }
-              },
-              icon: const Icon(Icons.person_remove),
-              label: const Text('Xóa khỏi ca'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Hủy'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final success = await provider.updateAssignment(
-                  assignmentId: assignment.assignmentId,
-                  employeeId: employeeId,
-                );
-                if (success && dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                }
-              },
-              child: const Text('Đổi nhân viên'),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 44),
+                      padding: const EdgeInsets.symmetric(horizontal: 6),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () async {
+                      final success = await provider.updateAssignment(
+                        assignmentId: assignment.assignmentId,
+                        employeeId: employeeId,
+                      );
+                      if (success && dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                      } else if (mounted) {
+                        await _showOperationError(
+                          title: 'Không thể đổi nhân viên',
+                          message:
+                              provider.error ??
+                              'Không thể cập nhật nhân viên cho ca này.',
+                        );
+                      }
+                    },
+                    child: const Text('Đổi nhân viên'),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(48, 44),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Hủy'),
+                ),
+              ],
             ),
           ],
         ),
@@ -426,7 +757,7 @@ class _StoreScheduleBuilderScreenState
                 const Expanded(
                   child: Center(child: CircularProgressIndicator()),
                 )
-              else if (provider.error != null)
+              else if (provider.error != null && provider.storeSchedule.isEmpty)
                 Expanded(
                   child: Center(
                     child: Column(
@@ -610,32 +941,74 @@ class _StoreScheduleBuilderScreenState
 
   Widget _buildAssignmentTile(ShiftAssignment a) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.all(8),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
       decoration: BoxDecoration(
-        color: AppTheme.primaryBlue.withOpacity(0.06),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.2)),
+        color: AppTheme.primaryBlue.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primaryBlue.withValues(alpha: 0.16)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.access_time, size: 16, color: AppTheme.primaryBlue),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              '${a.shiftName ?? ''} (${a.displayTime})',
-              style: const TextStyle(fontWeight: FontWeight.w500),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.access_time_rounded,
+              size: 19,
+              color: AppTheme.primaryBlue,
             ),
           ),
-          const Icon(Icons.person_outline, size: 16, color: Colors.grey),
-          const SizedBox(width: 4),
-          Text(
-            a.employeeName ?? '',
-            style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  a.shiftName ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  a.displayTime,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.person_outline,
+                      size: 15,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        a.employeeName ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           IconButton(
             tooltip: 'Sửa ca làm việc',
-            icon: const Icon(Icons.edit_outlined, size: 18),
+            icon: const Icon(
+              Icons.chevron_right_rounded,
+              color: AppTheme.primaryBlue,
+            ),
             onPressed: () {
               _showEditAssignmentDialog(a);
             },

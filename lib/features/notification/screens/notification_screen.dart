@@ -40,9 +40,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<NotificationProvider>();
-      if (!provider.isLoading && provider.notifications.length < provider.totalCount) {
+      if (!provider.isLoading &&
+          provider.notifications.length < provider.totalCount) {
         _currentPage++;
         _loadData();
       }
@@ -75,7 +77,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => _loadData(refresh: true),
-          )
+          ),
         ],
       ),
       body: Consumer<NotificationProvider>(
@@ -83,9 +85,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
           if (provider.isLoading && _currentPage == 1) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if (provider.error != null && provider.notifications.isEmpty) {
-            return Center(child: Text(provider.error!, style: const TextStyle(color: Colors.red)));
+            return Center(
+              child: Text(
+                provider.error!,
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
           }
 
           if (provider.notifications.isEmpty) {
@@ -96,7 +103,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
             onRefresh: () async => _loadData(refresh: true),
             child: ListView.separated(
               controller: _scrollController,
-              itemCount: provider.notifications.length + (provider.isLoading ? 1 : 0),
+              itemCount:
+                  provider.notifications.length + (provider.isLoading ? 1 : 0),
               separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 if (index == provider.notifications.length) {
@@ -109,9 +117,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 final item = provider.notifications[index];
 
                 return ListTile(
-                  tileColor: item.isRead ? Colors.transparent : Colors.blue.withOpacity(0.05),
+                  tileColor: item.isRead
+                      ? Colors.transparent
+                      : Colors.blue.withOpacity(0.05),
                   leading: CircleAvatar(
-                    backgroundColor: item.isRead ? Colors.grey : AppColors.primary,
+                    backgroundColor: item.isRead
+                        ? Colors.grey
+                        : AppColors.primary,
                     child: Icon(
                       Icons.notifications,
                       color: Colors.white,
@@ -119,10 +131,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     ),
                   ),
                   title: Text(
-                    item.title, 
+                    item.title,
                     style: TextStyle(
-                      fontWeight: item.isRead ? FontWeight.normal : FontWeight.bold
-                    )
+                      fontWeight: item.isRead
+                          ? FontWeight.normal
+                          : FontWeight.bold,
+                    ),
                   ),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,8 +145,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       Text(item.message),
                       const SizedBox(height: 4),
                       Text(
-                        DateFormat('dd/MM/yyyy HH:mm').format(item.createdAt.toLocal()),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        DateFormat(
+                          'dd/MM/yyyy HH:mm',
+                        ).format(item.createdAt.toLocal()),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                     ],
                   ),

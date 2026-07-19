@@ -10,7 +10,8 @@ class ProductSalesReportScreen extends StatefulWidget {
   const ProductSalesReportScreen({super.key});
 
   @override
-  State<ProductSalesReportScreen> createState() => _ProductSalesReportScreenState();
+  State<ProductSalesReportScreen> createState() =>
+      _ProductSalesReportScreenState();
 }
 
 class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
@@ -28,7 +29,11 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
   }
 
   void _loadData() {
-    context.read<ReportsProvider>().fetchTopProducts(_startDate, _endDate, top: 10);
+    context.read<ReportsProvider>().fetchTopProducts(
+      _startDate,
+      _endDate,
+      top: 10,
+    );
   }
 
   @override
@@ -37,7 +42,13 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Báo cáo Sản phẩm Bán chạy', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Báo cáo Sản phẩm Bán chạy',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
@@ -55,17 +66,26 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
       body: Consumer<ReportsProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingTopProducts) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
           }
 
           if (provider.error != null) {
-            return Center(child: Text('Lỗi: ${provider.error}', style: const TextStyle(color: Colors.red)));
+            return Center(
+              child: Text(
+                'Lỗi: ${provider.error}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
           }
 
           final topProducts = provider.topProducts;
 
           if (topProducts.isEmpty) {
-            return const Center(child: Text('Không có dữ liệu trong khoảng thời gian này'));
+            return const Center(
+              child: Text('Không có dữ liệu trong khoảng thời gian này'),
+            );
           }
 
           return SingleChildScrollView(
@@ -73,11 +93,25 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Tỷ trọng Doanh thu Top 10', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                const Text(
+                  'Tỷ trọng Doanh thu Top 10',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 _buildPieChart(topProducts),
                 const SizedBox(height: 32),
-                const Text('Bảng xếp hạng Sản phẩm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                const Text(
+                  'Bảng xếp hạng Sản phẩm',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 _buildProductList(topProducts),
               ],
@@ -90,8 +124,16 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
 
   Widget _buildPieChart(List<dynamic> products) {
     List<Color> colors = [
-      Colors.blue, Colors.red, Colors.green, Colors.orange, Colors.purple,
-      Colors.teal, Colors.pink, Colors.amber, Colors.cyan, Colors.brown
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.pink,
+      Colors.amber,
+      Colors.cyan,
+      Colors.brown,
     ];
 
     return Container(
@@ -113,11 +155,14 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
           pieTouchData: PieTouchData(
             touchCallback: (FlTouchEvent event, pieTouchResponse) {
               setState(() {
-                if (!event.isInterestedForInteractions || pieTouchResponse == null || pieTouchResponse.touchedSection == null) {
+                if (!event.isInterestedForInteractions ||
+                    pieTouchResponse == null ||
+                    pieTouchResponse.touchedSection == null) {
                   _touchedIndex = -1;
                   return;
                 }
-                _touchedIndex = pieTouchResponse.touchedSection!.touchedSectionIndex;
+                _touchedIndex =
+                    pieTouchResponse.touchedSection!.touchedSectionIndex;
               });
             },
           ),
@@ -129,11 +174,13 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
             final fontSize = isTouched ? 20.0 : 12.0;
             final radius = isTouched ? 60.0 : 50.0;
             final product = products[i];
-            
+
             return PieChartSectionData(
               color: colors[i % colors.length],
               value: product.totalRevenue,
-              title: isTouched ? currencyFormat.format(product.totalRevenue) : '${(product.totalRevenue / products.fold(0.0, (sum, item) => sum + item.totalRevenue) * 100).toStringAsFixed(1)}%',
+              title: isTouched
+                  ? currencyFormat.format(product.totalRevenue)
+                  : '${(product.totalRevenue / products.fold(0.0, (sum, item) => sum + item.totalRevenue) * 100).toStringAsFixed(1)}%',
               radius: radius,
               titleStyle: TextStyle(
                 fontSize: fontSize,
@@ -150,8 +197,16 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
 
   Widget _buildProductList(List<dynamic> products) {
     List<Color> colors = [
-      Colors.blue, Colors.red, Colors.green, Colors.orange, Colors.purple,
-      Colors.teal, Colors.pink, Colors.amber, Colors.cyan, Colors.brown
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.pink,
+      Colors.amber,
+      Colors.cyan,
+      Colors.brown,
     ];
 
     return ListView.separated(
@@ -190,15 +245,31 @@ class _ProductSalesReportScreenState extends State<ProductSalesReportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(product.productName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      product.productName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('${product.categoryName} - Đã bán: ${product.totalQuantitySold}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                    Text(
+                      '${product.categoryName} - Đã bán: ${product.totalQuantitySold}',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Text(
                 currencyFormat.format(product.totalRevenue),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 15),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                  fontSize: 15,
+                ),
               ),
             ],
           ),

@@ -53,16 +53,18 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
       _currentPage = 1;
     }
     context.read<InventoryProvider>().fetchBranchInventory(
-          _branchId!,
-          page: _currentPage,
-          search: _searchController.text,
-        );
+      _branchId!,
+      page: _currentPage,
+      search: _searchController.text,
+    );
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<InventoryProvider>();
-      if (!provider.isLoadingBranch && provider.branchItems.length < provider.branchTotalCount) {
+      if (!provider.isLoadingBranch &&
+          provider.branchItems.length < provider.branchTotalCount) {
         _currentPage++;
         _loadData();
       }
@@ -88,7 +90,7 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => _loadData(refresh: true),
-          )
+          ),
         ],
       ),
       body: Column(
@@ -134,9 +136,14 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
         if (provider.isLoadingBranch && _currentPage == 1) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (provider.branchError != null && provider.branchItems.isEmpty) {
-          return Center(child: Text(provider.branchError!, style: const TextStyle(color: Colors.red)));
+          return Center(
+            child: Text(
+              provider.branchError!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         }
 
         if (provider.branchItems.isEmpty) {
@@ -147,7 +154,9 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
           onRefresh: () async => _loadData(refresh: true),
           child: ListView.separated(
             controller: _scrollController,
-            itemCount: provider.branchItems.length + (provider.isLoadingBranch ? 1 : 0),
+            itemCount:
+                provider.branchItems.length +
+                (provider.isLoadingBranch ? 1 : 0),
             separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == provider.branchItems.length) {
@@ -161,8 +170,13 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
               final bool isLowStock = item.quantity <= 10;
 
               return ListTile(
-                title: Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}'),
+                title: Text(
+                  item.productName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}',
+                ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -176,7 +190,10 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
                       ),
                     ),
                     if (isLowStock)
-                      const Text('Sắp hết', style: TextStyle(color: Colors.red, fontSize: 10)),
+                      const Text(
+                        'Sắp hết',
+                        style: TextStyle(color: Colors.red, fontSize: 10),
+                      ),
                   ],
                 ),
               );

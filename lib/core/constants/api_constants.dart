@@ -1,10 +1,19 @@
 import 'dart:io';
 
 class ApiConstants {
+  static const String _configuredBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+  );
+
   // Base URL for the backend
   static String get baseUrl {
+    if (_configuredBaseUrl.isNotEmpty) {
+      return _configuredBaseUrl;
+    }
     if (Platform.isAndroid) {
-      return 'http://10.0.2.2:8080/api';
+      // Android connects to the Docker API through `adb reverse tcp:8080
+      // tcp:8080`. This works for both a USB device and an emulator.
+      return 'http://127.0.0.1:8080/api';
     }
     return 'http://localhost:8080/api';
   }
@@ -31,8 +40,10 @@ class ApiConstants {
   // Attendance endpoints
   static const String attendanceCheckIn = '/Attendances/check-in';
   static const String attendanceCheckOut = '/Attendances/check-out';
+  static const String attendanceToday = '/Attendances/my-today';
   static const String attendanceReport = '/Attendances/report';
   static const String attendanceHistory = '/Attendances/history';
+  static const String workHistory = '/Attendances/work-history';
 
   // Branch Order endpoints (Task 4.1)
   static const String branchOrders = '/BranchOrder';

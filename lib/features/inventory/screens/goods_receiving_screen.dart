@@ -14,17 +14,13 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _poIdController = TextEditingController();
   final _notesController = TextEditingController();
-  
+
   final List<Map<String, dynamic>> _items = [];
   bool _isSubmitting = false;
 
   void _addItem() {
     setState(() {
-      _items.add({
-        'productId': null,
-        'quantityReceived': null,
-        'price': null,
-      });
+      _items.add({'productId': null, 'quantityReceived': null, 'price': null});
     });
   }
 
@@ -37,7 +33,9 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng thêm ít nhất 1 sản phẩm')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Vui lòng thêm ít nhất 1 sản phẩm')),
+      );
       return;
     }
 
@@ -53,14 +51,28 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
       };
 
       await context.read<InventoryProvider>().receiveGoods(request);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Nhận hàng thành công', style: TextStyle(color: Colors.green))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Nhận hàng thành công',
+              style: TextStyle(color: Colors.green),
+            ),
+          ),
+        );
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString(), style: const TextStyle(color: Colors.red))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              e.toString(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -94,9 +106,12 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
           children: [
             TextFormField(
               controller: _poIdController,
-              decoration: const InputDecoration(labelText: 'Mã đơn đặt hàng (Purchase Order ID)'),
+              decoration: const InputDecoration(
+                labelText: 'Mã đơn đặt hàng (Purchase Order ID)',
+              ),
               keyboardType: TextInputType.number,
-              validator: (v) => v == null || v.isEmpty ? 'Không được để trống' : null,
+              validator: (v) =>
+                  v == null || v.isEmpty ? 'Không được để trống' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -108,7 +123,10 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Danh sách sản phẩm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Danh sách sản phẩm',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 TextButton.icon(
                   onPressed: _addItem,
                   icon: const Icon(Icons.add),
@@ -127,7 +145,10 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
                     children: [
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Product ID', isDense: true),
+                          decoration: const InputDecoration(
+                            labelText: 'Product ID',
+                            isDense: true,
+                          ),
                           keyboardType: TextInputType.number,
                           onChanged: (v) => item['productId'] = int.tryParse(v),
                         ),
@@ -135,15 +156,22 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Số lượng', isDense: true),
+                          decoration: const InputDecoration(
+                            labelText: 'Số lượng',
+                            isDense: true,
+                          ),
                           keyboardType: TextInputType.number,
-                          onChanged: (v) => item['quantityReceived'] = int.tryParse(v),
+                          onChanged: (v) =>
+                              item['quantityReceived'] = int.tryParse(v),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Giá', isDense: true),
+                          decoration: const InputDecoration(
+                            labelText: 'Giá',
+                            isDense: true,
+                          ),
                           keyboardType: TextInputType.number,
                           onChanged: (v) => item['price'] = double.tryParse(v),
                         ),
@@ -151,7 +179,7 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () => _removeItem(index),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -160,10 +188,10 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: _isSubmitting ? null : _submit,
-              child: _isSubmitting 
+              child: _isSubmitting
                   ? const CircularProgressIndicator(color: Colors.white)
                   : const Text('Tạo Phiếu Nhận Hàng'),
-            )
+            ),
           ],
         ),
       ),

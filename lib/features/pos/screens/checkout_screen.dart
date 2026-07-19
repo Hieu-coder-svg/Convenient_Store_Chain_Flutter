@@ -49,9 +49,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (points > customer.loyaltyPoints) {
       points = customer.loyaltyPoints;
       _pointsController.text = points.toString();
-      _pointsController.selection = TextSelection.fromPosition(TextPosition(offset: _pointsController.text.length));
+      _pointsController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _pointsController.text.length),
+      );
     }
-    
+
     // Convert points to discount (1 point = 100 VND)
     // Discount cannot exceed subtotal
     double maxDiscount = cart.subtotal;
@@ -59,7 +61,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     if (points > maxPoints) {
       points = maxPoints;
       _pointsController.text = points.toString();
-      _pointsController.selection = TextSelection.fromPosition(TextPosition(offset: _pointsController.text.length));
+      _pointsController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _pointsController.text.length),
+      );
     }
 
     cart.setRedeemPoints(points);
@@ -67,7 +71,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   void _onCashChanged() {
     setState(() {
-      _customerCash = double.tryParse(_cashController.text.replaceAll(',', '')) ?? 0;
+      _customerCash =
+          double.tryParse(_cashController.text.replaceAll(',', '')) ?? 0;
     });
   }
 
@@ -83,7 +88,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       cart.setBranchId(1);
     }
 
-    final payload = cart.toCheckoutPayload(customerProvider.selectedCustomer?.customerId);
+    final payload = cart.toCheckoutPayload(
+      customerProvider.selectedCustomer?.customerId,
+    );
 
     final success = await invoiceProvider.checkout(payload);
 
@@ -93,13 +100,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       cart.clearCart();
       customerProvider.clearSelectedCustomer();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Thanh toán thành công!'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Thanh toán thành công!'),
+          backgroundColor: Colors.green,
+        ),
       );
       // Navigate to receipt screen
       context.go('/invoices/${invoiceProvider.lastCreatedInvoice!.invoiceId}');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(invoiceProvider.error ?? 'Thanh toán thất bại'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(invoiceProvider.error ?? 'Thanh toán thất bại'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -109,15 +122,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final cart = context.watch<CartProvider>();
     final customerProvider = context.watch<CustomerProvider>();
     final invoiceProvider = context.watch<InvoiceProvider>();
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+    );
 
     final double change = _customerCash - cart.grandTotal;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text('Xác nhận thanh toán'),
-      ),
+      appBar: AppBar(title: const Text('Xác nhận thanh toán')),
       body: invoiceProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -132,11 +146,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _buildSummaryRow('Số mặt hàng', '${cart.totalItems} SP'),
+                          _buildSummaryRow(
+                            'Số mặt hàng',
+                            '${cart.totalItems} SP',
+                          ),
                           const SizedBox(height: 8),
-                          _buildSummaryRow('Tổng số lượng', '${cart.totalQuantity}'),
+                          _buildSummaryRow(
+                            'Tổng số lượng',
+                            '${cart.totalQuantity}',
+                          ),
                           const SizedBox(height: 8),
-                          _buildSummaryRow('Tổng tiền hàng', currencyFormatter.format(cart.subtotal)),
+                          _buildSummaryRow(
+                            'Tổng tiền hàng',
+                            currencyFormatter.format(cart.subtotal),
+                          ),
                         ],
                       ),
                     ),
@@ -153,8 +176,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               child: TextButton.icon(
                                 onPressed: () {
                                   // Open dialog from POS screen logic or just navigate back
-                                  context.pop(); 
-                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vui lòng chọn khách hàng ở màn hình trước.')));
+                                  context.pop();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Vui lòng chọn khách hàng ở màn hình trước.',
+                                      ),
+                                    ),
+                                  );
                                 },
                                 icon: const Icon(Icons.person_search),
                                 label: const Text('Quay lại chọn khách hàng'),
@@ -165,35 +194,56 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    const Icon(Icons.person, color: AppColors.primary),
+                                    const Icon(
+                                      Icons.person,
+                                      color: AppColors.primary,
+                                    ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      customerProvider.selectedCustomer!.fullName,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                      customerProvider
+                                          .selectedCustomer!
+                                          .fullName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 4),
-                                Text('⭐ Điểm hiện có: ${customerProvider.selectedCustomer!.loyaltyPoints} điểm'),
+                                Text(
+                                  '⭐ Điểm hiện có: ${customerProvider.selectedCustomer!.loyaltyPoints} điểm',
+                                ),
                                 const SizedBox(height: 16),
                                 const Text('Đổi điểm (1 điểm = 100đ):'),
                                 const SizedBox(height: 8),
                                 TextField(
                                   controller: _pointsController,
                                   keyboardType: TextInputType.number,
-                                  enabled: customerProvider.selectedCustomer!.loyaltyPoints >= 100,
+                                  enabled:
+                                      customerProvider
+                                          .selectedCustomer!
+                                          .loyaltyPoints >=
+                                      100,
                                   decoration: InputDecoration(
                                     border: const OutlineInputBorder(),
                                     isDense: true,
-                                    hintText: customerProvider.selectedCustomer!.loyaltyPoints >= 100 
-                                      ? 'Nhập số điểm...' 
-                                      : 'Cần tối thiểu 100 điểm để đổi',
+                                    hintText:
+                                        customerProvider
+                                                .selectedCustomer!
+                                                .loyaltyPoints >=
+                                            100
+                                        ? 'Nhập số điểm...'
+                                        : 'Cần tối thiểu 100 điểm để đổi',
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   '→ Giảm giá: -${currencyFormatter.format(cart.discountFromPoints)}',
-                                  style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ],
                             ),
@@ -210,19 +260,22 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           title: const Text('💵 Tiền mặt'),
                           value: 'Cash',
                           groupValue: cart.paymentMethod,
-                          onChanged: (val) => cart.setPaymentMethod(val.toString()),
+                          onChanged: (val) =>
+                              cart.setPaymentMethod(val.toString()),
                         ),
                         RadioListTile(
                           title: const Text('💳 Thẻ (Card)'),
                           value: 'Card',
                           groupValue: cart.paymentMethod,
-                          onChanged: (val) => cart.setPaymentMethod(val.toString()),
+                          onChanged: (val) =>
+                              cart.setPaymentMethod(val.toString()),
                         ),
                         RadioListTile(
                           title: const Text('📱 Chuyển khoản (QR)'),
                           value: 'QR',
                           groupValue: cart.paymentMethod,
-                          onChanged: (val) => cart.setPaymentMethod(val.toString()),
+                          onChanged: (val) =>
+                              cart.setPaymentMethod(val.toString()),
                         ),
                       ],
                     ),
@@ -237,7 +290,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Tiền khách đưa:', style: TextStyle(fontWeight: FontWeight.bold)),
+                            const Text(
+                              'Tiền khách đưa:',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
                             const SizedBox(height: 8),
                             TextField(
                               controller: _cashController,
@@ -254,19 +310,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                               children: [
                                 const Text('💰 Tiền thối lại:'),
                                 Text(
-                                  change >= 0 ? currencyFormatter.format(change) : 'Chưa đủ',
+                                  change >= 0
+                                      ? currencyFormatter.format(change)
+                                      : 'Chưa đủ',
                                   style: TextStyle(
-                                    color: change >= 0 ? Colors.green : Colors.red,
+                                    color: change >= 0
+                                        ? Colors.green
+                                        : Colors.red,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
-                                )
+                                ),
                               ],
-                            )
+                            ),
                           ],
                         ),
                       ),
-                    )
+                    ),
                   ],
 
                   const SizedBox(height: 24),
@@ -276,17 +336,33 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     color: Colors.white,
                     child: Column(
                       children: [
-                        _buildSummaryRow('Tổng tiền hàng:', currencyFormatter.format(cart.subtotal)),
+                        _buildSummaryRow(
+                          'Tổng tiền hàng:',
+                          currencyFormatter.format(cart.subtotal),
+                        ),
                         const SizedBox(height: 8),
-                        _buildSummaryRow('Giảm giá (${cart.redeemPoints} điểm):', '-${currencyFormatter.format(cart.discountFromPoints)}'),
+                        _buildSummaryRow(
+                          'Giảm giá (${cart.redeemPoints} điểm):',
+                          '-${currencyFormatter.format(cart.discountFromPoints)}',
+                        ),
                         const Divider(thickness: 2),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('TỔNG THANH TOÁN:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                            const Text(
+                              'TỔNG THANH TOÁN:',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                             Text(
                               currencyFormatter.format(cart.grandTotal),
-                              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
                             ),
                           ],
                         ),
@@ -296,9 +372,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
-                    onPressed: (cart.paymentMethod == 'Cash' && change < 0) ? null : _handleCheckout,
+                    onPressed: (cart.paymentMethod == 'Cash' && change < 0)
+                        ? null
+                        : _handleCheckout,
                     icon: const Icon(Icons.check_circle, color: Colors.white),
-                    label: const Text('XÁC NHẬN THANH TOÁN', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    label: const Text(
+                      'XÁC NHẬN THANH TOÁN',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -316,7 +397,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.grey,
+        ),
       ),
     );
   }
@@ -326,7 +411,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: const TextStyle(fontSize: 15)),
-        Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+        ),
       ],
     );
   }

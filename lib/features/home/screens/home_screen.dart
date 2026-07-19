@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_drawer.dart';
 import '../../user_management/screens/system_admin_dashboard.dart';
 import '../../reports/screens/chain_dashboard_screen.dart';
+import 'manager_home_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,9 +19,14 @@ class HomeScreen extends StatelessWidget {
         user?.roleName == 'SystemAdmin') {
       return const SystemAdminDashboard();
     }
-    
+
     if (user?.roleName.contains('Director') == true) {
       return const ChainDashboardScreen();
+    }
+
+    final normalizedRole = user?.roleName.replaceAll(' ', '').toLowerCase();
+    if (normalizedRole == 'storemanager') {
+      return const ManagerHomeScreen();
     }
 
     return Scaffold(
@@ -229,6 +235,24 @@ class HomeScreen extends StatelessWidget {
                         ),
                         label: const Text(
                           'Chấm công (Check-in/out)',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (user?.roleName.contains('Store Staff') == true ||
+                        user?.roleName.contains('StoreStaff') == true ||
+                        user?.roleName.contains('Warehouse Staff') == true ||
+                        user?.roleName.contains('WarehouseStaff') == true) ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade700,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () => context.go('/work-history'),
+                        icon: const Icon(Icons.history, color: Colors.white),
+                        label: const Text(
+                          'Lịch sử làm việc',
                           style: TextStyle(color: Colors.white),
                         ),
                       ),

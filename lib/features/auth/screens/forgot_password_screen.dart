@@ -211,7 +211,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        _currentStep == 1 
+                        _currentStep == 1
                             ? 'Nhập tên tài khoản và email đã đăng ký để nhận mã khôi phục mật khẩu.'
                             : 'Nhập mã OTP đã được gửi đến email của bạn và mật khẩu mới.',
                         textAlign: TextAlign.center,

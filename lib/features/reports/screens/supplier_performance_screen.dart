@@ -10,7 +10,8 @@ class SupplierPerformanceScreen extends StatefulWidget {
   const SupplierPerformanceScreen({super.key});
 
   @override
-  State<SupplierPerformanceScreen> createState() => _SupplierPerformanceScreenState();
+  State<SupplierPerformanceScreen> createState() =>
+      _SupplierPerformanceScreenState();
 }
 
 class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
@@ -27,7 +28,10 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
   }
 
   void _loadData() {
-    context.read<ReportsProvider>().fetchSupplierPerformance(_startDate, _endDate);
+    context.read<ReportsProvider>().fetchSupplierPerformance(
+      _startDate,
+      _endDate,
+    );
   }
 
   @override
@@ -36,7 +40,13 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
       backgroundColor: AppColors.background,
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Đánh giá Nhà cung cấp', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Đánh giá Nhà cung cấp',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
@@ -54,17 +64,28 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
       body: Consumer<ReportsProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingSupplierPerformance) {
-            return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
           }
 
           if (provider.error != null) {
-            return Center(child: Text('Lỗi: ${provider.error}', style: const TextStyle(color: Colors.red)));
+            return Center(
+              child: Text(
+                'Lỗi: ${provider.error}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
           }
 
           final suppliers = provider.supplierPerformanceList;
 
           if (suppliers.isEmpty) {
-            return const Center(child: Text('Không có dữ liệu nhà cung cấp trong khoảng thời gian này'));
+            return const Center(
+              child: Text(
+                'Không có dữ liệu nhà cung cấp trong khoảng thời gian này',
+              ),
+            );
           }
 
           return ListView.separated(
@@ -82,11 +103,11 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
   }
 
   Widget _buildSupplierCard(SupplierPerformanceDto supplier, int rank) {
-    final performanceColor = supplier.deliveryPerformancePercentage >= 80 
-        ? Colors.green 
-        : supplier.deliveryPerformancePercentage >= 50 
-            ? Colors.orange 
-            : Colors.red;
+    final performanceColor = supplier.deliveryPerformancePercentage >= 80
+        ? Colors.green
+        : supplier.deliveryPerformancePercentage >= 50
+        ? Colors.orange
+        : Colors.red;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -108,18 +129,32 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
             children: [
               CircleAvatar(
                 backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: Text('#$rank', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                child: Text(
+                  '#$rank',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   supplier.supplierName,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
               Text(
                 currencyFormat.format(supplier.totalValueProvided),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
               ),
             ],
           ),
@@ -127,18 +162,38 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatItem('Tổng đơn hàng', supplier.totalOrders.toString(), Icons.shopping_cart, Colors.blue),
-              _buildStatItem('Giao đúng hạn', supplier.onTimeDeliveries.toString(), Icons.check_circle, Colors.green),
-              _buildStatItem('Giao trễ hạn', supplier.lateDeliveries.toString(), Icons.cancel, Colors.red),
+              _buildStatItem(
+                'Tổng đơn hàng',
+                supplier.totalOrders.toString(),
+                Icons.shopping_cart,
+                Colors.blue,
+              ),
+              _buildStatItem(
+                'Giao đúng hạn',
+                supplier.onTimeDeliveries.toString(),
+                Icons.check_circle,
+                Colors.green,
+              ),
+              _buildStatItem(
+                'Giao trễ hạn',
+                supplier.lateDeliveries.toString(),
+                Icons.cancel,
+                Colors.red,
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              const Text('Tỷ lệ đúng hạn: ', style: TextStyle(color: AppColors.textSecondary)),
+              const Text(
+                'Tỷ lệ đúng hạn: ',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
               Expanded(
                 child: LinearProgressIndicator(
-                  value: supplier.totalOrders > 0 ? supplier.onTimeDeliveries / supplier.totalOrders : 0,
+                  value: supplier.totalOrders > 0
+                      ? supplier.onTimeDeliveries / supplier.totalOrders
+                      : 0,
                   backgroundColor: Colors.grey.shade200,
                   valueColor: AlwaysStoppedAnimation<Color>(performanceColor),
                   minHeight: 8,
@@ -148,7 +203,10 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
               const SizedBox(width: 12),
               Text(
                 '${supplier.deliveryPerformancePercentage.toStringAsFixed(1)}%',
-                style: TextStyle(fontWeight: FontWeight.bold, color: performanceColor),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: performanceColor,
+                ),
               ),
             ],
           ),
@@ -157,13 +215,24 @@ class _SupplierPerformanceScreenState extends State<SupplierPerformanceScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Icon(icon, color: color, size: 24),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
       ],
     );
   }

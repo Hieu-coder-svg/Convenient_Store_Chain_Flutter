@@ -49,7 +49,7 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
     try {
       final response = await _dioClient.dio.get('/SystemSettings');
       final List<dynamic> data = response.data;
-      
+
       for (var item in data) {
         if (item['settingKey'] == 'WarehouseLowStockThreshold') {
           _warehouseThresholdCtrl.text = item['settingValue'];
@@ -60,7 +60,10 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi tải cấu hình: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Lỗi tải cấu hình: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -145,122 +148,137 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: _isLoading 
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader(Icons.point_of_sale, 'Bán hàng & Khách hàng'),
-            _buildCard([
-              _buildNumberInputRow(
-                'Thuế VAT mặc định (%)',
-                _vatCtrl,
-                suffix: '%',
-              ),
-              const Divider(),
-              _buildNumberInputRow(
-                'Tỷ lệ quy đổi điểm (VNĐ/Điểm)',
-                _loyaltyRateCtrl,
-                suffix: 'VNĐ = 1 Điểm',
-                width: 100,
-              ),
-            ]),
-            const SizedBox(height: 24),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    Icons.point_of_sale,
+                    'Bán hàng & Khách hàng',
+                  ),
+                  _buildCard([
+                    _buildNumberInputRow(
+                      'Thuế VAT mặc định (%)',
+                      _vatCtrl,
+                      suffix: '%',
+                    ),
+                    const Divider(),
+                    _buildNumberInputRow(
+                      'Tỷ lệ quy đổi điểm (VNĐ/Điểm)',
+                      _loyaltyRateCtrl,
+                      suffix: 'VNĐ = 1 Điểm',
+                      width: 100,
+                    ),
+                  ]),
+                  const SizedBox(height: 24),
 
-            _buildSectionHeader(Icons.access_time, 'Ca làm việc & Nhân sự'),
-            _buildCard([
-              _buildTimeRangeRow('Ca Sáng', _morningStart, _morningEnd, (
-                start,
-                end,
-              ) {
-                setState(() {
-                  _morningStart = start;
-                  _morningEnd = end;
-                });
-              }),
-              const Divider(),
-              _buildTimeRangeRow('Ca Chiều', _afternoonStart, _afternoonEnd, (
-                start,
-                end,
-              ) {
-                setState(() {
-                  _afternoonStart = start;
-                  _afternoonEnd = end;
-                });
-              }),
-              const Divider(),
-              _buildTimeRangeRow('Ca Đêm', _nightStart, _nightEnd, (
-                start,
-                end,
-              ) {
-                setState(() {
-                  _nightStart = start;
-                  _nightEnd = end;
-                });
-              }),
-              const Divider(),
-              _buildNumberInputRow(
-                'Giới hạn đi trễ (Phút)',
-                _lateLimitCtrl,
-                suffix: 'Phút',
-              ),
-            ]),
-            const SizedBox(height: 24),
+                  _buildSectionHeader(
+                    Icons.access_time,
+                    'Ca làm việc & Nhân sự',
+                  ),
+                  _buildCard([
+                    _buildTimeRangeRow('Ca Sáng', _morningStart, _morningEnd, (
+                      start,
+                      end,
+                    ) {
+                      setState(() {
+                        _morningStart = start;
+                        _morningEnd = end;
+                      });
+                    }),
+                    const Divider(),
+                    _buildTimeRangeRow(
+                      'Ca Chiều',
+                      _afternoonStart,
+                      _afternoonEnd,
+                      (start, end) {
+                        setState(() {
+                          _afternoonStart = start;
+                          _afternoonEnd = end;
+                        });
+                      },
+                    ),
+                    const Divider(),
+                    _buildTimeRangeRow('Ca Đêm', _nightStart, _nightEnd, (
+                      start,
+                      end,
+                    ) {
+                      setState(() {
+                        _nightStart = start;
+                        _nightEnd = end;
+                      });
+                    }),
+                    const Divider(),
+                    _buildNumberInputRow(
+                      'Giới hạn đi trễ (Phút)',
+                      _lateLimitCtrl,
+                      suffix: 'Phút',
+                    ),
+                  ]),
+                  const SizedBox(height: 24),
 
-            _buildSectionHeader(Icons.inventory_2, 'Kho & Cảnh báo'),
-            _buildCard([
-              _buildNumberInputRow(
-                'Ngưỡng cảnh báo Kho Tổng',
-                _warehouseThresholdCtrl,
-                suffix: 'SP',
-              ),
-              const Divider(),
-              _buildNumberInputRow(
-                'Ngưỡng cảnh báo Chi Nhánh',
-                _branchThresholdCtrl,
-                suffix: 'SP',
-              ),
-              const Divider(),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  'Gửi thông báo qua Email',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                ),
-                subtitle: const Text(
-                  'Tự động gửi báo cáo khi tồn kho thấp',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                value: _emailAlertEnabled,
-                activeThumbColor: Colors.blue,
-                onChanged: (val) => setState(() => _emailAlertEnabled = val),
-              ),
-            ]),
-            const SizedBox(height: 24),
+                  _buildSectionHeader(Icons.inventory_2, 'Kho & Cảnh báo'),
+                  _buildCard([
+                    _buildNumberInputRow(
+                      'Ngưỡng cảnh báo Kho Tổng',
+                      _warehouseThresholdCtrl,
+                      suffix: 'SP',
+                    ),
+                    const Divider(),
+                    _buildNumberInputRow(
+                      'Ngưỡng cảnh báo Chi Nhánh',
+                      _branchThresholdCtrl,
+                      suffix: 'SP',
+                    ),
+                    const Divider(),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Gửi thông báo qua Email',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Tự động gửi báo cáo khi tồn kho thấp',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      value: _emailAlertEnabled,
+                      activeThumbColor: Colors.blue,
+                      onChanged: (val) =>
+                          setState(() => _emailAlertEnabled = val),
+                    ),
+                  ]),
+                  const SizedBox(height: 24),
 
-            _buildSectionHeader(Icons.security, 'Bảo mật'),
-            _buildCard([
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  'Yêu cầu xác thực 2 lớp (2FA)',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-                ),
-                subtitle: const Text(
-                  'Tăng cường bảo mật bằng mã OTP. (Tính năng sắp ra mắt)',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                value: _twoFactorEnabled,
-                onChanged: null, // Disabled
-              ),
-            ]),
+                  _buildSectionHeader(Icons.security, 'Bảo mật'),
+                  _buildCard([
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Yêu cầu xác thực 2 lớp (2FA)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Tăng cường bảo mật bằng mã OTP. (Tính năng sắp ra mắt)',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      value: _twoFactorEnabled,
+                      onChanged: null, // Disabled
+                    ),
+                  ]),
 
-            const SizedBox(height: 80), // Padding for Bottom button
-          ],
-        ),
-      ),
+                  const SizedBox(height: 80), // Padding for Bottom button
+                ],
+              ),
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
