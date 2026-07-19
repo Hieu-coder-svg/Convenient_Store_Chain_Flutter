@@ -21,9 +21,27 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
   final List<String> _statusOptions = [
     'All',
     'Pending',
+    'Processing',
     'Fulfilled',
     'Cancelled',
   ];
+
+  String _getStatusTranslation(String status) {
+    switch (status.toLowerCase()) {
+      case 'all':
+        return 'Tất cả';
+      case 'pending':
+        return 'Chờ duyệt';
+      case 'processing':
+        return 'Đang giao';
+      case 'fulfilled':
+        return 'Hoàn tất';
+      case 'cancelled':
+        return 'Đã hủy';
+      default:
+        return status;
+    }
+  }
 
   @override
   void initState() {
@@ -86,7 +104,7 @@ class _BranchOrderListScreenState extends State<BranchOrderListScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: _buildFilterChip(
-                        status == 'All' ? 'Tất cả' : status,
+                        _getStatusTranslation(status),
                         status,
                       ),
                     );
