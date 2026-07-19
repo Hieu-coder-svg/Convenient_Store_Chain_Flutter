@@ -70,6 +70,17 @@ class BranchOrderApiService {
     }
   }
 
+  Future<bool> confirmReceived(int id) async {
+    try {
+      await _dioClient.dio.put('${ApiConstants.branchOrders}/$id/confirm-received');
+      return true;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
   Future<bool> cancelOrder(int id) async {
     try {
       await _dioClient.dio.put('${ApiConstants.branchOrders}/$id/cancel');
