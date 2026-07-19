@@ -87,19 +87,22 @@ class AppDrawer extends StatelessWidget {
                 const Divider(),
 
                 // Cửa hàng & Sản phẩm
-                _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
-                _buildNavItem(
-                  context,
-                  icon: Icons.inventory_2_outlined,
-                  title: 'Sản phẩm',
-                  onTap: () => context.go('/products'),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.category_outlined,
-                  title: 'Danh mục',
-                  onTap: () => context.go('/categories'),
-                ),
+                if (user?.roleName != 'System Admin') ...[
+                  _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.inventory_2_outlined,
+                    title: 'Sản phẩm',
+                    onTap: () => context.go('/products'),
+                  ),
+                  if (user?.roleName == 'Chain Director')
+                    _buildNavItem(
+                      context,
+                      icon: Icons.category_outlined,
+                      title: 'Danh mục',
+                      onTap: () => context.go('/categories'),
+                    ),
+                ],
                 _buildNavItem(
                   context,
                   icon: Icons.warehouse_outlined,
@@ -121,19 +124,21 @@ class AppDrawer extends StatelessWidget {
                 
 
                 // Đối tác & Chi nhánh
-                _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
-                _buildNavItem(
-                  context,
-                  icon: Icons.business_outlined,
-                  title: 'Nhà cung cấp',
-                  onTap: () => context.go('/suppliers'),
-                ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.storefront_outlined,
-                  title: 'Chi nhánh',
-                  onTap: () => context.go('/branches'),
-                ),
+                if (user?.roleName == 'Chain Director') ...[
+                  _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.business_outlined,
+                    title: 'Nhà cung cấp',
+                    onTap: () => context.go('/suppliers'),
+                  ),
+                  _buildNavItem(
+                    context,
+                    icon: Icons.storefront_outlined,
+                    title: 'Chi nhánh',
+                    onTap: () => context.go('/branches'),
+                  ),
+                ],
 
                 // NHÂN SỰ & CA LÀM
                 _buildSectionTitle('NHÂN SỰ & CA LÀM'),

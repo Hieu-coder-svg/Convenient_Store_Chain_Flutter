@@ -199,4 +199,24 @@ class ProductCatalogProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<int> getProductInventoryForBranch(int branchId, int productId) async {
+    try {
+      return await _apiService.getProductInventoryForBranch(branchId, productId);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<ProductModel> getProductById(int productId) async {
+    try {
+      return await _apiService.getProductById(productId);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      rethrow;
+    }
+  }
 }

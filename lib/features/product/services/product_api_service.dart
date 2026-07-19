@@ -119,6 +119,18 @@ class ProductApiService {
     }
   }
 
+  Future<int> getProductInventoryForBranch(int branchId, int productId) async {
+    try {
+      final response = await _dioClient.dio.get('/branches/$branchId/inventory/$productId');
+      return response.data['quantity'] ?? 0;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return 0; // If 404, it means no stock initialized, so quantity is 0
+      }
+      throw _handleError(e, 'Không thể tải tồn kho chi nhánh');
+    }
+  }
+
   // Helper error handler
   Exception _handleError(DioException e, String defaultMessage) {
     if (e.response != null && e.response?.data != null) {

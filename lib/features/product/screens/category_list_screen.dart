@@ -14,12 +14,16 @@ class CategoryListScreen extends StatefulWidget {
 }
 
 class _CategoryListScreenState extends State<CategoryListScreen> {
+  String _sortOrder = 'manual'; // 'manual', 'az', 'za', 'count_desc', 'count_asc'
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    Future.microtask(() async {
       if (!mounted) return;
-      context.read<ProductCatalogProvider>().fetchCategories();
+      final provider = context.read<ProductCatalogProvider>();
+      await provider.fetchCategories();
+      await provider.fetchProducts(); // Load products to count them dynamically
     });
   }
 
@@ -210,9 +214,27 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProductCatalogProvider>();
-    final categories = provider.categories;
+    final rawCategories = provider.categories;
+    final products = provider.products;
 
-    // Tổng số sản phẩm gắn thẻ (tổng hợp từ số lượng sản phẩm của các danh mục)
+    // Tính toán số lượng sản phẩm động trên Frontend
+    final List<CategoryModel> categories = rawCategories.map((c) {
+      final count = products.where((p) => p.categoryId == c.categoryId).length;
+      return c.copyWith(productCount: count);
+    }).toList();
+
+    // Sắp xếp theo cấu hình
+    if (_sortOrder == 'az') {
+      categories.sort((a, b) => a.categoryName.compareTo(b.categoryName));
+    } else if (_sortOrder == 'za') {
+      categories.sort((a, b) => b.categoryName.compareTo(a.categoryName));
+    } else if (_sortOrder == 'count_desc') {
+      categories.sort((a, b) => b.productCount.compareTo(a.productCount));
+    } else if (_sortOrder == 'count_asc') {
+      categories.sort((a, b) => a.productCount.compareTo(b.productCount));
+    }
+
+    // Tổng số sản phẩm đã phân loại (tổng hợp từ số lượng sản phẩm của các danh mục)
     int totalProducts = categories.fold(
       0,
       (sum, item) => sum + item.productCount,
@@ -246,7 +268,10 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
       body: provider.isLoading && categories.isEmpty
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () => provider.fetchCategories(),
+              onRefresh: () async {
+                await provider.fetchCategories();
+                await provider.fetchProducts();
+              },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(16.0),
@@ -325,7 +350,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  'Sản phẩm gắn thẻ',
+                                  'Sản phẩm đã phân loại',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textSecondary,
@@ -361,29 +386,60 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        TextButton.icon(
-                          onPressed: () {
-                            // Show sorting instruction info
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Giữ và kéo icon ở góc trái để sắp xếp thứ tự.',
+                        PopupMenuButton<String>(
+                          initialValue: _sortOrder,
+                          onSelected: (value) {
+                            setState(() {
+                              _sortOrder = value;
+                            });
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(
+                              value: 'manual',
+                              child: Text('Thứ tự thủ công (Kéo thả)'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'az',
+                              child: Text('Tên danh mục (A - Z)'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'za',
+                              child: Text('Tên danh mục (Z - A)'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'count_desc',
+                              child: Text('Số sản phẩm (Giảm dần)'),
+                            ),
+                            const PopupMenuItem(
+                              value: 'count_asc',
+                              child: Text('Số sản phẩm (Tăng dần)'),
+                            ),
+                          ],
+                          child: Row(
+                            children: [
+                              Icon(
+                                _sortOrder == 'manual' ? Icons.drag_handle : Icons.sort,
+                                size: 18,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _sortOrder == 'manual'
+                                    ? 'Sắp xếp'
+                                    : (_sortOrder == 'az'
+                                        ? 'Tên (A-Z)'
+                                        : (_sortOrder == 'za'
+                                            ? 'Tên (Z-A)'
+                                            : (_sortOrder == 'count_desc'
+                                                ? 'Sản phẩm (Giảm)'
+                                                : 'Sản phẩm (Tăng)'))),
+                                style: const TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                            );
-                          },
-                          icon: const Icon(
-                            Icons.sort,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                          label: const Text(
-                            'Sắp xếp',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            ],
                           ),
                         ),
                       ],
@@ -426,106 +482,33 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                     else
                       SizedBox(
                         height: categories.length * 80.0 + 100.0,
-                        child: ReorderableListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: categories.length,
-                          onReorder: provider.reorderCategories,
-                          itemBuilder: (context, index) {
-                            final category = categories[index];
-                            final color = _getCategoryColor(
-                              category.categoryName,
-                            );
-                            final icon = _getCategoryIcon(
-                              category.categoryName,
-                            );
-
-                            return Container(
-                              key: ValueKey(category.categoryId),
-                              margin: const EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: AppColors.outlineVariant.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.02),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ],
+                        child: _sortOrder == 'manual'
+                            ? ReorderableListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: categories.length,
+                                onReorder: provider.reorderCategories,
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  return _buildCategoryItem(
+                                    category,
+                                    index,
+                                    isManual: true,
+                                  );
+                                },
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  return _buildCategoryItem(
+                                    category,
+                                    index,
+                                    isManual: false,
+                                  );
+                                },
                               ),
-                              child: ListTile(
-                                leading: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ReorderableDragStartListener(
-                                      index: index,
-                                      child: const Padding(
-                                        padding: EdgeInsets.only(right: 8),
-                                        child: Icon(
-                                          Icons.drag_indicator,
-                                          color: AppColors.outline,
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: color.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(icon, color: color, size: 24),
-                                    ),
-                                  ],
-                                ),
-                                title: Text(
-                                  category.categoryName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  '${category.productCount} sản phẩm',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.edit,
-                                        color: AppColors.textSecondary,
-                                        size: 20,
-                                      ),
-                                      onPressed: () =>
-                                          _showAddEditCategoryDialog(
-                                            category: category,
-                                          ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(
-                                        Icons.delete,
-                                        color: AppColors.error,
-                                        size: 20,
-                                      ),
-                                      onPressed: () =>
-                                          _confirmDeleteCategory(category),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
                       ),
 
                     const SizedBox(height: 24),
@@ -612,6 +595,96 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
             }),
             _buildBottomNavItem(Icons.badge, 'Staff', false, () {}),
             _buildBottomNavItem(Icons.settings, 'Settings', false, () {}),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryItem(CategoryModel category, int index, {required bool isManual}) {
+    final color = _getCategoryColor(category.categoryName);
+    final icon = _getCategoryIcon(category.categoryName);
+
+    return Container(
+      key: ValueKey(category.categoryId),
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(
+            alpha: 0.2,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isManual)
+              ReorderableDragStartListener(
+                index: index,
+                child: const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Icon(
+                    Icons.drag_indicator,
+                    color: AppColors.outline,
+                  ),
+                ),
+              ),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+          ],
+        ),
+        title: Text(
+          category.categoryName,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        subtitle: Text(
+          '${category.productCount} sản phẩm',
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.edit,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+              onPressed: () => _showAddEditCategoryDialog(
+                category: category,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.delete,
+                color: AppColors.error,
+                size: 20,
+              ),
+              onPressed: () => _confirmDeleteCategory(category),
+            ),
           ],
         ),
       ),
