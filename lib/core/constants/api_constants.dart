@@ -13,7 +13,7 @@ class ApiConstants {
     if (Platform.isAndroid) {
       // Android connects to the Docker API through `adb reverse tcp:8080
       // tcp:8080`. This works for both a USB device and an emulator.
-      return 'http://127.0.0.1:8080/api';
+      return 'http://10.0.2.2:8080/api';
     }
     return 'http://localhost:8080/api';
   }

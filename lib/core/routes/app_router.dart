@@ -19,6 +19,9 @@ import '../../features/inventory/screens/goods_receiving_screen.dart';
 import '../../features/inventory/screens/branch_inventory_screen.dart';
 import '../../features/inventory/screens/stock_adjustment_screen.dart';
 import '../../features/notification/screens/notification_screen.dart';
+import '../../features/purchase_order/screens/purchase_order_list_screen.dart';
+import '../../features/purchase_order/screens/create_purchase_order_screen.dart';
+import '../../features/purchase_order/screens/purchase_order_detail_screen.dart';
 import '../../features/pos/screens/checkout_screen.dart';
 import '../../features/pos/screens/invoice_detail_screen.dart';
 import '../../features/pos/screens/invoice_list_screen.dart';
@@ -35,8 +38,6 @@ import '../../features/reports/screens/chain_dashboard_screen.dart';
 import '../../features/reports/screens/product_sales_report_screen.dart';
 import '../../features/reports/screens/supplier_performance_screen.dart';
 import '../../features/reports/screens/low_stock_alerts_screen.dart';
-
-
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
@@ -130,6 +131,21 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: '/purchase-orders',
+        builder: (context, state) => const PurchaseOrderListScreen(),
+      ),
+      GoRoute(
+        path: '/purchase-orders/create',
+        builder: (context, state) => const CreatePurchaseOrderScreen(),
+      ),
+      GoRoute(
+        path: '/purchase-orders/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+          return PurchaseOrderDetailScreen(poId: id);
+        },
+      ),
+      GoRoute(
         path: '/branch-orders',
         builder: (context, state) => const BranchOrderListScreen(),
       ),
@@ -162,7 +178,8 @@ class AppRouter {
         path: '/stock-adjustment',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          final branchId = extra?['branchId'] ?? 1;
+          final isWarehouse = extra?['isWarehouse'] == true;
+          final branchId = isWarehouse ? null : (extra?['branchId'] as int? ?? 1);
           return StockAdjustmentScreen(branchId: branchId);
         },
       ),

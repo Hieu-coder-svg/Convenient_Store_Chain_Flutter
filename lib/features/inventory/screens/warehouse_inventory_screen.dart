@@ -24,7 +24,6 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
-    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -42,18 +41,6 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
       page: _currentPage,
       search: _searchController.text,
     );
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      final provider = context.read<InventoryProvider>();
-      if (!provider.isLoadingWarehouse &&
-          provider.warehouseItems.length < provider.warehouseTotalCount) {
-        _currentPage++;
-        _loadData();
-      }
-    }
   }
 
   @override
@@ -81,8 +68,21 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
       body: Column(
         children: [
           _buildSearchBar(),
+          _buildPaginationControl(),
           Expanded(child: _buildList()),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          context.push(
+            '/stock-adjustment',
+            extra: {'isWarehouse': true},
+          ).then((_) => _loadData(refresh: true));
+        },
+        icon: const Icon(Icons.inventory),
+        label: const Text('Kiểm kê'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
       ),
     );
   }
@@ -133,18 +133,9 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
           onRefresh: () async => _loadData(refresh: true),
           child: ListView.separated(
             controller: _scrollController,
-            itemCount:
-                provider.warehouseItems.length +
-                (provider.isLoadingWarehouse ? 1 : 0),
+            itemCount: provider.warehouseItems.length,
             separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              if (index == provider.warehouseItems.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
               final item = provider.warehouseItems[index];
               final bool isLowStock = item.quantity <= 10; // Threshold
               
@@ -186,6 +177,71 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
                 ),
               );
             },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPaginationControl() {
+    return Consumer<InventoryProvider>(
+      builder: (context, provider, child) {
+        if (provider.warehouseTotalCount == 0) return const SizedBox.shrink();
+        
+        // Assume default pageSize = 10
+        final int pageSize = 10;
+        final int totalPages = (provider.warehouseTotalCount / pageSize).ceil();
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                blurRadius: 4,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Tổng: ${provider.warehouseTotalCount} sp',
+                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: _currentPage > 1
+                        ? () {
+                            setState(() {
+                              _currentPage--;
+                            });
+                            _loadData();
+                          }
+                        : null,
+                  ),
+                  Text(
+                    'Trang $_currentPage / $totalPages',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: _currentPage < totalPages
+                        ? () {
+                            setState(() {
+                              _currentPage++;
+                            });
+                            _loadData();
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
