@@ -47,7 +47,10 @@ class BranchOrderProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createOrder(int branchId, List<Map<String, dynamic>> items) async {
+  Future<bool> createOrder(
+    int branchId,
+    List<Map<String, dynamic>> items,
+  ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -72,6 +75,24 @@ class BranchOrderProvider extends ChangeNotifier {
 
     try {
       await _apiService.approveOrder(id);
+      await fetchOrderDetail(id); // Reload the detail
+      await fetchOrders(); // Reload the list
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> confirmReceived(int id) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _apiService.confirmReceived(id);
       await fetchOrderDetail(id); // Reload the detail
       await fetchOrders(); // Reload the list
       return true;

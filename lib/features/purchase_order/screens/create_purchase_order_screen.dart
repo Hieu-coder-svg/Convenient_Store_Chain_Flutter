@@ -59,11 +59,24 @@ class _CreatePurchaseOrderScreenState extends State<CreatePurchaseOrderScreen> {
       return;
     }
 
+    final products = context.read<ProductCatalogProvider>().products;
+
+    // Convert Box quantity to Unit quantity before sending to backend
+    final submitItems = _items.map((item) {
+      final product = products.firstWhere((p) => p.productId == item['productId']);
+      final factor = product.conversionFactor > 0 ? product.conversionFactor : 1;
+      return {
+        'productId': item['productId'],
+        'quantity': (item['quantity'] as int) * factor,
+        'unitPrice': item['unitPrice'],
+      };
+    }).toList();
+
     setState(() {
       _isSubmitting = true;
     });
 
-    final success = await context.read<PurchaseOrderProvider>().createOrder(_selectedSupplierId!, _items);
+    final success = await context.read<PurchaseOrderProvider>().createOrder(_selectedSupplierId!, submitItems);
     
     if (mounted) {
       setState(() {
@@ -138,7 +151,7 @@ class _CreatePurchaseOrderScreenState extends State<CreatePurchaseOrderScreen> {
                           isExpanded: true,
                           items: products.map((p) => DropdownMenuItem<int>(
                             value: p.productId,
-                            child: Text(p.productName, overflow: TextOverflow.ellipsis),
+                            child: Text('${p.productName} (${p.importUnit ?? "Thùng"} - ${p.conversionFactor} ${p.unit ?? "cái"})', overflow: TextOverflow.ellipsis),
                           )).toList(),
                           onChanged: (v) {
                             setState(() {
@@ -151,7 +164,7 @@ class _CreatePurchaseOrderScreenState extends State<CreatePurchaseOrderScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'SL', isDense: true),
+                          decoration: const InputDecoration(labelText: 'SL (Thùng)', isDense: true),
                           keyboardType: TextInputType.number,
                           onChanged: (v) => item['quantity'] = int.tryParse(v),
                           validator: (v) => (v == null || v.isEmpty) ? 'Bắt buộc' : null,
@@ -160,7 +173,7 @@ class _CreatePurchaseOrderScreenState extends State<CreatePurchaseOrderScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Giá', isDense: true),
+                          decoration: const InputDecoration(labelText: 'Giá/Cái', isDense: true),
                           keyboardType: TextInputType.number,
                           onChanged: (v) => item['unitPrice'] = double.tryParse(v),
                           validator: (v) => (v == null || v.isEmpty) ? 'Bắt buộc' : null,

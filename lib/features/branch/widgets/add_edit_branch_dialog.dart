@@ -63,16 +63,25 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
     }
 
     setState(() => _isSaving = false);
-    
+
     if (!mounted) return;
     if (success) {
       Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.branch == null ? 'Đã thêm chi nhánh thành công' : 'Đã cập nhật chi nhánh thành công')),
+        SnackBar(
+          content: Text(
+            widget.branch == null
+                ? 'Đã thêm chi nhánh thành công'
+                : 'Đã cập nhật chi nhánh thành công',
+          ),
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error ?? 'Thao tác thất bại'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(provider.error ?? 'Thao tác thất bại'),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
@@ -80,7 +89,9 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.branch == null ? 'Thêm chi nhánh mới' : 'Chỉnh sửa chi nhánh'),
+      title: Text(
+        widget.branch == null ? 'Thêm chi nhánh mới' : 'Chỉnh sửa chi nhánh',
+      ),
       content: _isSaving
           ? const SizedBox(
               height: 100,
@@ -131,11 +142,14 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                         children: [
                           const Text(
                             'Trạng thái hoạt động (Active)',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
                           ),
                           Switch(
                             value: _isActive,
-                            activeColor: AppColors.primary,
+                            activeThumbColor: AppColors.primary,
                             onChanged: (val) {
                               setState(() => _isActive = val);
                             },
@@ -155,7 +169,9 @@ class _AddEditBranchDialogState extends State<AddEditBranchDialog> {
                 child: const Text('Hủy'),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
                 onPressed: _saveBranch,
                 child: const Text('Lưu', style: TextStyle(color: Colors.white)),
               ),

@@ -26,7 +26,10 @@ class CartItemTile extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Nhập số lượng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          title: const Text(
+            'Nhập số lượng',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
@@ -51,8 +54,13 @@ class CartItemTile extends StatelessWidget {
                 }
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-              child: const Text('Xác nhận', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: const Text(
+                'Xác nhận',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -62,7 +70,10 @@ class CartItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'vi_VN',
+      symbol: 'đ',
+    );
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -82,7 +93,12 @@ class CartItemTile extends StatelessWidget {
               child: item.imageUrl != null
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: Image.network(item.imageUrl!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.image, color: Colors.grey)),
+                      child: Image.network(
+                        item.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            const Icon(Icons.image, color: Colors.grey),
+                      ),
                     )
                   : const Icon(Icons.image, color: Colors.grey),
             ),
@@ -94,7 +110,10 @@ class CartItemTile extends StatelessWidget {
                 children: [
                   Text(
                     item.productName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -106,7 +125,11 @@ class CartItemTile extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Thành tiền: ${currencyFormatter.format(item.lineTotal)}',
-                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -117,7 +140,10 @@ class CartItemTile extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: onRemove,
-                  icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.error,
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -156,13 +182,17 @@ class CartItemTile extends StatelessWidget {
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Icon(Icons.add, size: 16, color: Colors.white),
+                        child: const Icon(
+                          Icons.add,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),

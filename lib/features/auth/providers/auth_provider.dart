@@ -27,12 +27,15 @@ class AuthProvider extends ChangeNotifier {
     try {
       final request = LoginRequest(username: username, password: password);
       final response = await _authService.login(request);
-      
+
       _currentUser = response;
 
       // Store tokens
       await _secureStorage.write(key: 'jwt_token', value: response.accessToken);
-      await _secureStorage.write(key: 'refresh_token', value: response.refreshToken);
+      await _secureStorage.write(
+        key: 'refresh_token',
+        value: response.refreshToken,
+      );
 
       _isLoading = false;
       notifyListeners();
@@ -52,13 +55,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> forgotPassword(String email) async {
+  Future<bool> forgotPassword(String username, String email) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      await _authService.forgotPassword(email);
+      await _authService.forgotPassword(username, email);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -70,7 +73,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> resetPassword(String email, String otp, String newPassword) async {
+  Future<bool> resetPassword(
+    String email,
+    String otp,
+    String newPassword,
+  ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -82,7 +89,7 @@ class AuthProvider extends ChangeNotifier {
         newPassword: newPassword,
       );
       await _authService.resetPassword(request);
-      
+
       _isLoading = false;
       notifyListeners();
       return true;

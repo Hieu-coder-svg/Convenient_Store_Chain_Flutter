@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../branch/providers/branch_provider.dart';
 import '../../product/providers/product_catalog_provider.dart';
 import '../../product/models/product_model.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/branch_order_provider.dart';
 import '../widgets/order_item_card.dart';
 
@@ -20,7 +21,8 @@ class CreateBranchOrderScreen extends StatefulWidget {
   const CreateBranchOrderScreen({super.key});
 
   @override
-  State<CreateBranchOrderScreen> createState() => _CreateBranchOrderScreenState();
+  State<CreateBranchOrderScreen> createState() =>
+      _CreateBranchOrderScreenState();
 }
 
 class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
@@ -74,7 +76,10 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Text(
                       'Chọn sản phẩm',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   Padding(
@@ -92,7 +97,9 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                         fillColor: Colors.white,
                       ),
                       onChanged: (value) {
-                        context.read<ProductCatalogProvider>().fetchProducts(search: value);
+                        context.read<ProductCatalogProvider>().fetchProducts(
+                          search: value,
+                        );
                       },
                     ),
                   ),
@@ -100,11 +107,15 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                     child: Consumer<ProductCatalogProvider>(
                       builder: (context, provider, child) {
                         if (provider.isLoading) {
-                          return const Center(child: CircularProgressIndicator());
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         }
-                        
+
                         if (provider.products.isEmpty) {
-                          return const Center(child: Text('Không tìm thấy sản phẩm.'));
+                          return const Center(
+                            child: Text('Không tìm thấy sản phẩm.'),
+                          );
                         }
 
                         return ListView.builder(
@@ -113,26 +124,46 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                           itemBuilder: (context, index) {
                             final product = provider.products[index];
                             return Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                                border: Border.all(
+                                  color: AppColors.outlineVariant.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
                               ),
                               child: ListTile(
                                 leading: Container(
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(alpha: 0.1),
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
+                                  child: const Icon(
+                                    Icons.inventory_2_outlined,
+                                    color: AppColors.primary,
+                                  ),
                                 ),
-                                title: Text(product.productName, style: const TextStyle(fontWeight: FontWeight.w500)),
+                                title: Text(
+                                  product.productName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                                 subtitle: Text('Giá: ${product.sellingPrice}đ'),
                                 trailing: IconButton(
-                                  icon: const Icon(Icons.add_circle, color: AppColors.primary),
+                                  icon: const Icon(
+                                    Icons.add_circle,
+                                    color: AppColors.primary,
+                                  ),
                                   onPressed: () {
                                     _addProductToCart(product);
                                     Navigator.pop(context);
@@ -160,7 +191,9 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
 
   void _addProductToCart(ProductModel product) {
     setState(() {
-      final existingIndex = _cartItems.indexWhere((item) => item.product.productId == product.productId);
+      final existingIndex = _cartItems.indexWhere(
+        (item) => item.product.productId == product.productId,
+      );
       if (existingIndex >= 0) {
         _cartItems[existingIndex].quantity += 1;
       } else {
@@ -187,36 +220,55 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
   Future<void> _submitOrder() async {
     if (_selectedBranchId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn chi nhánh'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Vui lòng chọn chi nhánh'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     if (_cartItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn ít nhất 1 sản phẩm'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Vui lòng chọn ít nhất 1 sản phẩm'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
     final provider = context.read<BranchOrderProvider>();
-    final itemsPayload = _cartItems.map((item) => {
-      'productId': item.product.productId,
-      'quantity': item.quantity,
-    }).toList();
+    final itemsPayload = _cartItems
+        .map(
+          (item) => {
+            'productId': item.product.productId,
+            'quantity': item.quantity,
+          },
+        )
+        .toList();
 
-    final success = await provider.createOrder(_selectedBranchId!, itemsPayload);
+    final success = await provider.createOrder(
+      _selectedBranchId!,
+      itemsPayload,
+    );
 
     if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tạo đơn hàng thành công!'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Tạo đơn hàng thành công!'),
+          backgroundColor: Colors.green,
+        ),
       );
       context.pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error ?? 'Lỗi khi tạo đơn hàng'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(provider.error ?? 'Lỗi khi tạo đơn hàng'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -225,13 +277,35 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
   Widget build(BuildContext context) {
     final branchProvider = context.watch<BranchProvider>();
     final orderProvider = context.watch<BranchOrderProvider>();
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
+
+    // Lọc chi nhánh theo role
+    var availableBranches = branchProvider.branches;
+    if (user != null && user.roleName == 'Store Manager') {
+      availableBranches = availableBranches.where((b) => b.branchId == user.branchId).toList();
+    }
+
+    // Tự động chọn nếu chỉ có 1 chi nhánh
+    if (availableBranches.length == 1 && _selectedBranchId == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _selectedBranchId = availableBranches.first.branchId;
+          });
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
           'Tạo đơn đặt hàng',
-          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0.5,
@@ -246,7 +320,10 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Chi nhánh nhận hàng', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const Text(
+                  'Chi nhánh nhận hàng',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -259,13 +336,13 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                       isExpanded: true,
                       hint: const Text('Chọn chi nhánh...'),
                       value: _selectedBranchId,
-                      items: branchProvider.branches.map((branch) {
+                      items: availableBranches.map((branch) {
                         return DropdownMenuItem<int>(
                           value: branch.branchId,
                           child: Text(branch.branchName),
                         );
                       }).toList(),
-                      onChanged: (value) {
+                      onChanged: availableBranches.length <= 1 ? null : (value) {
                         setState(() {
                           _selectedBranchId = value;
                         });
@@ -278,7 +355,10 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                   onTap: _showProductSearchSheet,
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.background,
                       borderRadius: BorderRadius.circular(8),
@@ -288,7 +368,10 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                       children: [
                         Icon(Icons.search, color: AppColors.textSecondary),
                         SizedBox(width: 8),
-                        Text('Tìm sản phẩm để thêm vào đơn...', style: TextStyle(color: AppColors.textSecondary)),
+                        Text(
+                          'Tìm sản phẩm để thêm vào đơn...',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
                       ],
                     ),
                   ),
@@ -296,9 +379,9 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Danh sách sản phẩm đã chọn
           Expanded(
             child: _cartItems.isEmpty
@@ -306,11 +389,19 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.shopping_cart_outlined, size: 64, color: AppColors.outline),
+                        Icon(
+                          Icons.shopping_cart_outlined,
+                          size: 64,
+                          color: AppColors.outline,
+                        ),
                         SizedBox(height: 16),
                         Text(
                           'Chưa có sản phẩm nào',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         SizedBox(height: 4),
                         Text(
@@ -321,7 +412,10 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     itemCount: _cartItems.length,
                     itemBuilder: (context, index) {
                       final item = _cartItems[index];
@@ -340,7 +434,7 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                     },
                   ),
           ),
-          
+
           // Bottom Summary & Button
           Container(
             padding: const EdgeInsets.all(16),
@@ -360,8 +454,18 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Tổng số mặt hàng:', style: TextStyle(fontSize: 14)),
-                      Text('${_cartItems.length}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary)),
+                      const Text(
+                        'Tổng số mặt hàng:',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        '${_cartItems.length}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -372,7 +476,9 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         disabledBackgroundColor: Colors.grey[300],
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       onPressed: (_cartItems.isEmpty || orderProvider.isLoading)
                           ? null
@@ -381,11 +487,18 @@ class _CreateBranchOrderScreenState extends State<CreateBranchOrderScreen> {
                           ? const SizedBox(
                               width: 24,
                               height: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
                             )
                           : const Text(
                               'GỬI YÊU CẦU',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                     ),
                   ),

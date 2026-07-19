@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/network/dio_client.dart';
 
 class SystemConfigScreen extends StatefulWidget {
   const SystemConfigScreen({super.key});
@@ -10,7 +11,9 @@ class SystemConfigScreen extends StatefulWidget {
 class _SystemConfigScreenState extends State<SystemConfigScreen> {
   // Sales & Loyalty State
   final TextEditingController _vatCtrl = TextEditingController(text: '8');
-  final TextEditingController _loyaltyRateCtrl = TextEditingController(text: '10000');
+  final TextEditingController _loyaltyRateCtrl = TextEditingController(
+    text: '10000',
+  );
 
   // HR State
   TimeOfDay _morningStart = const TimeOfDay(hour: 6, minute: 0);
@@ -19,17 +22,58 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
   TimeOfDay _afternoonEnd = const TimeOfDay(hour: 22, minute: 0);
   TimeOfDay _nightStart = const TimeOfDay(hour: 22, minute: 0);
   TimeOfDay _nightEnd = const TimeOfDay(hour: 6, minute: 0);
-  final TextEditingController _lateLimitCtrl = TextEditingController(text: '10');
+  final TextEditingController _lateLimitCtrl = TextEditingController(
+    text: '10',
+  );
 
   // Inventory & Alerts State
-  final TextEditingController _warehouseThresholdCtrl = TextEditingController(text: '50');
-  final TextEditingController _branchThresholdCtrl = TextEditingController(text: '10');
+  final TextEditingController _warehouseThresholdCtrl = TextEditingController();
+  final TextEditingController _branchThresholdCtrl = TextEditingController();
   bool _emailAlertEnabled = true;
-  
+
   // Security State
   final bool _twoFactorEnabled = false;
 
   bool _isSaving = false;
+  bool _isLoading = true;
+
+  final DioClient _dioClient = DioClient();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    try {
+      final response = await _dioClient.dio.get('/SystemSettings');
+      final List<dynamic> data = response.data;
+
+      for (var item in data) {
+        if (item['settingKey'] == 'WarehouseLowStockThreshold') {
+          _warehouseThresholdCtrl.text = item['settingValue'];
+        } else if (item['settingKey'] == 'BranchLowStockThreshold') {
+          _branchThresholdCtrl.text = item['settingValue'];
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi tải cấu hình: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -41,7 +85,11 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
     super.dispose();
   }
 
-  Future<void> _selectTime(BuildContext context, TimeOfDay initialTime, Function(TimeOfDay) onSelected) async {
+  Future<void> _selectTime(
+    BuildContext context,
+    TimeOfDay initialTime,
+    Function(TimeOfDay) onSelected,
+  ) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: initialTime,
@@ -63,104 +111,174 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
 
   void _handleSave() async {
     setState(() => _isSaving = true);
-    
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
-    
-    if (!mounted) return;
-    setState(() => _isSaving = false);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Đã lưu cấu hình thành công!'),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+
+    try {
+      final settings = {
+        'WarehouseLowStockThreshold': _warehouseThresholdCtrl.text,
+        'BranchLowStockThreshold': _branchThresholdCtrl.text,
+      };
+
+      await _dioClient.dio.put('/SystemSettings', data: settings);
+
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Đã lưu cấu hình thành công!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi khi lưu cấu hình: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader(Icons.point_of_sale, 'Bán hàng & Khách hàng'),
-            _buildCard([
-              _buildNumberInputRow('Thuế VAT mặc định (%)', _vatCtrl, suffix: '%'),
-              const Divider(),
-              _buildNumberInputRow('Tỷ lệ quy đổi điểm (VNĐ/Điểm)', _loyaltyRateCtrl, suffix: 'VNĐ = 1 Điểm', width: 100),
-            ]),
-            const SizedBox(height: 24),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    Icons.point_of_sale,
+                    'Bán hàng & Khách hàng',
+                  ),
+                  _buildCard([
+                    _buildNumberInputRow(
+                      'Thuế VAT mặc định (%)',
+                      _vatCtrl,
+                      suffix: '%',
+                    ),
+                    const Divider(),
+                    _buildNumberInputRow(
+                      'Tỷ lệ quy đổi điểm (VNĐ/Điểm)',
+                      _loyaltyRateCtrl,
+                      suffix: 'VNĐ = 1 Điểm',
+                      width: 100,
+                    ),
+                  ]),
+                  const SizedBox(height: 24),
 
-            _buildSectionHeader(Icons.access_time, 'Ca làm việc & Nhân sự'),
-            _buildCard([
-              _buildTimeRangeRow('Ca Sáng', _morningStart, _morningEnd, (start, end) {
-                setState(() {
-                  _morningStart = start;
-                  _morningEnd = end;
-                });
-              }),
-              const Divider(),
-              _buildTimeRangeRow('Ca Chiều', _afternoonStart, _afternoonEnd, (start, end) {
-                setState(() {
-                  _afternoonStart = start;
-                  _afternoonEnd = end;
-                });
-              }),
-              const Divider(),
-              _buildTimeRangeRow('Ca Đêm', _nightStart, _nightEnd, (start, end) {
-                setState(() {
-                  _nightStart = start;
-                  _nightEnd = end;
-                });
-              }),
-              const Divider(),
-              _buildNumberInputRow('Giới hạn đi trễ (Phút)', _lateLimitCtrl, suffix: 'Phút'),
-            ]),
-            const SizedBox(height: 24),
+                  _buildSectionHeader(
+                    Icons.access_time,
+                    'Ca làm việc & Nhân sự',
+                  ),
+                  _buildCard([
+                    _buildTimeRangeRow('Ca Sáng', _morningStart, _morningEnd, (
+                      start,
+                      end,
+                    ) {
+                      setState(() {
+                        _morningStart = start;
+                        _morningEnd = end;
+                      });
+                    }),
+                    const Divider(),
+                    _buildTimeRangeRow(
+                      'Ca Chiều',
+                      _afternoonStart,
+                      _afternoonEnd,
+                      (start, end) {
+                        setState(() {
+                          _afternoonStart = start;
+                          _afternoonEnd = end;
+                        });
+                      },
+                    ),
+                    const Divider(),
+                    _buildTimeRangeRow('Ca Đêm', _nightStart, _nightEnd, (
+                      start,
+                      end,
+                    ) {
+                      setState(() {
+                        _nightStart = start;
+                        _nightEnd = end;
+                      });
+                    }),
+                    const Divider(),
+                    _buildNumberInputRow(
+                      'Giới hạn đi trễ (Phút)',
+                      _lateLimitCtrl,
+                      suffix: 'Phút',
+                    ),
+                  ]),
+                  const SizedBox(height: 24),
 
-            _buildSectionHeader(Icons.inventory_2, 'Kho & Cảnh báo'),
-            _buildCard([
-              _buildNumberInputRow('Ngưỡng cảnh báo Kho Tổng', _warehouseThresholdCtrl, suffix: 'SP'),
-              const Divider(),
-              _buildNumberInputRow('Ngưỡng cảnh báo Chi Nhánh', _branchThresholdCtrl, suffix: 'SP'),
-              const Divider(),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Gửi thông báo qua Email', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: const Text('Tự động gửi báo cáo khi tồn kho thấp', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                value: _emailAlertEnabled,
-                activeColor: Colors.blue,
-                onChanged: (val) => setState(() => _emailAlertEnabled = val),
+                  _buildSectionHeader(Icons.inventory_2, 'Kho & Cảnh báo'),
+                  _buildCard([
+                    _buildNumberInputRow(
+                      'Ngưỡng cảnh báo Kho Tổng',
+                      _warehouseThresholdCtrl,
+                      suffix: 'SP',
+                    ),
+                    const Divider(),
+                    _buildNumberInputRow(
+                      'Ngưỡng cảnh báo Chi Nhánh',
+                      _branchThresholdCtrl,
+                      suffix: 'SP',
+                    ),
+                    const Divider(),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Gửi thông báo qua Email',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Tự động gửi báo cáo khi tồn kho thấp',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      value: _emailAlertEnabled,
+                      activeThumbColor: Colors.blue,
+                      onChanged: (val) =>
+                          setState(() => _emailAlertEnabled = val),
+                    ),
+                  ]),
+                  const SizedBox(height: 24),
+
+                  _buildSectionHeader(Icons.security, 'Bảo mật'),
+                  _buildCard([
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Yêu cầu xác thực 2 lớp (2FA)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      subtitle: const Text(
+                        'Tăng cường bảo mật bằng mã OTP. (Tính năng sắp ra mắt)',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      value: _twoFactorEnabled,
+                      onChanged: null, // Disabled
+                    ),
+                  ]),
+
+                  const SizedBox(height: 80), // Padding for Bottom button
+                ],
               ),
-            ]),
-            const SizedBox(height: 24),
-
-            _buildSectionHeader(Icons.security, 'Bảo mật'),
-            _buildCard([
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Yêu cầu xác thực 2 lớp (2FA)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: const Text('Tăng cường bảo mật bằng mã OTP. (Tính năng sắp ra mắt)', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                value: _twoFactorEnabled,
-                onChanged: null, // Disabled
-              ),
-            ]),
-
-            const SizedBox(height: 80), // Padding for Bottom button
-          ],
-        ),
-      ),
+            ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -169,9 +287,16 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
           height: 50,
           child: ElevatedButton.icon(
             onPressed: _isSaving ? null : _handleSave,
-            icon: _isSaving 
-              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-              : const Icon(Icons.save),
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Icon(Icons.save),
             label: Text(
               _isSaving ? 'Đang lưu...' : 'Lưu cấu hình',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -179,7 +304,9 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue[700],
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
               elevation: 4,
             ),
           ),
@@ -230,7 +357,12 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
     );
   }
 
-  Widget _buildNumberInputRow(String label, TextEditingController controller, {String? suffix, double width = 60}) {
+  Widget _buildNumberInputRow(
+    String label,
+    TextEditingController controller, {
+    String? suffix,
+    double width = 60,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -252,15 +384,23 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
                   decoration: InputDecoration(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 0,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
               ),
               if (suffix != null) ...[
                 const SizedBox(width: 8),
-                Text(suffix, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-              ]
+                Text(
+                  suffix,
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+              ],
             ],
           ),
         ],
@@ -268,7 +408,12 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
     );
   }
 
-  Widget _buildTimeRangeRow(String label, TimeOfDay start, TimeOfDay end, Function(TimeOfDay, TimeOfDay) onChanged) {
+  Widget _buildTimeRangeRow(
+    String label,
+    TimeOfDay start,
+    TimeOfDay end,
+    Function(TimeOfDay, TimeOfDay) onChanged,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -281,15 +426,25 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
           Row(
             children: [
               InkWell(
-                onTap: () => _selectTime(context, start, (newStart) => onChanged(newStart, end)),
+                onTap: () => _selectTime(
+                  context,
+                  start,
+                  (newStart) => onChanged(newStart, end),
+                ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Text(_formatTime(start), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    _formatTime(start),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const Padding(
@@ -297,15 +452,25 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
                 child: Text('-', style: TextStyle(color: Colors.grey)),
               ),
               InkWell(
-                onTap: () => _selectTime(context, end, (newEnd) => onChanged(start, newEnd)),
+                onTap: () => _selectTime(
+                  context,
+                  end,
+                  (newEnd) => onChanged(start, newEnd),
+                ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: Colors.grey[300]!),
                   ),
-                  child: Text(_formatTime(end), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  child: Text(
+                    _formatTime(end),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],

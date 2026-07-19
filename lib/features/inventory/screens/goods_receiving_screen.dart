@@ -160,14 +160,14 @@ class _GoodsReceivingScreenState extends State<GoodsReceivingScreen> {
                           children: [
                             Text(item['productName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                             const SizedBox(height: 4),
-                            Text('SL đã đặt: ${item['orderedQuantity']}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                            Text('SL đã đặt: ${item['orderedQuantity']} (Thùng)', style: const TextStyle(color: Colors.grey, fontSize: 13)),
                           ],
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'SL Thực nhận', isDense: true),
+                          decoration: const InputDecoration(labelText: 'SL Thực nhận (Thùng)', isDense: true),
                           keyboardType: TextInputType.number,
                           onChanged: (v) => item['quantityReceived'] = int.tryParse(v),
                           validator: (v) => (v == null || v.isEmpty || int.tryParse(v) == null) ? 'Nhập SL' : null,

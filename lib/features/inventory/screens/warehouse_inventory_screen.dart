@@ -9,7 +9,8 @@ class WarehouseInventoryScreen extends StatefulWidget {
   const WarehouseInventoryScreen({super.key});
 
   @override
-  State<WarehouseInventoryScreen> createState() => _WarehouseInventoryScreenState();
+  State<WarehouseInventoryScreen> createState() =>
+      _WarehouseInventoryScreenState();
 }
 
 class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
@@ -23,7 +24,6 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
     });
-    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -38,19 +38,9 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
       _currentPage = 1;
     }
     context.read<InventoryProvider>().fetchWarehouseInventory(
-          page: _currentPage,
-          search: _searchController.text,
-        );
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      final provider = context.read<InventoryProvider>();
-      if (!provider.isLoadingWarehouse && provider.warehouseItems.length < provider.warehouseTotalCount) {
-        _currentPage++;
-        _loadData();
-      }
-    }
+      page: _currentPage,
+      search: _searchController.text,
+    );
   }
 
   @override
@@ -72,14 +62,27 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => _loadData(refresh: true),
-          )
+          ),
         ],
       ),
       body: Column(
         children: [
           _buildSearchBar(),
+          _buildPaginationControl(),
           Expanded(child: _buildList()),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          context.push(
+            '/stock-adjustment',
+            extra: {'isWarehouse': true},
+          ).then((_) => _loadData(refresh: true));
+        },
+        icon: const Icon(Icons.inventory),
+        label: const Text('Kiểm kê'),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
       ),
     );
   }
@@ -111,9 +114,15 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
         if (provider.isLoadingWarehouse && _currentPage == 1) {
           return const Center(child: CircularProgressIndicator());
         }
-        
-        if (provider.warehouseError != null && provider.warehouseItems.isEmpty) {
-          return Center(child: Text(provider.warehouseError!, style: const TextStyle(color: Colors.red)));
+
+        if (provider.warehouseError != null &&
+            provider.warehouseItems.isEmpty) {
+          return Center(
+            child: Text(
+              provider.warehouseError!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         }
 
         if (provider.warehouseItems.isEmpty) {
@@ -124,40 +133,115 @@ class _WarehouseInventoryScreenState extends State<WarehouseInventoryScreen> {
           onRefresh: () async => _loadData(refresh: true),
           child: ListView.separated(
             controller: _scrollController,
-            itemCount: provider.warehouseItems.length + (provider.isLoadingWarehouse ? 1 : 0),
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemCount: provider.warehouseItems.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              if (index == provider.warehouseItems.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
               final item = provider.warehouseItems[index];
               final bool isLowStock = item.quantity <= 10; // Threshold
+              
+              String secondaryText = '';
+              if (item.conversionFactor > 1 && item.importUnit != null) {
+                int boxes = item.quantity ~/ item.conversionFactor;
+                int pieces = item.quantity % item.conversionFactor;
+                secondaryText = '(~ $boxes ${item.importUnit} $pieces ${item.unit ?? ""})';
+              }
 
               return ListTile(
-                title: Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}'),
+                title: Text(
+                  item.productName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}',
+                ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '${item.quantity}',
+                      '${item.quantity} ${item.unit ?? ""}',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: isLowStock ? Colors.red : AppColors.primary,
                       ),
                     ),
+                    if (secondaryText.isNotEmpty)
+                      Text(secondaryText, style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     if (isLowStock)
-                      const Text('Sắp hết', style: TextStyle(color: Colors.red, fontSize: 10)),
+                      const Text(
+                        'Sắp hết',
+                        style: TextStyle(color: Colors.red, fontSize: 10),
+                      ),
                   ],
                 ),
               );
             },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPaginationControl() {
+    return Consumer<InventoryProvider>(
+      builder: (context, provider, child) {
+        if (provider.warehouseTotalCount == 0) return const SizedBox.shrink();
+        
+        // Assume default pageSize = 10
+        final int pageSize = 10;
+        final int totalPages = (provider.warehouseTotalCount / pageSize).ceil();
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                blurRadius: 4,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Tổng: ${provider.warehouseTotalCount} sp',
+                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: _currentPage > 1
+                        ? () {
+                            setState(() {
+                              _currentPage--;
+                            });
+                            _loadData();
+                          }
+                        : null,
+                  ),
+                  Text(
+                    'Trang $_currentPage / $totalPages',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: _currentPage < totalPages
+                        ? () {
+                            setState(() {
+                              _currentPage++;
+                            });
+                            _loadData();
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },

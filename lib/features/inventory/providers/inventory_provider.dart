@@ -36,16 +36,16 @@ class InventoryProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final data = await _apiService.getWarehouseInventory(page: page, search: search);
+      final data = await _apiService.getWarehouseInventory(
+        page: page,
+        pageSize: 10,
+        search: search,
+      );
       final items = (data['items'] as List)
           .map((item) => WarehouseInventoryModel.fromJson(item))
           .toList();
-      
-      if (page == 1) {
-        _warehouseItems = items;
-      } else {
-        _warehouseItems.addAll(items);
-      }
+
+      _warehouseItems = items;
       _warehouseTotalCount = data['totalCount'];
     } catch (e) {
       _warehouseError = e.toString();
@@ -55,22 +55,24 @@ class InventoryProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchBranchInventory(int branchId, {int page = 1, String? search}) async {
+  Future<void> fetchBranchInventory(int branchId,
+      {int page = 1, String? search}) async {
     _isLoadingBranch = true;
     _branchError = null;
     notifyListeners();
 
     try {
-      final data = await _apiService.getBranchInventory(branchId, page: page, search: search);
+      final data = await _apiService.getBranchInventory(
+        branchId,
+        page: page,
+        pageSize: 10,
+        search: search,
+      );
       final items = (data['items'] as List)
           .map((item) => BranchInventoryModel.fromJson(item))
           .toList();
-      
-      if (page == 1) {
-        _branchItems = items;
-      } else {
-        _branchItems.addAll(items);
-      }
+
+      _branchItems = items;
       _branchTotalCount = data['totalCount'];
     } catch (e) {
       _branchError = e.toString();
@@ -80,10 +82,21 @@ class InventoryProvider with ChangeNotifier {
     }
   }
 
-  Future<void> adjustStock(int branchId, List<Map<String, dynamic>> items) async {
+  Future<void> adjustStock(
+    int branchId,
+    List<Map<String, dynamic>> items,
+  ) async {
     await _apiService.adjustStock(branchId, items);
     // Refresh branch inventory after adjustment
     await fetchBranchInventory(branchId);
+  }
+
+  Future<void> adjustWarehouseStock(
+    List<Map<String, dynamic>> items,
+  ) async {
+    await _apiService.adjustWarehouseStock(items);
+    // Refresh warehouse inventory after adjustment
+    await fetchWarehouseInventory();
   }
 
   Future<void> receiveGoods(Map<String, dynamic> request) async {

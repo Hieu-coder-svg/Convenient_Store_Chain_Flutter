@@ -9,6 +9,8 @@ import '../widgets/product_search_tile.dart';
 import '../widgets/cart_item_tile.dart';
 import '../widgets/cart_summary_bar.dart';
 import '../widgets/customer_search_dialog.dart';
+import '../../../../core/widgets/app_drawer.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 import 'dart:async';
 
 class PosScreen extends StatefulWidget {
@@ -18,7 +20,8 @@ class PosScreen extends StatefulWidget {
   State<PosScreen> createState() => _PosScreenState();
 }
 
-class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMixin {
+class _PosScreenState extends State<PosScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
@@ -27,6 +30,9 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductCatalogProvider>().fetchProducts();
     });
@@ -56,16 +62,55 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
     );
   }
 
+  void _handleBarcodeScan(String barcode, CartProvider cart) {
+    if (barcode == '-1' || barcode.isEmpty) return;
+
+    final products = context.read<ProductCatalogProvider>().products;
+    final matchedProducts = products
+        .where((p) => p.barcode == barcode)
+        .toList();
+
+    if (matchedProducts.isNotEmpty) {
+      final product = matchedProducts.first;
+      cart.addItem(product);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã thêm: ${product.productName}'),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Mã vạch $barcode không tồn tại trong hệ thống!'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
     final customerProvider = context.watch<CustomerProvider>();
-    final isTablet = MediaQuery.of(context).size.width >= 768; // Simple responsive check
+    final isTablet =
+        MediaQuery.of(context).size.width >= 768; // Simple responsive check
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Máy tính tiền POS'),
+        title: const Text(
+          'Máy tính tiền POS',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        iconTheme: const IconThemeData(color: AppColors.textSecondary),
         actions: [
           Center(
             child: Padding(
@@ -73,27 +118,38 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
               child: Badge(
                 label: Text('${cart.totalQuantity}'),
                 isLabelVisible: cart.totalQuantity > 0,
-                child: const Icon(Icons.shopping_cart),
+                child: const Icon(
+                  Icons.shopping_cart,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ),
-          )
+          ),
         ],
-        bottom: !isTablet ? TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(icon: Icon(Icons.inventory_2), text: 'Sản phẩm'),
-            Tab(icon: Icon(Icons.shopping_bag), text: 'Giỏ hàng'),
-          ],
-        ) : null,
+        bottom: !isTablet
+            ? TabBar(
+                controller: _tabController,
+                labelColor: AppColors.primary,
+                unselectedLabelColor: AppColors.textSecondary,
+                indicatorColor: AppColors.primary,
+                tabs: const [
+                  Tab(icon: Icon(Icons.inventory_2), text: 'Sản phẩm'),
+                  Tab(icon: Icon(Icons.shopping_bag), text: 'Giỏ hàng'),
+                ],
+              )
+            : null,
       ),
-      body: isTablet ? _buildTabletLayout(cart, customerProvider) : _buildMobileLayout(cart, customerProvider),
+      drawer: const AppDrawer(),
+      body: isTablet
+          ? _buildTabletLayout(cart, customerProvider)
+          : _buildMobileLayout(cart, customerProvider),
     );
   }
 
-  Widget _buildMobileLayout(CartProvider cart, CustomerProvider customerProvider) {
+  Widget _buildMobileLayout(
+    CartProvider cart,
+    CustomerProvider customerProvider,
+  ) {
     return Column(
       children: [
         Expanded(
@@ -118,14 +174,14 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
     );
   }
 
-  Widget _buildTabletLayout(CartProvider cart, CustomerProvider customerProvider) {
+  Widget _buildTabletLayout(
+    CartProvider cart,
+    CustomerProvider customerProvider,
+  ) {
     return Row(
       children: [
         // Left: Products
-        Expanded(
-          flex: 5,
-          child: _buildProductList(cart),
-        ),
+        Expanded(flex: 5, child: _buildProductList(cart)),
         const VerticalDivider(width: 1, thickness: 1),
         // Right: Cart
         Expanded(
@@ -159,6 +215,24 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
             decoration: InputDecoration(
               hintText: 'Tìm tên hoặc mã sản phẩm...',
               prefixIcon: const Icon(Icons.search),
+              suffixIcon: IconButton(
+                icon: const Icon(
+                  Icons.qr_code_scanner,
+                  color: AppColors.primary,
+                ),
+                tooltip: 'Quét mã vạch',
+                onPressed: () async {
+                  var res = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SimpleBarcodeScannerPage(),
+                    ),
+                  );
+                  if (res is String && res != '-1' && res.isNotEmpty) {
+                    _handleBarcodeScan(res, cart);
+                  }
+                },
+              ),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(
@@ -168,6 +242,10 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
             ),
             onChanged: _onSearchChanged,
+            onSubmitted: (value) {
+              _handleBarcodeScan(value, cart);
+              _searchController.clear();
+            },
           ),
         ),
         // Product Grid
@@ -183,14 +261,21 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: Colors.red,
+                      ),
                       const SizedBox(height: 16),
-                      Text('Lỗi: ${provider.error}', style: const TextStyle(color: Colors.red)),
+                      Text(
+                        'Lỗi: ${provider.error}',
+                        style: const TextStyle(color: Colors.red),
+                      ),
                       const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () => provider.fetchProducts(),
                         child: const Text('Thử lại'),
-                      )
+                      ),
                     ],
                   ),
                 );
@@ -201,9 +286,16 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
+                      Icon(
+                        Icons.inventory_2_outlined,
+                        size: 64,
+                        color: Colors.grey,
+                      ),
                       SizedBox(height: 16),
-                      Text('Không tìm thấy sản phẩm nào', style: TextStyle(color: Colors.grey)),
+                      Text(
+                        'Không tìm thấy sản phẩm nào',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ],
                   ),
                 );
@@ -215,7 +307,10 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
                   if (constraints.maxWidth > 900) crossAxisCount = 5;
 
                   return GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: crossAxisCount,
                       childAspectRatio: 0.75,
@@ -261,25 +356,39 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
               const SizedBox(width: 12),
               Expanded(
                 child: customerProvider.selectedCustomer == null
-                    ? const Text('Khách hàng: Chưa chọn', style: TextStyle(color: Colors.grey))
+                    ? const Text(
+                        'Khách hàng: Chưa chọn',
+                        style: TextStyle(color: Colors.grey),
+                      )
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             customerProvider.selectedCustomer!.fullName,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                           Text(
                             '⭐ ${customerProvider.selectedCustomer!.loyaltyPoints} điểm',
-                            style: const TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.amber,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
               ),
               TextButton(
                 onPressed: _showCustomerDialog,
-                child: Text(customerProvider.selectedCustomer == null ? 'Tìm khách' : 'Đổi khách'),
-              )
+                child: Text(
+                  customerProvider.selectedCustomer == null
+                      ? 'Tìm khách'
+                      : 'Đổi khách',
+                ),
+              ),
             ],
           ),
         ),
@@ -291,9 +400,16 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shopping_cart_outlined, size: 64, color: Colors.grey[300]),
+                      Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 64,
+                        color: Colors.grey[300],
+                      ),
                       const SizedBox(height: 16),
-                      Text('Giỏ hàng trống', style: TextStyle(color: Colors.grey[600])),
+                      Text(
+                        'Giỏ hàng trống',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
                     ],
                   ),
                 )
@@ -304,9 +420,16 @@ class _PosScreenState extends State<PosScreen> with SingleTickerProviderStateMix
                     final item = cart.items[index];
                     return CartItemTile(
                       item: item,
-                      onIncrement: () => cart.updateQuantity(item.productId, item.quantity + 1),
-                      onDecrement: () => cart.updateQuantity(item.productId, item.quantity - 1),
-                      onQuantityChanged: (newQty) => cart.updateQuantity(item.productId, newQty),
+                      onIncrement: () => cart.updateQuantity(
+                        item.productId,
+                        item.quantity + 1,
+                      ),
+                      onDecrement: () => cart.updateQuantity(
+                        item.productId,
+                        item.quantity - 1,
+                      ),
+                      onQuantityChanged: (newQty) =>
+                          cart.updateQuantity(item.productId, newQty),
                       onRemove: () => cart.removeItem(item.productId),
                     );
                   },

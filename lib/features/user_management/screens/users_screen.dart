@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -22,7 +21,7 @@ class _UsersScreenState extends State<UsersScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<UserProvider>().fetchUsers(page: 1);
+      context.read<UserProvider>().loadUsers(page: 1);
     });
   }
 
@@ -68,7 +67,9 @@ class _UsersScreenState extends State<UsersScreen> {
                   Navigator.pop(context);
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => UserFormScreen(user: user)),
+                    MaterialPageRoute(
+                      builder: (context) => UserFormScreen(user: user),
+                    ),
                   );
                 },
               ),
@@ -91,18 +92,27 @@ class _UsersScreenState extends State<UsersScreen> {
                     if (!context.mounted) return;
                     if (success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Khóa tài khoản thành công'), backgroundColor: Colors.green),
+                        const SnackBar(
+                          content: Text('Khóa tài khoản thành công'),
+                          backgroundColor: Colors.green,
+                        ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(provider.error ?? 'Đã xảy ra lỗi'), backgroundColor: Colors.red),
+                        SnackBar(
+                          content: Text(provider.error ?? 'Đã xảy ra lỗi'),
+                          backgroundColor: Colors.red,
+                        ),
                       );
                     }
                   },
                 )
               else
                 ListTile(
-                  leading: const Icon(Icons.check_circle_outline, color: Colors.green),
+                  leading: const Icon(
+                    Icons.check_circle_outline,
+                    color: Colors.green,
+                  ),
                   title: const Text('Kích hoạt tài khoản'),
                   onTap: () async {
                     Navigator.pop(context);
@@ -111,11 +121,17 @@ class _UsersScreenState extends State<UsersScreen> {
                     if (!context.mounted) return;
                     if (success) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Kích hoạt tài khoản thành công'), backgroundColor: Colors.green),
+                        const SnackBar(
+                          content: Text('Kích hoạt tài khoản thành công'),
+                          backgroundColor: Colors.green,
+                        ),
                       );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(provider.error ?? 'Đã xảy ra lỗi'), backgroundColor: Colors.red),
+                        SnackBar(
+                          content: Text(provider.error ?? 'Đã xảy ra lỗi'),
+                          backgroundColor: Colors.red,
+                        ),
                       );
                     }
                   },
@@ -130,9 +146,9 @@ class _UsersScreenState extends State<UsersScreen> {
   void _handleResetPassword(User user) async {
     final provider = context.read<UserProvider>();
     final newPassword = await provider.resetPassword(user.userId);
-    
+
     if (!mounted) return;
-    
+
     if (newPassword != null) {
       showDialog(
         context: context,
@@ -184,9 +200,9 @@ class _UsersScreenState extends State<UsersScreen> {
         ),
       );
     } else if (provider.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error!)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(provider.error!)));
     }
   }
 
@@ -204,9 +220,9 @@ class _UsersScreenState extends State<UsersScreen> {
           }
 
           final users = provider.users;
-          
+
           return RefreshIndicator(
-            onRefresh: () => provider.fetchUsers(),
+            onRefresh: () => provider.loadUsers(),
             child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
@@ -234,7 +250,7 @@ class _UsersScreenState extends State<UsersScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // Stats Grid (Mock Data for now as per template)
                         GridView.count(
                           crossAxisCount: 2,
@@ -244,14 +260,34 @@ class _UsersScreenState extends State<UsersScreen> {
                           crossAxisSpacing: 12,
                           childAspectRatio: 2.2,
                           children: [
-                            _buildStatCard('TỔNG NHÂN SỰ', '${provider.stats?.totalUsers ?? '-'}', Colors.blue, null),
-                            _buildStatCard('CỬA HÀNG TRƯỞNG', '${provider.stats?.storeManagers ?? '-'}', Colors.orange, null),
-                            _buildStatCard('ĐANG HOẠT ĐỘNG', '${provider.stats?.activeUsers ?? '-'}', Colors.green, null),
-                            _buildStatCard('YÊU CẦU NGHỈ', '${provider.stats?.leaveRequests ?? '-'}', Colors.red, null),
+                            _buildStatCard(
+                              'TỔNG NHÂN SỰ',
+                              '${provider.stats?.totalUsers ?? '-'}',
+                              Colors.blue,
+                              null,
+                            ),
+                            _buildStatCard(
+                              'CỬA HÀNG TRƯỞNG',
+                              '${provider.stats?.storeManagers ?? '-'}',
+                              Colors.orange,
+                              null,
+                            ),
+                            _buildStatCard(
+                              'ĐANG HOẠT ĐỘNG',
+                              '${provider.stats?.activeUsers ?? '-'}',
+                              Colors.green,
+                              null,
+                            ),
+                            _buildStatCard(
+                              'YÊU CẦU NGHỈ',
+                              '${provider.stats?.leaveRequests ?? '-'}',
+                              Colors.red,
+                              null,
+                            ),
                           ],
                         ),
                         const SizedBox(height: 24),
-                        
+
                         // List Header
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -279,18 +315,15 @@ class _UsersScreenState extends State<UsersScreen> {
                     ),
                   ),
                 ),
-                
+
                 // User List
                 SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final user = users[index];
-                      return _buildUserListItem(context, user);
-                    },
-                    childCount: users.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final user = users[index];
+                    return _buildUserListItem(context, user);
+                  }, childCount: users.length),
                 ),
-                
+
                 // Pagination controls
                 if (provider.totalPages > 1)
                   SliverToBoxAdapter(
@@ -302,7 +335,9 @@ class _UsersScreenState extends State<UsersScreen> {
                           IconButton(
                             icon: const Icon(Icons.chevron_left),
                             onPressed: provider.currentPage > 1
-                                ? () => provider.fetchUsers(page: provider.currentPage - 1)
+                                ? () => provider.loadUsers(
+                                    page: provider.currentPage - 1,
+                                  )
                                 : null,
                           ),
                           Text(
@@ -311,8 +346,11 @@ class _UsersScreenState extends State<UsersScreen> {
                           ),
                           IconButton(
                             icon: const Icon(Icons.chevron_right),
-                            onPressed: provider.currentPage < provider.totalPages
-                                ? () => provider.fetchUsers(page: provider.currentPage + 1)
+                            onPressed:
+                                provider.currentPage < provider.totalPages
+                                ? () => provider.loadUsers(
+                                    page: provider.currentPage + 1,
+                                  )
                                 : null,
                           ),
                         ],
@@ -320,7 +358,9 @@ class _UsersScreenState extends State<UsersScreen> {
                     ),
                   ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 80)), // Padding for bottom FAB
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 80),
+                ), // Padding for bottom FAB
               ],
             ),
           );
@@ -339,7 +379,12 @@ class _UsersScreenState extends State<UsersScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, Color color, String? trend) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    Color color,
+    String? trend,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -360,7 +405,11 @@ class _UsersScreenState extends State<UsersScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 4),
           Row(
@@ -368,12 +417,19 @@ class _UsersScreenState extends State<UsersScreen> {
             children: [
               Text(
                 value,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               if (trend != null)
                 Text(
                   trend,
-                  style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
             ],
           ),
@@ -390,7 +446,9 @@ class _UsersScreenState extends State<UsersScreen> {
       if (parts.length > 1) {
         initials = '${parts[0][0]}${parts.last[0]}'.toUpperCase();
       } else {
-        initials = parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+        initials = parts[0]
+            .substring(0, parts[0].length >= 2 ? 2 : 1)
+            .toUpperCase();
       }
     } else {
       initials = 'NA';
@@ -399,7 +457,7 @@ class _UsersScreenState extends State<UsersScreen> {
     Color avatarColor = Colors.grey[300]!;
     if (user.roleName.contains('Giám đốc')) avatarColor = Colors.blue[100]!;
     if (user.roleName.contains('Quản lý')) avatarColor = Colors.orange[100]!;
-    
+
     Color badgeColor = Colors.grey;
     if (user.roleName.contains('Giám đốc')) badgeColor = Colors.blue;
     if (user.roleName.contains('Quản lý')) badgeColor = Colors.orange;
@@ -437,7 +495,9 @@ class _UsersScreenState extends State<UsersScreen> {
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                       color: user.isActive ? Colors.black87 : Colors.grey,
-                      decoration: user.isActive ? null : TextDecoration.lineThrough,
+                      decoration: user.isActive
+                          ? null
+                          : TextDecoration.lineThrough,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -455,7 +515,10 @@ class _UsersScreenState extends State<UsersScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                user.roleName.replaceAll(' ', '\n'), // Just to match the UI style a bit
+                user.roleName.replaceAll(
+                  ' ',
+                  '\n',
+                ), // Just to match the UI style a bit
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   color: Colors.white,

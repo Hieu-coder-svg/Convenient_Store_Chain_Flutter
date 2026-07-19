@@ -5,8 +5,8 @@ import '../providers/inventory_provider.dart';
 import '../../product/providers/product_catalog_provider.dart';
 
 class StockAdjustmentScreen extends StatefulWidget {
-  final int branchId;
-  const StockAdjustmentScreen({super.key, required this.branchId});
+  final int? branchId;
+  const StockAdjustmentScreen({super.key, this.branchId});
 
   @override
   State<StockAdjustmentScreen> createState() => _StockAdjustmentScreenState();
@@ -58,7 +58,11 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
     });
 
     try {
-      await context.read<InventoryProvider>().adjustStock(widget.branchId, _items);
+      if (widget.branchId == null) {
+        await context.read<InventoryProvider>().adjustWarehouseStock(_items);
+      } else {
+        await context.read<InventoryProvider>().adjustStock(widget.branchId!, _items);
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Kiểm kê thành công', style: TextStyle(color: Colors.green))));
@@ -92,7 +96,7 @@ class _StockAdjustmentScreenState extends State<StockAdjustmentScreen> {
             }
           },
         ),
-        title: const Text('Kiểm Kê Kho Chi Nhánh'),
+        title: Text(widget.branchId == null ? 'Kiểm Kê Kho Tổng' : 'Kiểm Kê Kho Chi Nhánh'),
       ),
       body: Form(
         key: _formKey,

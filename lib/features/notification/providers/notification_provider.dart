@@ -3,6 +3,7 @@ import 'package:signalr_netcore/signalr_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/notification_model.dart';
 import '../services/notification_api_service.dart';
+import '../../../core/constants/api_constants.dart';
 
 class NotificationProvider with ChangeNotifier {
   final NotificationApiService _apiService;
@@ -32,14 +33,14 @@ class NotificationProvider with ChangeNotifier {
       final items = (data['items'] as List)
           .map((item) => NotificationModel.fromJson(item))
           .toList();
-      
+
       if (page == 1) {
         _notifications = items;
       } else {
         _notifications.addAll(items);
       }
       _totalCount = data['totalCount'];
-      
+
       await fetchUnreadCount();
     } catch (e) {
       _error = e.toString();
@@ -56,9 +57,11 @@ class NotificationProvider with ChangeNotifier {
 
   Future<void> markAsRead(int notificationId) async {
     await _apiService.markAsRead(notificationId);
-    
+
     // Update local state
-    final index = _notifications.indexWhere((n) => n.notificationId == notificationId);
+    final index = _notifications.indexWhere(
+      (n) => n.notificationId == notificationId,
+    );
     if (index != -1 && !_notifications[index].isRead) {
       // Create a copy with isRead = true (since fields are final)
       final n = _notifications[index];
@@ -77,7 +80,7 @@ class NotificationProvider with ChangeNotifier {
 
   Future<void> markAllAsRead() async {
     await _apiService.markAllAsRead();
-    
+
     // Update local state
     for (int i = 0; i < _notifications.length; i++) {
       if (!_notifications[i].isRead) {
@@ -100,21 +103,26 @@ class NotificationProvider with ChangeNotifier {
   Future<void> startSignalR() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-    
+
     if (token == null) return;
 
-    // TODO: Change to real backend URL
-    const serverUrl = "https://10.0.2.2:5001/hubs/inventory"; // 10.0.2.2 is local for Android emulator
-    
+    final baseUrl = ApiConstants.baseUrl;
+    final serverUrl = baseUrl.endsWith('/api')
+        ? '${baseUrl.substring(0, baseUrl.length - 4)}/hubs/inventory'
+        : '$baseUrl/hubs/inventory';
+
     _hubConnection = HubConnectionBuilder()
-        .withUrl(serverUrl, options: HttpConnectionOptions(
-          accessTokenFactory: () async => token,
-        ))
+        .withUrl(
+          serverUrl,
+          options: HttpConnectionOptions(accessTokenFactory: () async => token),
+        )
         .withAutomaticReconnect()
         .build();
 
-    _hubConnection?.onclose(({error}) => debugPrint("SignalR Connection Closed: $error"));
-    
+    _hubConnection?.onclose(
+      ({error}) => debugPrint("SignalR Connection Closed: $error"),
+    );
+
     _hubConnection?.on("ReceiveNotification", _handleNewNotification);
 
     try {

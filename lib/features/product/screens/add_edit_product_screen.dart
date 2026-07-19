@@ -25,11 +25,16 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
   final TextEditingController _costPriceController = TextEditingController();
   final TextEditingController _sellingPriceController = TextEditingController();
   final TextEditingController _imageUrlController = TextEditingController();
-  
+
   // Custom unit of measure controllers
-  final TextEditingController _unitController = TextEditingController(text: 'Cái');
-  final TextEditingController _importUnitController = TextEditingController(text: 'Cái');
-  final TextEditingController _conversionFactorController = TextEditingController(text: '1');
+  final TextEditingController _unitController = TextEditingController(
+    text: 'Cái',
+  );
+  final TextEditingController _importUnitController = TextEditingController(
+    text: 'Cái',
+  );
+  final TextEditingController _conversionFactorController =
+      TextEditingController(text: '1');
 
   int? _selectedCategoryId;
   int? _selectedSupplierId;
@@ -74,10 +79,14 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       final response = await dioClient.dio.get('/suppliers');
       if (response.data is List) {
         setState(() {
-          _suppliers = (response.data as List).map((item) => {
-            'id': item['supplierId'] as int,
-            'name': item['supplierName'] as String,
-          }).toList();
+          _suppliers = (response.data as List)
+              .map(
+                (item) => {
+                  'id': item['supplierId'] as int,
+                  'name': item['supplierName'] as String,
+                },
+              )
+              .toList();
         });
       }
     } catch (e) {
@@ -133,7 +142,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
       setState(() => _isUploadingImage = true);
 
-      final String secureUrl = await CloudinaryService.uploadImage(imageFile.path);
+      final String secureUrl = await CloudinaryService.uploadImage(
+        imageFile.path,
+      );
 
       setState(() {
         _imageUrlController.text = secureUrl;
@@ -141,9 +152,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
       });
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tải ảnh lên thành công!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Tải ảnh lên thành công!')));
     } catch (e) {
       setState(() => _isUploadingImage = false);
       if (!mounted) return;
@@ -167,7 +178,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
           child: Wrap(
             children: [
               ListTile(
-                leading: const Icon(Icons.photo_library, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: AppColors.primary,
+                ),
                 title: const Text('Chọn từ Thư viện'),
                 onTap: () {
                   Navigator.pop(context);
@@ -199,25 +213,30 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     final imageUrl = _imageUrlController.text.trim();
     final unit = _unitController.text.trim();
     final importUnit = _importUnitController.text.trim();
-    final conversionFactor = int.tryParse(_conversionFactorController.text.trim()) ?? 1;
+    final conversionFactor =
+        int.tryParse(_conversionFactorController.text.trim()) ?? 1;
 
     if (_selectedCategoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Vui lòng chọn danh mục.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Vui lòng chọn danh mục.')));
       return;
     }
 
     if (sellingPrice < costPrice) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Giá bán lẻ không được nhỏ hơn giá nhập.')),
+        const SnackBar(
+          content: Text('Giá bán lẻ không được nhỏ hơn giá nhập.'),
+        ),
       );
       return;
     }
 
     if (conversionFactor < 1) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Hệ số quy đổi phải lớn hơn hoặc bằng 1.')),
+        const SnackBar(
+          content: Text('Hệ số quy đổi phải lớn hơn hoặc bằng 1.'),
+        ),
       );
       return;
     }
@@ -227,7 +246,10 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
 
     // Tìm tên danh mục từ ID
     final catName = provider.categories
-        .firstWhere((c) => c.categoryId == _selectedCategoryId, orElse: () => CategoryModel(categoryId: 0, categoryName: ''))
+        .firstWhere(
+          (c) => c.categoryId == _selectedCategoryId,
+          orElse: () => CategoryModel(categoryId: 0, categoryName: ''),
+        )
         .categoryName;
 
     final product = ProductModel(
@@ -258,12 +280,25 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
     if (!mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.productId == null ? 'Đã thêm sản phẩm thành công' : 'Đã cập nhật sản phẩm thành công')),
+        SnackBar(
+          content: Text(
+            widget.productId == null
+                ? 'Đã thêm sản phẩm thành công'
+                : 'Đã cập nhật sản phẩm thành công',
+          ),
+        ),
       );
-      context.go('/products'); // Quay lại màn hình sản phẩm
+      if (context.canPop()) {
+        context.pop(); // Quay lại màn hình trước đó (List hoặc Detail)
+      } else {
+        context.go('/products');
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(provider.error ?? 'Thao tác thất bại'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(provider.error ?? 'Thao tác thất bại'),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
@@ -278,14 +313,22 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () {
-            context.go('/products');
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/products');
+            }
           },
         ),
         title: Text(
           widget.productId == null ? 'Thêm sản phẩm mới' : 'Chỉnh sửa sản phẩm',
-          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
       ),
       body: _isSaving
@@ -304,13 +347,17 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: AppColors.outlineVariant.withValues(
+                            alpha: 0.5,
+                          ),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.01),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
-                          )
+                          ),
                         ],
                       ),
                       child: Stack(
@@ -326,7 +373,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return const Center(
-                                    child: Icon(Icons.broken_image, size: 48, color: AppColors.error),
+                                    child: Icon(
+                                      Icons.broken_image,
+                                      size: 48,
+                                      color: AppColors.error,
+                                    ),
                                   );
                                 },
                               ),
@@ -346,7 +397,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                     color: Colors.black54,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.close, color: Colors.white, size: 20),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
                             ),
@@ -356,16 +411,26 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                               child: const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.add_a_photo_outlined, size: 48, color: AppColors.outline),
+                                  Icon(
+                                    Icons.add_a_photo_outlined,
+                                    size: 48,
+                                    color: AppColors.outline,
+                                  ),
                                   SizedBox(height: 8),
                                   Text(
                                     'Chọn hình ảnh sản phẩm',
-                                    style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.textPrimary,
+                                    ),
                                   ),
                                   SizedBox(height: 2),
                                   Text(
                                     'Tải trực tiếp lên Cloudinary (Max 5MB)',
-                                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -378,7 +443,9 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Center(
-                                child: CircularProgressIndicator(color: Colors.white),
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                         ],
@@ -392,7 +459,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.outlineVariant.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -404,7 +475,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                  return 'Tên sản phẩm không được để trống';
+                                return 'Tên sản phẩm không được để trống';
                               }
                               return null;
                             },
@@ -428,12 +499,16 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.outlineVariant.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
                       ),
                       child: Column(
                         children: [
                           DropdownButtonFormField<int>(
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             decoration: const InputDecoration(
                               labelText: 'Danh mục sản phẩm *',
                             ),
@@ -457,10 +532,12 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                           _isLoadingSuppliers
                               ? const SizedBox(
                                   height: 50,
-                                  child: Center(child: CircularProgressIndicator()),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
                                 )
                               : DropdownButtonFormField<int>(
-                                  value: _selectedSupplierId,
+                                  initialValue: _selectedSupplierId,
                                   decoration: const InputDecoration(
                                     labelText: 'Nhà cung cấp',
                                   ),
@@ -485,14 +562,22 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.outlineVariant.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             'Quy cách đóng gói & Đơn vị',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: AppColors.textPrimary,
+                            ),
                           ),
                           const SizedBox(height: 12),
                           Row(
@@ -537,7 +622,8 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                             controller: _conversionFactorController,
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
-                              labelText: 'Hệ số quy đổi (1 Đơn vị nhập = ? Đơn vị lẻ) *',
+                              labelText:
+                                  'Hệ số quy đổi (1 Đơn vị nhập = ? Đơn vị lẻ) *',
                               hintText: '24',
                             ),
                             onChanged: (_) => setState(() {}),
@@ -554,19 +640,32 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                           ),
                           const SizedBox(height: 12),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
-                              color: AppColors.secondaryFixed.withValues(alpha: 0.1),
+                              color: AppColors.secondaryFixed.withValues(
+                                alpha: 0.1,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.info_outline, size: 16, color: AppColors.primary),
+                                const Icon(
+                                  Icons.info_outline,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     'Gợi ý: 1 ${_importUnitController.text.trim().isEmpty ? 'đơn vị sỉ' : _importUnitController.text.trim()} nhập kho sẽ được quy đổi thành ${_conversionFactorController.text.trim().isEmpty ? '?' : _conversionFactorController.text.trim()} ${_unitController.text.trim().isEmpty ? 'đơn vị lẻ' : _unitController.text.trim()} khi lưu kho.',
-                                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, height: 1.3),
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textSecondary,
+                                      height: 1.3,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -583,7 +682,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.outlineVariant.withValues(
+                            alpha: 0.3,
+                          ),
+                        ),
                       ),
                       child: Column(
                         children: [
@@ -636,11 +739,15 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                             children: [
                               const Text(
                                 'Kích hoạt kinh doanh (Active)',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: AppColors.textPrimary,
+                                ),
                               ),
                               Switch(
                                 value: _isActive,
-                                activeColor: AppColors.primary,
+                                activeThumbColor: AppColors.primary,
                                 onChanged: (val) {
                                   setState(() => _isActive = val);
                                 },
@@ -655,9 +762,7 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                     // Hidden image url controller (keeps string sync)
                     Visibility(
                       visible: false,
-                      child: TextFormField(
-                        controller: _imageUrlController,
-                      ),
+                      child: TextFormField(controller: _imageUrlController),
                     ),
 
                     // Save Button
@@ -674,7 +779,11 @@ class _AddEditProductScreenState extends State<AddEditProductScreen> {
                         onPressed: _saveProduct,
                         child: const Text(
                           'Lưu sản phẩm',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
                     ),

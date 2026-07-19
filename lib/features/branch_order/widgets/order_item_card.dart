@@ -27,7 +27,10 @@ class OrderItemCard extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Nhập số lượng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          title: const Text(
+            'Nhập số lượng',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
@@ -52,8 +55,13 @@ class OrderItemCard extends StatelessWidget {
                 }
                 Navigator.pop(context);
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-              child: const Text('Xác nhận', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: const Text(
+                'Xác nhận',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -68,13 +76,15 @@ class OrderItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(alpha: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 4,
             offset: const Offset(0, 1),
-          )
+          ),
         ],
       ),
       child: Padding(
@@ -88,13 +98,30 @@ class OrderItemCard extends StatelessWidget {
                 children: [
                   Text(
                     product.productName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Mã SP: ${product.productId}',
-                    style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                    ),
                   ),
+                  if ((product.conversionFactor ?? 1) > 1 && product.importUnit != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      '(~ ${quantity ~/ (product.conversionFactor ?? 1)} ${product.importUnit} ${quantity % (product.conversionFactor ?? 1)} ${product.unit ?? ""})',
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -102,7 +129,10 @@ class OrderItemCard extends StatelessWidget {
             Row(
               children: [
                 IconButton(
-                  icon: const Icon(Icons.remove_circle_outline, color: AppColors.primary),
+                  icon: const Icon(
+                    Icons.remove_circle_outline,
+                    color: AppColors.primary,
+                  ),
                   onPressed: onDecrement,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -120,19 +150,28 @@ class OrderItemCard extends StatelessWidget {
                     ),
                     child: Text(
                       '$quantity',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
+                  icon: const Icon(
+                    Icons.add_circle_outline,
+                    color: AppColors.primary,
+                  ),
                   onPressed: onIncrement,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.error,
+                  ),
                   onPressed: onRemove,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),

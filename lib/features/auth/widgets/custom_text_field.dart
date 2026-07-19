@@ -74,7 +74,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                       color: AppColors.primary.withValues(alpha: 0.1),
                       blurRadius: 0,
                       spreadRadius: 2,
-                    )
+                    ),
                   ]
                 : null,
           ),
@@ -84,7 +84,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Icon(
                   widget.prefixIcon,
-                  color: _isFocused ? AppColors.primary : AppColors.textSecondary,
+                  color: _isFocused
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                 ),
               ),
               Expanded(

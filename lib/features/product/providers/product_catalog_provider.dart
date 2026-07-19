@@ -120,7 +120,10 @@ class ProductCatalogProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final list = await _apiService.getProducts(search: search, categoryId: categoryId);
+      final list = await _apiService.getProducts(
+        search: search,
+        categoryId: categoryId,
+      );
       _products = list;
       _isLoading = false;
       notifyListeners();
@@ -158,7 +161,9 @@ class ProductCatalogProvider extends ChangeNotifier {
     try {
       final success = await _apiService.updateProduct(product);
       if (success) {
-        final index = _products.indexWhere((p) => p.productId == product.productId);
+        final index = _products.indexWhere(
+          (p) => p.productId == product.productId,
+        );
         if (index != -1) {
           _products[index] = product;
         }
@@ -192,6 +197,26 @@ class ProductCatalogProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<int> getProductInventoryForBranch(int branchId, int productId) async {
+    try {
+      return await _apiService.getProductInventoryForBranch(branchId, productId);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<ProductModel> getProductById(int productId) async {
+    try {
+      return await _apiService.getProductById(productId);
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      rethrow;
     }
   }
 }

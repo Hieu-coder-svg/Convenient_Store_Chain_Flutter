@@ -27,19 +27,34 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      userId: json['userId'] ?? 0,
-      username: json['username'] ?? '',
-      fullName: json['fullName'] ?? '',
-      email: json['email'] ?? '',
-      phone: json['phone'],
-      roleId: json['roleId'] ?? 0,
-      roleName: json['roleName'] ?? '',
-      branchId: json['branchId'],
-      branchName: json['branchName'],
-      isActive: json['isActive'] ?? false,
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
+      userId: _parseInt(json['userId']) ?? 0,
+      username: json['username']?.toString() ?? '',
+      fullName: json['fullName']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      phone: json['phone']?.toString(),
+      roleId: _parseInt(json['roleId']) ?? 0,
+      roleName: json['roleName']?.toString() ?? '',
+      branchId: _parseInt(json['branchId']),
+      branchName: json['branchName']?.toString(),
+      isActive: _parseBool(json['isActive']),
+      createdAt: DateTime.tryParse(
+        json['createdAt']?.toString() ?? '',
+      ) ??
+          DateTime.now(),
     );
+  }
+
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+
+    return int.tryParse(value.toString());
+  }
+
+  static bool _parseBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is int) return value == 1;
+
+    return value?.toString().toLowerCase() == 'true';
   }
 }

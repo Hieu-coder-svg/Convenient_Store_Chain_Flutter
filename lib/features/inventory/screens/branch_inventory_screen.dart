@@ -25,7 +25,6 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadBranchIdAndData();
     });
-    _scrollController.addListener(_onScroll);
   }
 
   Future<void> _loadBranchIdAndData() async {
@@ -53,20 +52,10 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
       _currentPage = 1;
     }
     context.read<InventoryProvider>().fetchBranchInventory(
-          _branchId!,
-          page: _currentPage,
-          search: _searchController.text,
-        );
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      final provider = context.read<InventoryProvider>();
-      if (!provider.isLoadingBranch && provider.branchItems.length < provider.branchTotalCount) {
-        _currentPage++;
-        _loadData();
-      }
-    }
+      _branchId!,
+      page: _currentPage,
+      search: _searchController.text,
+    );
   }
 
   @override
@@ -88,12 +77,13 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () => _loadData(refresh: true),
-          )
+          ),
         ],
       ),
       body: Column(
         children: [
           _buildSearchBar(),
+          _buildPaginationControl(),
           Expanded(child: _buildList()),
         ],
       ),
@@ -136,9 +126,14 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
         if (provider.isLoadingBranch && _currentPage == 1) {
           return const Center(child: CircularProgressIndicator());
         }
-        
+
         if (provider.branchError != null && provider.branchItems.isEmpty) {
-          return Center(child: Text(provider.branchError!, style: const TextStyle(color: Colors.red)));
+          return Center(
+            child: Text(
+              provider.branchError!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         }
 
         if (provider.branchItems.isEmpty) {
@@ -149,22 +144,20 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
           onRefresh: () async => _loadData(refresh: true),
           child: ListView.separated(
             controller: _scrollController,
-            itemCount: provider.branchItems.length + (provider.isLoadingBranch ? 1 : 0),
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemCount: provider.branchItems.length,
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
-              if (index == provider.branchItems.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Center(child: CircularProgressIndicator()),
-                );
-              }
-
               final item = provider.branchItems[index];
               final bool isLowStock = item.quantity <= 10;
 
               return ListTile(
-                title: Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}'),
+                title: Text(
+                  item.productName,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}',
+                ),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -178,11 +171,79 @@ class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
                       ),
                     ),
                     if (isLowStock)
-                      const Text('Sắp hết', style: TextStyle(color: Colors.red, fontSize: 10)),
+                      const Text(
+                        'Sắp hết',
+                        style: TextStyle(color: Colors.red, fontSize: 10),
+                      ),
                   ],
                 ),
               );
             },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPaginationControl() {
+    return Consumer<InventoryProvider>(
+      builder: (context, provider, child) {
+        if (provider.branchTotalCount == 0) return const SizedBox.shrink();
+        
+        // Assume default pageSize = 10
+        final int pageSize = 10;
+        final int totalPages = (provider.branchTotalCount / pageSize).ceil();
+        
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                blurRadius: 4,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Tổng: ${provider.branchTotalCount} sp',
+                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left),
+                    onPressed: _currentPage > 1
+                        ? () {
+                            setState(() {
+                              _currentPage--;
+                            });
+                            _loadData();
+                          }
+                        : null,
+                  ),
+                  Text(
+                    'Trang $_currentPage / $totalPages',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right),
+                    onPressed: _currentPage < totalPages
+                        ? () {
+                            setState(() {
+                              _currentPage++;
+                            });
+                            _loadData();
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
