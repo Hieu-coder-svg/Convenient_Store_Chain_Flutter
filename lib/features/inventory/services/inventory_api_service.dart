@@ -64,7 +64,21 @@ class InventoryApiService {
         data: {'items': items},
       );
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Lỗi điều chỉnh tồn kho');
+      throw Exception(e.response?.data['message'] ?? 'Lỗi điều chỉnh tồn kho chi nhánh');
+    }
+  }
+
+  // WAREHOUSE STOCK ADJUSTMENT
+  Future<void> adjustWarehouseStock(
+    List<Map<String, dynamic>> items,
+  ) async {
+    try {
+      await _dioClient.dio.post(
+        '/warehouse-inventory/adjust',
+        data: {'items': items},
+      );
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Lỗi điều chỉnh tồn kho tổng');
     }
   }
 
