@@ -126,6 +126,7 @@ class _RbacConfigScreenState extends State<RbacConfigScreen> {
                           : FontWeight.normal,
                     ),
                     backgroundColor: Colors.white,
+
                     side: BorderSide(
                       color: isSelected
                           ? AppTheme.primaryBlue

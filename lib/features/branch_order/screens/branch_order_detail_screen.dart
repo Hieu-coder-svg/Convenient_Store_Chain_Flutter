@@ -42,7 +42,7 @@ class _BranchOrderDetailScreenState extends State<BranchOrderDetailScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: action == 'duyệt'
+              backgroundColor: action == 'duyệt' || action.contains('nhận hàng')
                   ? AppColors.primary
                   : AppColors.error,
             ),
@@ -73,6 +73,28 @@ class _BranchOrderDetailScreenState extends State<BranchOrderDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(provider.error ?? 'Lỗi khi duyệt đơn'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  Future<void> _confirmReceived() async {
+    final provider = context.read<BranchOrderProvider>();
+    final success = await provider.confirmReceived(widget.orderId);
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Xác nhận nhận hàng thành công!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.error ?? 'Lỗi khi xác nhận nhận hàng'),
           backgroundColor: AppColors.error,
         ),
       );
@@ -325,69 +347,110 @@ class _BranchOrderDetailScreenState extends State<BranchOrderDetailScreen> {
                   const SizedBox(height: 32),
 
                   // Nút hành động
-                  if (isPending && (isWarehouseStaff || isStoreManager))
-                    Row(
-                      children: [
-                        if (isWarehouseStaff) ...[
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
+                  () {
+                    final statusLower = order.status.toLowerCase();
+                    final isPending = statusLower == 'pending';
+                    final isProcessing = statusLower == 'processing';
+
+                    if ((isPending && (isWarehouseStaff || isStoreManager)) || (isProcessing && isStoreManager)) {
+                      return Row(
+                        children: [
+                          if (isPending && isWarehouseStaff) ...[
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              icon: const Icon(
-                                Icons.check_circle_outline,
-                                color: Colors.white,
-                              ),
-                              label: const Text(
-                                'DUYỆT ĐƠN',
-                                style: TextStyle(
+                                icon: const Icon(
+                                  Icons.check_circle_outline,
                                   color: Colors.white,
-                                  fontWeight: FontWeight.bold,
                                 ),
+                                label: const Text(
+                                  'DUYỆT ĐƠN',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                onPressed: provider.isLoading
+                                    ? null
+                                    : () => _showActionDialog(
+                                        'duyệt',
+                                        _approveOrder,
+                                      ),
                               ),
-                              onPressed: provider.isLoading
-                                  ? null
-                                  : () => _showActionDialog(
-                                      'duyệt',
-                                      _approveOrder,
-                                    ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
+                            const SizedBox(width: 16),
+                          ],
+                          if (isProcessing && isStoreManager) ...[
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue.shade700,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.local_shipping_outlined,
+                                  color: Colors.white,
+                                ),
+                                label: const Text(
+                                  'XÁC NHẬN NHẬN HÀNG',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                onPressed: provider.isLoading
+                                    ? null
+                                    : () => _showActionDialog(
+                                        'nhận hàng',
+                                        _confirmReceived,
+                                      ),
+                              ),
+                            ),
+                          ],
+                          if (isPending)
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.error,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.cancel_outlined,
+                                  color: Colors.white,
+                                ),
+                                label: const Text(
+                                  'HỦY ĐƠN',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                onPressed: provider.isLoading
+                                    ? null
+                                    : () => _showActionDialog('hủy', _cancelOrder),
+                              ),
+                            ),
                         ],
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.error,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            icon: const Icon(
-                              Icons.cancel_outlined,
-                              color: Colors.white,
-                            ),
-                            label: const Text(
-                              'HỦY ĐƠN',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            onPressed: provider.isLoading
-                                ? null
-                                : () => _showActionDialog('hủy', _cancelOrder),
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }(),
 
                   // Margin for bottom scrolling
                   const SizedBox(height: 32),

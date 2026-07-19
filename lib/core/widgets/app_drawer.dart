@@ -19,19 +19,60 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                _buildNavItem(
-                  context,
-                  icon: Icons.dashboard_outlined,
-                  title: 'Bảng điều khiển',
-                  onTap: () => context.go('/home'),
-                ),
+                if (user?.roleName == 'System Admin' || user?.roleName == 'SystemAdmin')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.dashboard_outlined,
+                    title: 'Bảng điều khiển',
+                    onTap: () => context.go('/home'),
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.bar_chart_outlined,
+                    title: 'Doanh thu Toàn chuỗi',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/chain-dashboard');
+                    },
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.pie_chart_outline,
+                    title: 'Báo cáo Sản phẩm',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/top-products');
+                    },
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.local_shipping_outlined,
+                    title: 'Đánh giá Nhà cung cấp',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/supplier-performance');
+                    },
+                  ),
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector' || user?.roleName == 'System Admin' || user?.roleName == 'SystemAdmin')
+                  _buildNavItem(
+                    context,
+                    icon: Icons.warning_amber_rounded,
+                    title: 'Cảnh báo Tồn kho',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reports/low-stock-alerts');
+                    },
+                  ),
                 _buildNavItem(
                   context,
                   icon: Icons.person_outline,
                   title: 'Thông tin cá nhân',
                   onTap: () {
-                    // TODO: Implement Profile Screen
                     Navigator.pop(context); // Close drawer
+                    context.go('/profile');
                   },
                 ),
                 _buildNavItem(
@@ -178,7 +219,9 @@ class AppDrawer extends StatelessWidget {
                 if (user?.roleName.contains('Admin') == true ||
                     user?.roleName.contains('Director') == true ||
                     user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('StoreManager') == true)
+                    user?.roleName.contains('StoreManager') == true ||
+                    user?.roleName.contains('Warehouse Staff') == true ||
+                    user?.roleName.contains('WarehouseStaff') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.local_shipping_outlined,
@@ -197,20 +240,22 @@ class AppDrawer extends StatelessWidget {
                     context.go('/goods-receiving');
                   },
                 ),
-                _buildNavItem(
-                  context,
-                  icon: Icons.receipt_long,
-                  title: 'Lịch sử hóa đơn',
-                  onTap: () {
-                    Navigator.pop(context); // Close drawer
-                    context.go('/invoices');
-                  },
-                ),
+                if (user?.roleName.contains('Warehouse Staff') != true &&
+                    user?.roleName.contains('WarehouseStaff') != true)
+                  _buildNavItem(
+                    context,
+                    icon: Icons.receipt_long,
+                    title: 'Lịch sử hóa đơn',
+                    onTap: () {
+                      Navigator.pop(context); // Close drawer
+                      context.go('/invoices');
+                    },
+                  ),
                 if (user?.roleName.contains('Director') == true || user?.roleName.contains('Admin') == true || user?.roleName.contains('Store Manager') == true || user?.roleName.contains('StoreManager') == true)
                   _buildNavItem(
                     context,
                     icon: Icons.bar_chart,
-                    title: 'Báo cáo doanh thu',
+                    title: 'Doanh thu Chi nhánh',
                     onTap: () {
                       Navigator.pop(context); // Close drawer
                       context.go('/daily-summary');
