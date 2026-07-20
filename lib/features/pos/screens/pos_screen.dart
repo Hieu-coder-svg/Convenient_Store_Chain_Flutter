@@ -25,6 +25,10 @@ class _PosScreenState extends State<PosScreen>
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  
+  int? _selectedCategoryId;
+  int _currentProductPage = 0;
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -34,7 +38,9 @@ class _PosScreenState extends State<PosScreen>
       setState(() {});
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProductCatalogProvider>().fetchProducts(page: 1);
+      final provider = context.read<ProductCatalogProvider>();
+      provider.fetchCategories();
+      provider.fetchProducts(page: 1, pageSize: 100);
     });
   }
 
@@ -42,6 +48,7 @@ class _PosScreenState extends State<PosScreen>
   void dispose() {
     _tabController.dispose();
     _searchController.dispose();
+    _pageController.dispose();
     _debounce?.cancel();
     super.dispose();
   }
@@ -49,7 +56,15 @@ class _PosScreenState extends State<PosScreen>
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
-      context.read<ProductCatalogProvider>().fetchProducts(search: query, page: 1);
+      context.read<ProductCatalogProvider>().fetchProducts(
+            search: query,
+            categoryId: _selectedCategoryId,
+            page: 1,
+            pageSize: 100,
+          );
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(0);
+      }
     });
   }
 
@@ -217,6 +232,62 @@ class _PosScreenState extends State<PosScreen>
     );
   }
 
+  Widget _buildCategoryFilter(ProductCatalogProvider provider) {
+    final categories = provider.categories;
+    return Container(
+      height: 38,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: categories.length + 1,
+        itemBuilder: (context, index) {
+          final isAll = index == 0;
+          final category = isAll ? null : categories[index - 1];
+          final isSelected = isAll 
+              ? _selectedCategoryId == null 
+              : _selectedCategoryId == category?.categoryId;
+          
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(
+                isAll ? 'Tất cả' : category!.categoryName,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : AppColors.textSecondary,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              selected: isSelected,
+              selectedColor: AppColors.primary,
+              backgroundColor: Colors.white,
+              side: BorderSide(
+                color: isSelected ? AppColors.primary : AppColors.outlineVariant,
+              ),
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _selectedCategoryId = isAll ? null : category!.categoryId;
+                    _currentProductPage = 0;
+                  });
+                  provider.fetchProducts(
+                    categoryId: _selectedCategoryId,
+                    search: _searchController.text,
+                    page: 1,
+                    pageSize: 100,
+                  );
+                  if (_pageController.hasClients) {
+                    _pageController.jumpToPage(0);
+                  }
+                }
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildProductList(CartProvider cart) {
     return Column(
       children: [
@@ -261,6 +332,12 @@ class _PosScreenState extends State<PosScreen>
             },
           ),
         ),
+        // Category Filter
+        Consumer<ProductCatalogProvider>(
+          builder: (context, provider, child) {
+            return _buildCategoryFilter(provider);
+          },
+        ),
         // Product Grid
         Expanded(
           child: Consumer<ProductCatalogProvider>(
@@ -286,7 +363,7 @@ class _PosScreenState extends State<PosScreen>
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () => provider.fetchProducts(),
+                        onPressed: () => provider.fetchProducts(pageSize: 100),
                         child: const Text('Thử lại'),
                       ),
                     ],
@@ -294,7 +371,10 @@ class _PosScreenState extends State<PosScreen>
                 );
               }
 
-              if (provider.products.isEmpty) {
+              // Only show active products at POS
+              final activeProducts = provider.products.where((p) => p.isActive).toList();
+
+              if (activeProducts.isEmpty) {
                 return const Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -319,36 +399,83 @@ class _PosScreenState extends State<PosScreen>
                   int crossAxisCount = constraints.maxWidth > 600 ? 4 : 2;
                   if (constraints.maxWidth > 900) crossAxisCount = 5;
 
-                  // Only show active products at POS
-                  final activeProducts = provider.products.where((p) => p.isActive).toList();
+                  // Paginated horizontal layout (2 rows)
+                  const int rowsCount = 2;
+                  final int itemsPerPage = crossAxisCount * rowsCount;
+                  final int totalPages = (activeProducts.length / itemsPerPage).ceil();
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: activeProducts.length,
-                    itemBuilder: (context, index) {
-                      final product = activeProducts[index];
-                      return ProductSearchTile(
-                        product: product,
-                        onAdd: () {
-                          cart.addItem(product);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Đã thêm ${product.productName}'),
-                              duration: const Duration(seconds: 1),
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          itemCount: totalPages,
+                          onPageChanged: (page) {
+                            setState(() {
+                              _currentProductPage = page;
+                            });
+                          },
+                          itemBuilder: (context, pageIndex) {
+                            final startIndex = pageIndex * itemsPerPage;
+                            final endIndex = (startIndex + itemsPerPage) > activeProducts.length
+                                ? activeProducts.length
+                                : (startIndex + itemsPerPage);
+                            final pageProducts = activeProducts.sublist(startIndex, endIndex);
+
+                            return GridView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                childAspectRatio: 0.75,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                              itemCount: pageProducts.length,
+                              itemBuilder: (context, index) {
+                                final product = pageProducts[index];
+                                return ProductSearchTile(
+                                  product: product,
+                                  onAdd: () {
+                                    cart.addItem(product);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Đã thêm ${product.productName}'),
+                                        duration: const Duration(seconds: 1),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      if (totalPages > 1)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16, top: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(
+                              totalPages,
+                              (index) => Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                width: _currentProductPage == index ? 24 : 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: _currentProductPage == index
+                                      ? AppColors.primary
+                                      : AppColors.outlineVariant,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      );
-                    },
+                          ),
+                        ),
+                    ],
                   );
                 },
               );

@@ -102,7 +102,6 @@ class AppDrawer extends StatelessWidget {
 
                 // Cửa hàng & Sản phẩm
                 if (user?.roleName != 'System Admin') ...[
-                  _buildSectionTitle('CỬA HÀNG & SẢN PHẨM'),
                   _buildNavItem(
                     context,
                     icon: Icons.inventory_2_outlined,
@@ -152,7 +151,6 @@ class AppDrawer extends StatelessWidget {
 
                 // Đối tác & Chi nhánh
                 if (user?.roleName == 'Chain Director') ...[
-                  _buildSectionTitle('ĐỐI TÁC & CHI NHÁNH'),
                   _buildNavItem(
                     context,
                     icon: Icons.business_outlined,
@@ -177,7 +175,6 @@ class AppDrawer extends StatelessWidget {
                 ],
 
                 // NHÂN SỰ & CA LÀM
-                _buildSectionTitle('NHÂN SỰ & CA LÀM'),
                 if (user?.roleName.contains('Store Manager') == true ||
                     user?.roleName.contains('StoreManager') == true) ...[
                   _buildNavItem(
@@ -217,7 +214,6 @@ class AppDrawer extends StatelessWidget {
                 ],
 
                 // Nghiệp vụ (Branch Orders & POS)
-                _buildSectionTitle('NGHIỆP VỤ'),
                 if (user?.roleName.contains('Store Staff') == true ||
                     user?.roleName.contains('StoreStaff') == true)
                   _buildNavItem(
@@ -346,14 +342,14 @@ class AppDrawer extends StatelessWidget {
                 ),
                 const Divider(),
                 
-                _buildSectionTitle('KHO & TỒN KHO'),
+
                 _buildNavItem(
                   context,
                   icon: Icons.store_mall_directory_outlined,
                   title: 'Kho chi nhánh (Branch)',
                   onTap: () => context.go('/branch-inventory'),
                 ),
-                _buildSectionTitle('NHÂN SỰ & CA LÀM'),
+
                 _buildNavItem(
                   context,
                   icon: Icons.people_outline,
@@ -372,7 +368,7 @@ class AppDrawer extends StatelessWidget {
                   title: 'Lịch sử làm việc',
                   onTap: () => context.go('/work-history'),
                 ),
-                _buildSectionTitle('NGHIỆP VỤ'),
+
                 _buildNavItem(
                   context,
                   icon: Icons.local_shipping_outlined,
@@ -479,18 +475,5 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey[600],
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
+
 }

@@ -131,6 +131,7 @@ class ProductCatalogProvider extends ChangeNotifier {
     String? search,
     int? categoryId,
     int page = 1,
+    int pageSize = 10,
   }) async {
     _isLoading = true;
     _error = null;
@@ -141,13 +142,13 @@ class ProductCatalogProvider extends ChangeNotifier {
         search: search,
         categoryId: categoryId,
         page: page,
-        pageSize: 10,
+        pageSize: pageSize,
       );
 
       _products = pagedResult.items;
       _currentPage = pagedResult.pageNumber;
       _totalCount = pagedResult.totalCount;
-      _totalPages = (pagedResult.totalCount / 10).ceil();
+      _totalPages = (pagedResult.totalCount / pageSize).ceil();
       if (_totalPages == 0) _totalPages = 1;
 
       _isLoading = false;

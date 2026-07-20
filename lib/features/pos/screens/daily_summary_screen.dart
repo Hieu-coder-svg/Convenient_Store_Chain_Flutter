@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../providers/invoice_provider.dart';
 import '../models/daily_summary_model.dart';
+import '../models/period_summary_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../branch/providers/branch_provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -16,10 +18,16 @@ class DailySummaryScreen extends StatefulWidget {
 }
 
 class _DailySummaryScreenState extends State<DailySummaryScreen> {
-  DateTime _selectedDate = DateTime.now();
+  DateTimeRange _selectedDateRange = DateTimeRange(
+    start: DateTime.now(),
+    end: DateTime.now(),
+  );
   int? _branchId;
   bool _canFilterBranch = false;
-  DailySummaryModel? _summary;
+  
+  DailySummaryModel? _dailySummary;
+  PeriodSummaryModel? _periodSummary;
+  
   bool _isFetching = false;
   String? _error;
 
@@ -31,8 +39,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       if (user != null) {
         if (user.roleName.toLowerCase().contains('director') ||
             user.roleName.toLowerCase().contains('admin')) {
-          _branchId =
-              1; // Default to branch 1 so they have to select or we just load it
+          _branchId = 1;
           _canFilterBranch = true;
           context.read<BranchProvider>().fetchBranches().then((_) {
             final branches = context.read<BranchProvider>().branches;
@@ -61,30 +68,61 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       _error = null;
     });
 
-    final summary = await context.read<InvoiceProvider>().fetchDailySummary(
-      branchId: _branchId!,
-      date: _selectedDate,
-    );
+    final isSingleDay = _selectedDateRange.start.isAtSameMomentAs(_selectedDateRange.end) || 
+                        _selectedDateRange.start.difference(_selectedDateRange.end).inDays == 0;
 
-    if (mounted) {
-      setState(() {
-        _summary = summary;
-        _isFetching = false;
-        _error = context.read<InvoiceProvider>().error;
-      });
+    if (isSingleDay) {
+      final summary = await context.read<InvoiceProvider>().fetchDailySummary(
+        branchId: _branchId!,
+        date: _selectedDateRange.start,
+      );
+      if (mounted) {
+        setState(() {
+          _dailySummary = summary;
+          _periodSummary = null;
+          _isFetching = false;
+          _error = context.read<InvoiceProvider>().error;
+        });
+      }
+    } else {
+      final summary = await context.read<InvoiceProvider>().fetchPeriodSummary(
+        branchId: _branchId!,
+        startDate: _selectedDateRange.start,
+        endDate: _selectedDateRange.end,
+      );
+      if (mounted) {
+        setState(() {
+          _periodSummary = summary;
+          _dailySummary = null;
+          _isFetching = false;
+          _error = context.read<InvoiceProvider>().error;
+        });
+      }
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+  Future<void> _selectDateRange(BuildContext context) async {
+    final DateTimeRange? picked = await showDateRangePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDateRange: _selectedDateRange,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
-    if (picked != null && picked != _selectedDate) {
+    if (picked != null && picked != _selectedDateRange) {
       setState(() {
-        _selectedDate = picked;
+        _selectedDateRange = picked;
       });
     }
   }
@@ -105,7 +143,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
         elevation: 0.5,
         iconTheme: const IconThemeData(color: AppColors.textSecondary),
         actions: [
-          if (_summary != null)
+          if (_periodSummary != null)
             IconButton(
               icon: const Icon(Icons.print, color: AppColors.primary),
               tooltip: 'Xem bản in',
@@ -191,7 +229,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                       ),
                       Expanded(
                         child: InkWell(
-                          onTap: () => _selectDate(context),
+                          onTap: () => _selectDateRange(context),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               vertical: 8,
@@ -202,7 +240,9 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              DateFormat('dd/MM/yyyy').format(_selectedDate),
+                              _selectedDateRange.start.isAtSameMomentAs(_selectedDateRange.end) || _selectedDateRange.start.difference(_selectedDateRange.end).inDays == 0
+                                  ? DateFormat('dd/MM/yyyy').format(_selectedDateRange.start)
+                                  : '${DateFormat('dd/MM/yyyy').format(_selectedDateRange.start)} - ${DateFormat('dd/MM/yyyy').format(_selectedDateRange.end)}',
                             ),
                           ),
                         ),
@@ -248,6 +288,12 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
     );
   }
 
+  bool get _hasData => _dailySummary != null || _periodSummary != null;
+  int get _totalInvoices => _periodSummary?.totalInvoices ?? _dailySummary?.totalInvoices ?? 0;
+  double get _totalRevenue => _periodSummary?.totalRevenue ?? _dailySummary?.totalRevenue ?? 0;
+  double get _totalDiscount => _periodSummary?.totalDiscount ?? _dailySummary?.totalDiscount ?? 0;
+  double get _netRevenue => _periodSummary?.netRevenue ?? _dailySummary?.netRevenue ?? 0;
+
   Widget _buildResult() {
     if (_isFetching) {
       return const Center(child: CircularProgressIndicator());
@@ -273,7 +319,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
       );
     }
 
-    if (_summary == null) {
+    if (!_hasData) {
       return const Center(
         child: Text(
           'Chưa có dữ liệu báo cáo',
@@ -283,6 +329,10 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
     }
 
     final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+    final isSingleDay = _selectedDateRange.start.isAtSameMomentAs(_selectedDateRange.end) || _selectedDateRange.start.difference(_selectedDateRange.end).inDays == 0;
+    final reportTitle = isSingleDay
+        ? 'BÁO CÁO NGÀY ${DateFormat('dd/MM/yyyy').format(_selectedDateRange.start)}'
+        : 'BÁO CÁO TỪ ${DateFormat('dd/MM/yyyy').format(_selectedDateRange.start)} ĐẾN ${DateFormat('dd/MM/yyyy').format(_selectedDateRange.end)}';
 
     return RefreshIndicator(
       onRefresh: _fetchSummary,
@@ -311,7 +361,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'BÁO CÁO NGÀY ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                        reportTitle,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -337,7 +387,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
             children: [
               _buildStatCard(
                 title: 'Tổng hóa đơn',
-                value: '${_summary!.totalInvoices}',
+                value: '$_totalInvoices',
                 unit: 'đơn',
                 icon: Icons.receipt_long,
                 color: Colors.blue,
@@ -345,7 +395,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               _buildStatCard(
                 title: 'Doanh thu',
                 value: formatCurrency
-                    .format(_summary!.totalRevenue)
+                    .format(_totalRevenue)
                     .replaceAll(' đ', ''),
                 unit: 'VNĐ',
                 icon: Icons.monetization_on,
@@ -354,7 +404,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               _buildStatCard(
                 title: 'Giảm giá',
                 value: formatCurrency
-                    .format(_summary!.totalDiscount)
+                    .format(_totalDiscount)
                     .replaceAll(' đ', ''),
                 unit: 'VNĐ',
                 icon: Icons.local_offer,
@@ -363,7 +413,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               _buildStatCard(
                 title: 'Doanh thu ròng',
                 value: formatCurrency
-                    .format(_summary!.netRevenue)
+                    .format(_netRevenue)
                     .replaceAll(' đ', ''),
                 unit: 'VNĐ',
                 icon: Icons.trending_up,
@@ -372,7 +422,173 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
               ),
             ],
           ),
+          if (_periodSummary != null && _periodSummary!.dailyRecords.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                'Biểu đồ doanh thu ròng',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildChart(),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _buildChart() {
+    final records = _periodSummary!.dailyRecords;
+    if (records.isEmpty) return const SizedBox();
+
+    double maxRevenue = 0;
+    for (var r in records) {
+      if (r.netRevenue > maxRevenue) {
+        maxRevenue = r.netRevenue;
+      }
+    }
+    
+    // Add 10% padding to max for Y axis
+    maxRevenue = maxRevenue + (maxRevenue * 0.1);
+    if (maxRevenue == 0) maxRevenue = 100000;
+
+    final spots = records.asMap().entries.map((e) {
+      return FlSpot(e.key.toDouble(), e.value.netRevenue);
+    }).toList();
+
+    return Container(
+      height: 300,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: maxRevenue > 0 ? maxRevenue / 4 : 1,
+            getDrawingHorizontalLine: (value) {
+              return FlLine(
+                color: Colors.grey.shade200,
+                strokeWidth: 1,
+              );
+            },
+          ),
+          titlesData: FlTitlesData(
+            show: true,
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  if (value.toInt() >= 0 && value.toInt() < records.length) {
+                    final date = records[value.toInt()].date;
+                    if (date == null) return const Text('');
+                    // Show every 2nd or 3rd label if too many days
+                    if (records.length > 7 && value.toInt() % 2 != 0 && value.toInt() != records.length - 1) {
+                      return const Text('');
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        DateFormat('dd/MM').format(date),
+                        style: const TextStyle(color: Colors.grey, fontSize: 10),
+                      ),
+                    );
+                  }
+                  return const Text('');
+                },
+              ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: maxRevenue > 0 ? maxRevenue / 4 : 1,
+                reservedSize: 50,
+                getTitlesWidget: (value, meta) {
+                  if (value == 0) return const Text('');
+                  String text;
+                  if (value >= 1000000) {
+                    text = '${(value / 1000000).toStringAsFixed(1)}M';
+                  } else if (value >= 1000) {
+                    text = '${(value / 1000).toStringAsFixed(0)}K';
+                  } else {
+                    text = value.toStringAsFixed(0);
+                  }
+                  return Text(
+                    text,
+                    style: const TextStyle(color: Colors.grey, fontSize: 10),
+                    textAlign: TextAlign.right,
+                  );
+                },
+              ),
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          minX: 0,
+          maxX: records.length.toDouble() - 1,
+          minY: 0,
+          maxY: maxRevenue,
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: AppColors.primary,
+              barWidth: 3,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.primary.withValues(alpha: 0.3),
+                    AppColors.primary.withValues(alpha: 0.0),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+          ],
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipColor: (touchedSpot) => Colors.blueGrey,
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((LineBarSpot touchedSpot) {
+                  final textStyle = const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  );
+                  final formatCurrency = NumberFormat.currency(locale: 'vi_VN', symbol: 'đ');
+                  return LineTooltipItem(
+                    formatCurrency.format(touchedSpot.y),
+                    textStyle,
+                  );
+                }).toList();
+              },
+            ),
+            handleBuiltInTouches: true,
+          ),
+        ),
       ),
     );
   }
@@ -467,23 +683,27 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 4),
-                Text('Ngày: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}'),
+                Text(
+                  _selectedDateRange.start.isAtSameMomentAs(_selectedDateRange.end) || _selectedDateRange.start.difference(_selectedDateRange.end).inDays == 0
+                    ? 'Ngày: ${DateFormat('dd/MM/yyyy').format(_selectedDateRange.start)}'
+                    : 'Từ: ${DateFormat('dd/MM/yyyy').format(_selectedDateRange.start)} - Đến: ${DateFormat('dd/MM/yyyy').format(_selectedDateRange.end)}'
+                ),
                 const SizedBox(height: 16),
                 const Text('----------------------------------------'),
                 const SizedBox(height: 16),
                 _buildPrintRow(
                   'Tổng số hóa đơn:',
-                  '${_summary!.totalInvoices} đơn',
+                  '${_periodSummary!.totalInvoices} đơn',
                 ),
                 const SizedBox(height: 8),
                 _buildPrintRow(
                   'Tổng doanh thu:',
-                  formatCurrency.format(_summary!.totalRevenue),
+                  formatCurrency.format(_periodSummary!.totalRevenue),
                 ),
                 const SizedBox(height: 8),
                 _buildPrintRow(
                   'Tổng giảm giá:',
-                  formatCurrency.format(_summary!.totalDiscount),
+                  formatCurrency.format(_periodSummary!.totalDiscount),
                 ),
                 const SizedBox(height: 16),
                 const Text('----------------------------------------'),
@@ -499,7 +719,7 @@ class _DailySummaryScreenState extends State<DailySummaryScreen> {
                       ),
                     ),
                     Text(
-                      formatCurrency.format(_summary!.netRevenue),
+                      formatCurrency.format(_periodSummary!.netRevenue),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
