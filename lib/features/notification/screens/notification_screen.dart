@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../providers/notification_provider.dart';
+import '../../purchase_order/providers/purchase_order_provider.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -119,7 +120,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 return ListTile(
                   tileColor: item.isRead
                       ? Colors.transparent
-                      : Colors.blue.withOpacity(0.05),
+                      : Colors.blue.withValues(alpha: 0.05),
                   leading: CircleAvatar(
                     backgroundColor: item.isRead
                         ? Colors.grey
@@ -155,9 +156,31 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ],
                   ),
-                  onTap: () {
+                  trailing: item.purchaseOrderId == null
+                      ? null
+                      : const Icon(Icons.chevron_right),
+                  onTap: () async {
                     if (!item.isRead) {
-                      provider.markAsRead(item.notificationId);
+                      await provider.markAsRead(item.notificationId);
+                    }
+                    if (!context.mounted) return;
+                    final poId = item.purchaseOrderId;
+                    if (poId != null) {
+                      final order = await context
+                          .read<PurchaseOrderProvider>()
+                          .fetchOrderById(poId);
+                      if (!context.mounted) return;
+                      if (order != null) {
+                        context.push('/purchase-orders/$poId');
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Không thể tải chi tiết đơn đặt hàng.',
+                            ),
+                          ),
+                        );
+                      }
                     }
                   },
                 );

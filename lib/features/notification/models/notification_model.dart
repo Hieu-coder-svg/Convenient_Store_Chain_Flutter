@@ -25,4 +25,20 @@ class NotificationModel {
       createdAt: DateTime.parse(json['createdAt']),
     );
   }
+
+  int? get purchaseOrderId {
+    final text = '$title $message';
+    final businessCodeMatch = RegExp(
+      r'PO-\d{8}-(\d+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    if (businessCodeMatch != null) {
+      return int.tryParse(businessCodeMatch.group(1)!);
+    }
+    final legacyMatch = RegExp(
+      r'PO #(\d+)',
+      caseSensitive: false,
+    ).firstMatch(text);
+    return legacyMatch == null ? null : int.tryParse(legacyMatch.group(1)!);
+  }
 }

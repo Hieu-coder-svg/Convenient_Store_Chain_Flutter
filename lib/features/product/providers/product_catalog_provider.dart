@@ -8,6 +8,9 @@ class ProductCatalogProvider extends ChangeNotifier {
 
   List<CategoryModel> _categories = [];
   List<ProductModel> _products = [];
+  List<ProductModel> _purchaseOrderProducts = [];
+  bool _isLoadingPurchaseOrderProducts = false;
+  String? _purchaseOrderProductsError;
   bool _isLoading = false;
   String? _error;
 
@@ -19,6 +22,9 @@ class ProductCatalogProvider extends ChangeNotifier {
 
   List<CategoryModel> get categories => _categories;
   List<ProductModel> get products => _products;
+  List<ProductModel> get purchaseOrderProducts => _purchaseOrderProducts;
+  bool get isLoadingPurchaseOrderProducts => _isLoadingPurchaseOrderProducts;
+  String? get purchaseOrderProductsError => _purchaseOrderProductsError;
   bool get isLoading => _isLoading;
   String? get error => _error;
   int get currentPage => _currentPage;
@@ -121,7 +127,11 @@ class ProductCatalogProvider extends ChangeNotifier {
   }
 
   // --- Product Handlers ---
-  Future<void> fetchProducts({String? search, int? categoryId, int page = 1}) async {
+  Future<void> fetchProducts({
+    String? search,
+    int? categoryId,
+    int page = 1,
+  }) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -133,18 +143,58 @@ class ProductCatalogProvider extends ChangeNotifier {
         page: page,
         pageSize: 10,
       );
-      
+
       _products = pagedResult.items;
       _currentPage = pagedResult.pageNumber;
       _totalCount = pagedResult.totalCount;
       _totalPages = (pagedResult.totalCount / 10).ceil();
       if (_totalPages == 0) _totalPages = 1;
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Loads every product page for purchase-order selectors without changing
+  /// the paginated product-management screen state.
+  Future<void> fetchPurchaseOrderProducts({bool forceRefresh = false}) async {
+    if (_isLoadingPurchaseOrderProducts) return;
+    if (_purchaseOrderProducts.isNotEmpty && !forceRefresh) return;
+
+    _isLoadingPurchaseOrderProducts = true;
+    _purchaseOrderProductsError = null;
+    notifyListeners();
+
+    try {
+      const pageSize = 100;
+      var page = 1;
+      var totalPages = 1;
+      final allProducts = <ProductModel>[];
+
+      do {
+        final result = await _apiService.getProducts(
+          page: page,
+          pageSize: pageSize,
+        );
+        allProducts.addAll(result.items);
+        totalPages = result.totalPages > 0 ? result.totalPages : 1;
+        page++;
+      } while (page <= totalPages);
+
+      final uniqueProducts = <int, ProductModel>{};
+      for (final product in allProducts) {
+        uniqueProducts[product.productId] = product;
+      }
+      _purchaseOrderProducts = uniqueProducts.values.toList()
+        ..sort((a, b) => a.productName.compareTo(b.productName));
+    } catch (e) {
+      _purchaseOrderProductsError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingPurchaseOrderProducts = false;
       notifyListeners();
     }
   }
@@ -217,7 +267,10 @@ class ProductCatalogProvider extends ChangeNotifier {
 
   Future<int> getProductInventoryForBranch(int branchId, int productId) async {
     try {
-      return await _apiService.getProductInventoryForBranch(branchId, productId);
+      return await _apiService.getProductInventoryForBranch(
+        branchId,
+        productId,
+      );
     } catch (e) {
       _error = e.toString().replaceAll('Exception: ', '');
       notifyListeners();

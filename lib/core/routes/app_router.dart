@@ -39,6 +39,7 @@ import '../../features/reports/screens/product_sales_report_screen.dart';
 import '../../features/reports/screens/supplier_performance_screen.dart';
 import '../../features/reports/screens/low_stock_alerts_screen.dart';
 import '../../features/user_management/screens/roles_screen.dart';
+
 class AppRouter {
   static final router = GoRouter(
     initialLocation: '/login',
@@ -134,16 +135,48 @@ class AppRouter {
       GoRoute(
         path: '/purchase-orders',
         builder: (context, state) => const PurchaseOrderListScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          const allowedRoles = {
+            'Warehouse Staff',
+            'Chain Director',
+            'System Admin',
+          };
+          return allowedRoles.contains(role) ? null : '/home';
+        },
       ),
       GoRoute(
         path: '/purchase-orders/create',
-        builder: (context, state) => const CreatePurchaseOrderScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return CreatePurchaseOrderScreen(
+            initialSupplierId: extra?['supplierId'] as int?,
+            initialItems:
+                (extra?['items'] as List?)
+                    ?.map((item) => Map<String, dynamic>.from(item as Map))
+                    .toList() ??
+                const [],
+          );
+        },
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          return role == 'Chain Director' ? null : '/purchase-orders';
+        },
       ),
       GoRoute(
         path: '/purchase-orders/:id',
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
           return PurchaseOrderDetailScreen(poId: id);
+        },
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          const allowedRoles = {
+            'Warehouse Staff',
+            'Chain Director',
+            'System Admin',
+          };
+          return allowedRoles.contains(role) ? null : '/home';
         },
       ),
       GoRoute(
@@ -170,18 +203,44 @@ class AppRouter {
       GoRoute(
         path: '/goods-receiving',
         builder: (context, state) => const GoodsReceivingScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          return role == 'Warehouse Staff' ? null : '/home';
+        },
       ),
       GoRoute(
         path: '/branch-inventory',
         builder: (context, state) => const BranchInventoryScreen(),
+        redirect: (context, state) {
+          final role = context.read<AuthProvider>().currentUser?.roleName;
+          const allowedRoles = {
+            'Store Manager',
+            'Store Staff',
+            'Chain Director',
+            'System Admin',
+          };
+          return allowedRoles.contains(role) ? null : '/home';
+        },
       ),
       GoRoute(
         path: '/stock-adjustment',
         builder: (context, state) {
+          final user = context.read<AuthProvider>().currentUser!;
           final extra = state.extra as Map<String, dynamic>?;
-          final isWarehouse = extra?['isWarehouse'] == true;
-          final branchId = isWarehouse ? null : (extra?['branchId'] as int? ?? 1);
+          final branchId = extra?['branchId'] as int? ?? user.branchId!;
           return StockAdjustmentScreen(branchId: branchId);
+        },
+        redirect: (context, state) {
+          final user = context.read<AuthProvider>().currentUser;
+          const allowedRoles = {
+            'Store Manager',
+          };
+          if (user == null || !allowedRoles.contains(user.roleName)) {
+            return '/home';
+          }
+          final extra = state.extra as Map<String, dynamic>?;
+          final branchId = extra?['branchId'] as int? ?? user.branchId;
+          return branchId == null ? '/branch-inventory' : null;
         },
       ),
       GoRoute(
@@ -228,10 +287,7 @@ class AppRouter {
         path: '/employee-management',
         builder: (context, state) => const EmployeeManagementScreen(),
       ),
-      GoRoute(
-        path: '/roles',
-        builder: (context, state) => const RolesScreen(),
-      ),
+      GoRoute(path: '/roles', builder: (context, state) => const RolesScreen()),
       GoRoute(
         path: '/store-schedule',
         builder: (context, state) => const StoreScheduleBuilderScreen(),

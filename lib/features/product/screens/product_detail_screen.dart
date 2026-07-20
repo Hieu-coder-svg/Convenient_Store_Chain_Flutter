@@ -71,23 +71,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
       if (!mounted) return;
 
-      final branches = branchProvider.branches;
+      final user = context.read<AuthProvider>().currentUser;
+      final canViewAllBranches = user?.roleName == 'Chain Director' ||
+          user?.roleName == 'System Admin';
+      final branches = branchProvider.branches.where((branch) {
+        if (!branch.isActive) return false;
+        return canViewAllBranches || branch.branchId == user?.branchId;
+      }).toList();
       final Map<int, int> tempStock = {};
 
-      // Load stock for each active branch in parallel
+      // Store roles may only query their assigned branch. Director/Admin can
+      // compare stock across branches.
       await Future.wait(
         branches.map((branch) async {
-          if (branch.isActive) {
-            try {
-              final qty = await catalogProvider.getProductInventoryForBranch(
-                branch.branchId,
-                widget.productId,
-              );
-              tempStock[branch.branchId] = qty;
-            } catch (_) {
-              tempStock[branch.branchId] = 0; // Default to 0 on failure
-            }
-          }
+          final qty = await catalogProvider.getProductInventoryForBranch(
+            branch.branchId,
+            widget.productId,
+          );
+          tempStock[branch.branchId] = qty;
         }),
       );
 
@@ -138,11 +139,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final role = context.watch<AuthProvider>().currentUser?.roleName;
+    final currentUser = context.watch<AuthProvider>().currentUser;
+    final role = currentUser?.roleName;
+    final canViewAllBranches =
+        role == 'Chain Director' || role == 'System Admin';
     final branches = context
         .watch<BranchProvider>()
         .branches
-        .where((b) => b.isActive)
+        .where(
+          (branch) =>
+              branch.isActive &&
+              (canViewAllBranches || branch.branchId == currentUser?.branchId),
+        )
         .toList();
 
     return Scaffold(

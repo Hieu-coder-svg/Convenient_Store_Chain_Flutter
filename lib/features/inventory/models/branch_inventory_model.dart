@@ -4,6 +4,7 @@ class BranchInventoryModel {
   final int productId;
   final String productName;
   final String? barcode;
+  final String? unit;
   final int quantity;
   final DateTime lastUpdated;
 
@@ -13,6 +14,7 @@ class BranchInventoryModel {
     required this.productId,
     required this.productName,
     this.barcode,
+    this.unit,
     required this.quantity,
     required this.lastUpdated,
   });
@@ -24,6 +26,7 @@ class BranchInventoryModel {
       productId: json['productId'],
       productName: json['productName'] ?? '',
       barcode: json['barcode'],
+      unit: json['unit'],
       quantity: json['quantity'],
       lastUpdated: DateTime.parse(json['lastUpdated']),
     );
