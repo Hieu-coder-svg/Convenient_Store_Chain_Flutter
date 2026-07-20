@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/invoice_model.dart';
 import '../models/daily_summary_model.dart';
+import '../models/period_summary_model.dart';
 import '../services/invoice_api_service.dart';
 
 class InvoiceProvider extends ChangeNotifier {
@@ -93,6 +94,27 @@ class InvoiceProvider extends ChangeNotifier {
       final String dateStr = date.toIso8601String().split('T')[0];
       final Map<String, dynamic> data = await _invoiceService.getDailySummary(branchId, dateStr);
       final summary = DailySummaryModel.fromJson(data);
+      _isLoading = false;
+      notifyListeners();
+      return summary;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<PeriodSummaryModel?> fetchPeriodSummary({required int branchId, required DateTime startDate, required DateTime endDate}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final String startDateStr = startDate.toIso8601String().split('T')[0];
+      final String endDateStr = endDate.toIso8601String().split('T')[0];
+      final Map<String, dynamic> data = await _invoiceService.getPeriodSummary(branchId, startDateStr, endDateStr);
+      final summary = PeriodSummaryModel.fromJson(data);
       _isLoading = false;
       notifyListeners();
       return summary;

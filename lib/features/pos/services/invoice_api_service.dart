@@ -87,6 +87,31 @@ class InvoiceApiService {
     }
   }
 
+  Future<Map<String, dynamic>> getPeriodSummary(
+    int branchId,
+    String startDate,
+    String endDate,
+  ) async {
+    try {
+      final response = await _dioClient.dio.get(
+        '${ApiConstants.invoices}/summary/period',
+        queryParameters: {
+          'branchId': branchId,
+          'startDate': startDate,
+          'endDate': endDate,
+        },
+      );
+      if (response.data != null && response.data['data'] != null) {
+        return response.data['data'];
+      }
+      throw Exception('Invalid response format');
+    } on DioException catch (e) {
+      throw _handleError(e);
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
   Exception _handleError(DioException e) {
     if (e.response != null) {
       final data = e.response?.data;
