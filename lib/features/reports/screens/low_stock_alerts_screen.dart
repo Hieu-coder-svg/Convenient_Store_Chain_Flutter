@@ -4,6 +4,7 @@ import '../../../core/widgets/app_drawer.dart';
 import '../../../core/network/dio_client.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/reports_provider.dart';
+import '../../../core/constants/app_colors.dart';
 
 class LowStockAlertsScreen extends StatefulWidget {
   const LowStockAlertsScreen({Key? key}) : super(key: key);
@@ -99,10 +100,16 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
       backgroundColor: Colors.grey[50],
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Cảnh Báo Hàng Sắp Hết'),
+        title: const Text(
+          'Cảnh Báo Hàng Sắp Hết',
+          style: TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        elevation: 0.5,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -296,24 +303,24 @@ class _LowStockAlertsScreenState extends State<LowStockAlertsScreen> {
                   child: TextField(
                     controller: _warehouseThresholdCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Ngưỡng Kho Tổng',
+                      labelText: 'Kho tổng',
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _branchThresholdCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Ngưỡng Chi Nhánh',
+                      labelText: 'Chi nhánh',
                       border: OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: _isSavingConfig ? null : _handleSaveConfig,
                   icon: _isSavingConfig

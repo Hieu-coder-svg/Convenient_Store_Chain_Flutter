@@ -233,12 +233,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
         backgroundColor: Colors.white,
         elevation: 0.5,
         iconTheme: const IconThemeData(color: AppColors.textSecondary),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: AppColors.textSecondary),
-            onPressed: () {},
-          ),
-        ],
       ),
       drawer: const AppDrawer(),
       body: RefreshIndicator(
@@ -290,7 +284,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   children: [
                     _buildFilterChip(
                       label: _selectedCategoryId == null
-                          ? 'Categories'
+                          ? 'Danh mục'
                           : provider.categories
                                 .firstWhere(
                                   (c) => c.categoryId == _selectedCategoryId,
@@ -304,23 +298,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     const SizedBox(width: 8),
                     _buildFilterChip(
                       label: _selectedStatus == null
-                          ? 'Status'
-                          : (_selectedStatus! ? 'Active' : 'Inactive'),
+                          ? 'Trạng thái'
+                          : (_selectedStatus! ? 'Hoạt động' : 'Ngưng hoạt động'),
                       icon: Icons.expand_more,
                       onTap: _showStatusFilterSheet,
                       isActive: _selectedStatus != null,
                     ),
-                    if (role == 'Chain Director') ...[
-                      const SizedBox(width: 8),
-                      _buildFilterChip(
-                        label: 'Categories Admin',
-                        icon: Icons.edit_note,
-                        onTap: () {
-                          context.go('/categories');
-                        },
-                        isActive: false,
-                      ),
-                    ],
                   ],
                 ),
               ),

@@ -28,19 +28,11 @@ class AppDrawer extends StatelessWidget {
                   _buildNavItem(
                     context,
                     icon: Icons.dashboard_outlined,
-                    title: 'Bảng điều khiển',
+                    title: 'Quản lý tài khoản',
                     onTap: () => context.go('/home'),
                   ),
-                if (user?.roleName == 'System Admin' || user?.roleName == 'SystemAdmin')
-                  _buildNavItem(
-                    context,
-                    icon: Icons.admin_panel_settings_outlined,
-                    title: 'Vai trò & Quyền',
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.go('/roles');
-                    },
-                  ),
+
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
                   _buildNavItem(
                     context,
                     icon: Icons.bar_chart_outlined,
@@ -70,7 +62,7 @@ class AppDrawer extends StatelessWidget {
                       context.go('/reports/supplier-performance');
                     },
                   ),
-                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector' || user?.roleName == 'System Admin' || user?.roleName == 'SystemAdmin')
+                if (user?.roleName == 'Chain Director' || user?.roleName == 'ChainDirector')
                   _buildNavItem(
                     context,
                     icon: Icons.warning_amber_rounded,

@@ -84,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: const Icon(Icons.store, color: Colors.white, size: 40),
                 ),
                 Text(
-                  'Store Manager',
+                  'Convenient Store',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                     letterSpacing: -0.5,
                     color: AppColors.textPrimary,
@@ -234,45 +234,45 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
 
                       // Secondary Options
-                      const SizedBox(height: 32),
-                      const Divider(color: AppColors.outlineVariant),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Hoặc đăng nhập nhanh bằng mã QR',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.outline,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.qr_code_scanner,
-                          color: AppColors.primary,
-                        ),
-                        label: const Text(
-                          'Quét mã QR',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          side: const BorderSide(
-                            color: AppColors.outlineVariant,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                        ),
-                      ),
+                      // const SizedBox(height: 32),
+                      // const Divider(color: AppColors.outlineVariant),
+                      // const SizedBox(height: 24),
+                      // const Text(
+                      //   'Hoặc đăng nhập nhanh bằng mã QR',
+                      //   style: TextStyle(
+                      //     fontSize: 11,
+                      //     fontWeight: FontWeight.w500,
+                      //     color: AppColors.outline,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 16),
+                      // OutlinedButton.icon(
+                      //   onPressed: () {},
+                      //   icon: const Icon(
+                      //     Icons.qr_code_scanner,
+                      //     color: AppColors.primary,
+                      //   ),
+                      //   label: const Text(
+                      //     'Quét mã QR',
+                      //     style: TextStyle(
+                      //       fontSize: 12,
+                      //       fontWeight: FontWeight.w600,
+                      //       color: AppColors.textPrimary,
+                      //     ),
+                      //   ),
+                      //   style: OutlinedButton.styleFrom(
+                      //     padding: const EdgeInsets.symmetric(
+                      //       horizontal: 24,
+                      //       vertical: 12,
+                      //     ),
+                      //     side: const BorderSide(
+                      //       color: AppColors.outlineVariant,
+                      //     ),
+                      //     shape: RoundedRectangleBorder(
+                      //       borderRadius: BorderRadius.circular(24),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -280,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // Footer
                 const SizedBox(height: 32),
                 const Text(
-                  '© 2024 Store Manager Enterprise. All rights reserved.',
+                  '© 2024 Convenient Store Enterprise. All rights reserved.',
                   style: TextStyle(
                     fontSize: 11,
                     color: AppColors.textSecondary,

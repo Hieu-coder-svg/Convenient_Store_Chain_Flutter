@@ -118,12 +118,6 @@ class _BranchListScreenState extends State<BranchListScreen> {
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-            onPressed: () {},
-          ),
-        ],
       ),
       drawer: const AppDrawer(),
       body: provider.isLoading && provider.branches.isEmpty

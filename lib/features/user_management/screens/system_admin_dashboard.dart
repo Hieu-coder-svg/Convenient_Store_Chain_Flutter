@@ -20,7 +20,7 @@ class _SystemAdminDashboardState extends State<SystemAdminDashboard> {
   ];
 
   final List<String> _titles = [
-    'Quản lý người dùng',
+    'Quản lý tài khoản',
     'Vai trò & Quyền',
   ];
 

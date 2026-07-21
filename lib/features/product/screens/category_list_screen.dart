@@ -247,16 +247,6 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
         elevation: 0.5,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: AppColors.textSecondary),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert, color: AppColors.textSecondary),
-            onPressed: () {},
-          ),
-        ],
       ),
       drawer: const AppDrawer(),
       body: provider.isLoading && categories.isEmpty
@@ -506,53 +496,53 @@ class _CategoryListScreenState extends State<CategoryListScreen> {
                       ),
 
                     const SizedBox(height: 24),
-                    // Empty State Illustration Placeholder (Subtle)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceBright,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.outlineVariant.withValues(
-                            alpha: 0.5,
-                          ),
-                          style: BorderStyle.solid,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.dashboard_customize,
-                              color: AppColors.textSecondary,
-                              size: 30,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Tùy chỉnh danh mục để tối ưu quy trình kiểm kho và bán hàng tại quầy.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // // Empty State Illustration Placeholder (Subtle)
+                    // Container(
+                    //   width: double.infinity,
+                    //   padding: const EdgeInsets.all(24),
+                    //   decoration: BoxDecoration(
+                    //     color: AppColors.surfaceBright,
+                    //     borderRadius: BorderRadius.circular(16),
+                    //     border: Border.all(
+                    //       color: AppColors.outlineVariant.withValues(
+                    //         alpha: 0.5,
+                    //       ),
+                    //       style: BorderStyle.solid,
+                    //     ),
+                    //   ),
+                    //   child: Column(
+                    //     children: [
+                    //       Container(
+                    //         width: 60,
+                    //         height: 60,
+                    //         decoration: BoxDecoration(
+                    //           color: Colors.white,
+                    //           borderRadius: BorderRadius.circular(30),
+                    //           boxShadow: [
+                    //             BoxShadow(
+                    //               color: Colors.black.withValues(alpha: 0.05),
+                    //               blurRadius: 10,
+                    //             ),
+                    //           ],
+                    //         ),
+                    //         child: const Icon(
+                    //           Icons.dashboard_customize,
+                    //           color: AppColors.textSecondary,
+                    //           size: 30,
+                    //         ),
+                    //       ),
+                    //       // const SizedBox(height: 16),
+                    //       // const Text(
+                    //       //   'Tùy chỉnh danh mục để tối ưu quy trình kiểm kho và bán hàng tại quầy.',
+                    //       //   textAlign: TextAlign.center,
+                    //       //   style: TextStyle(
+                    //       //     color: AppColors.textSecondary,
+                    //       //     fontSize: 12,
+                    //       //   ),
+                    //       // ),
+                    //     ],
+                    //   ),
+                    // ),
                     const SizedBox(
                       height: 80,
                     ), // Chừa trống cho FAB và Bottom Nav Bar
