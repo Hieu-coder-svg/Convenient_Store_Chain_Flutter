@@ -10,8 +10,9 @@ class PurchaseOrderApiService {
   Future<List<PurchaseOrderModel>> getAllPurchaseOrders() async {
     try {
       final response = await _dioClient.dio.get('/purchase-orders');
-      final List<dynamic> data = response.data;
-      return data.map((json) => PurchaseOrderModel.fromJson(json)).toList();
+      final Map<String, dynamic> data = response.data;
+      final List<dynamic> items = data['items'] ?? [];
+      return items.map((json) => PurchaseOrderModel.fromJson(json)).toList();
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Failed to load purchase orders');
     }

@@ -370,61 +370,61 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
 
                 // Visual Support & Links
-                const SizedBox(height: 32),
-                Container(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 128,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            image: const DecorationImage(
-                              image: NetworkImage(
-                                'https://lh3.googleusercontent.com/aida-public/AB6AXuD85qlaMM53v0G2Qf79VK8mxXCUgm06EjMH_yiXTtnedDjMWULZTXYf-1NflmhTS_nplgDvk65SB6AKfaK9GDBEXYEIlzUfv4GuMHJhR5aUg0Y7ycJCThDSnkoILW8SVTS3NAHtxQAtiBiCcJjQAag36R544MOt9YDB-UL_1lUz__jr2NHMmdqEeezuuiz6y_sjCVS750Qc0ExuxwExl2QvruWZjjF98sWCXRdmhYa8MEFoRCpRKULgnhi6Th310EldVco2XFvaitE',
-                              ),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          height: 128,
-                          decoration: BoxDecoration(
-                            color: AppColors.secondaryFixed,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.verified_user_outlined,
-                                color: AppColors.onSecondaryFixed,
-                                size: 32,
-                              ),
-                              SizedBox(height: 8),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: Text(
-                                  'Bảo mật đa lớp cho Store Manager',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.onSecondaryFixed,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // const SizedBox(height: 32),
+                // Container(
+                //   constraints: const BoxConstraints(maxWidth: 440),
+                //   child: Row(
+                //     children: [
+                //       Expanded(
+                //         child: Container(
+                //           height: 128,
+                //           decoration: BoxDecoration(
+                //             borderRadius: BorderRadius.circular(12),
+                //             image: const DecorationImage(
+                //               image: NetworkImage(
+                //                 'https://lh3.googleusercontent.com/aida-public/AB6AXuD85qlaMM53v0G2Qf79VK8mxXCUgm06EjMH_yiXTtnedDjMWULZTXYf-1NflmhTS_nplgDvk65SB6AKfaK9GDBEXYEIlzUfv4GuMHJhR5aUg0Y7ycJCThDSnkoILW8SVTS3NAHtxQAtiBiCcJjQAag36R544MOt9YDB-UL_1lUz__jr2NHMmdqEeezuuiz6y_sjCVS750Qc0ExuxwExl2QvruWZjjF98sWCXRdmhYa8MEFoRCpRKULgnhi6Th310EldVco2XFvaitE',
+                //               ),
+                //               fit: BoxFit.cover,
+                //             ),
+                //           ),
+                //         ),
+                //       ),
+                //       const SizedBox(width: 12),
+                //       Expanded(
+                //         child: Container(
+                //           height: 128,
+                //           decoration: BoxDecoration(
+                //             color: AppColors.secondaryFixed,
+                //             borderRadius: BorderRadius.circular(12),
+                //           ),
+                //           child: const Column(
+                //             mainAxisAlignment: MainAxisAlignment.center,
+                //             children: [
+                //               Icon(
+                //                 Icons.verified_user_outlined,
+                //                 color: AppColors.onSecondaryFixed,
+                //                 size: 32,
+                //               ),
+                //               SizedBox(height: 8),
+                //               Padding(
+                //                 padding: EdgeInsets.symmetric(horizontal: 16),
+                //                 child: Text(
+                //                   'Bảo mật đa lớp cho Store Manager',
+                //                   textAlign: TextAlign.center,
+                //                   style: TextStyle(
+                //                     fontSize: 11,
+                //                     color: AppColors.onSecondaryFixed,
+                //                     fontWeight: FontWeight.w500,
+                //                   ),
+                //                 ),
+                //               ),
+                //             ],
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
 
                 const SizedBox(height: 24),
                 TextButton(

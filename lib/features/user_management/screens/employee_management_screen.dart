@@ -184,12 +184,6 @@ class _EmployeeManagementScreenState extends State<EmployeeManagementScreen> {
             "${stats?.activeUsers ?? '-'}",
             valueColor: AppTheme.successGreen,
           ),
-          const SizedBox(width: 12),
-          _buildKpiCard(
-            "Yêu cầu nghỉ",
-            "${stats?.leaveRequests ?? '-'}",
-            valueColor: AppTheme.dangerRed,
-          ),
         ],
       ),
     );

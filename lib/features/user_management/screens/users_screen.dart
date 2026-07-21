@@ -327,12 +327,6 @@ class _UsersScreenState extends State<UsersScreen> {
                               Colors.green,
                               null,
                             ),
-                            _buildStatCard(
-                              'YÊU CẦU NGHỈ',
-                              '${provider.stats?.leaveRequests ?? '-'}',
-                              Colors.red,
-                              null,
-                            ),
                           ],
                         ),
                         const SizedBox(height: 24),
