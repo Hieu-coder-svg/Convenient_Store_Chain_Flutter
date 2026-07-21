@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../branch/providers/branch_provider.dart';
 import '../providers/inventory_provider.dart';
 
 class BranchInventoryScreen extends StatefulWidget {
@@ -14,239 +16,273 @@ class BranchInventoryScreen extends StatefulWidget {
 }
 
 class _BranchInventoryScreenState extends State<BranchInventoryScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  static const _pageSize = 10;
+  final _searchController = TextEditingController();
   int _currentPage = 1;
   int? _branchId;
+
+  bool get _canSelectBranch {
+    final role = context.read<AuthProvider>().currentUser?.roleName;
+    return role == 'Chain Director' || role == 'System Admin';
+  }
+
+  bool get _canAdjust {
+    final role = context.read<AuthProvider>().currentUser?.roleName;
+    return role == 'Store Manager';
+  }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadBranchIdAndData();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final user = context.read<AuthProvider>().currentUser;
+      if (user == null) return;
+      if (user.roleName == 'Chain Director' || user.roleName == 'System Admin') {
+        await context.read<BranchProvider>().fetchBranches();
+        if (!mounted) return;
+        final activeBranches = context
+            .read<BranchProvider>()
+            .branches
+            .where((branch) => branch.isActive)
+            .toList();
+        if (activeBranches.isNotEmpty) {
+          setState(() => _branchId = activeBranches.first.branchId);
+          _loadPage(1);
+        }
+      } else {
+        setState(() => _branchId = user.branchId);
+        if (_branchId != null) _loadPage(1);
+      }
     });
-  }
-
-  Future<void> _loadBranchIdAndData() async {
-    final user = context.read<AuthProvider>().currentUser;
-    if (user != null) {
-      // Assuming user model has branchId or we can fetch it. For now, try to get from user object if available.
-      // If not, we might need to select branch if Admin, or get from profile.
-      // Let's assume Store Manager has branchId in user.branchId (if you added it)
-      // If not available easily, we fallback to 1 for demo
-      _branchId = 1; // TODO: Get actual branch ID from User Auth state.
-      _loadData();
-    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _scrollController.dispose();
     super.dispose();
   }
 
-  void _loadData({bool refresh = false}) {
+  Future<void> _loadPage(int page) async {
     if (_branchId == null) return;
-    if (refresh) {
-      _currentPage = 1;
-    }
-    context.read<InventoryProvider>().fetchBranchInventory(
-      _branchId!,
-      page: _currentPage,
-      search: _searchController.text,
-    );
+    setState(() => _currentPage = page);
+    await context.read<InventoryProvider>().fetchBranchInventory(
+          _branchId!,
+          page: page,
+          search: _searchController.text,
+        );
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<InventoryProvider>();
+    final branchProvider = context.watch<BranchProvider>();
+    final totalPages = provider.branchTotalCount == 0
+        ? 1
+        : (provider.branchTotalCount / _pageSize).ceil();
+
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Tồn kho chi nhánh'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/home');
-            }
-          },
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
         ),
-        title: const Text('Kho Chi Nhánh'),
         actions: [
           IconButton(
+            tooltip: 'Tải lại',
+            onPressed: provider.isLoadingBranch
+                ? null
+                : () => _loadPage(_currentPage),
             icon: const Icon(Icons.refresh),
-            onPressed: () => _loadData(refresh: true),
           ),
         ],
       ),
+      floatingActionButton: _canAdjust && _branchId != null
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                await context.push(
+                  '/stock-adjustment',
+                  extra: {'branchId': _branchId},
+                );
+                if (mounted) await _loadPage(_currentPage);
+              },
+              icon: const Icon(Icons.fact_check_outlined),
+              label: const Text('Kiểm kê'),
+            )
+          : null,
       body: Column(
         children: [
-          _buildSearchBar(),
-          _buildPaginationControl(),
-          Expanded(child: _buildList()),
+          if (_canSelectBranch)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: DropdownButtonFormField<int>(
+                initialValue: _branchId,
+                decoration: const InputDecoration(
+                  labelText: 'Chi nhánh',
+                  border: OutlineInputBorder(),
+                  isDense: true,
+                ),
+                items: branchProvider.branches
+                    .where((branch) => branch.isActive)
+                    .map(
+                      (branch) => DropdownMenuItem(
+                        value: branch.branchId,
+                        child: Text(branch.branchName),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  setState(() => _branchId = value);
+                  _loadPage(1);
+                },
+              ),
+            ),
+          _buildSearch(provider),
+          Expanded(child: _buildContent(provider)),
+          if (!provider.isLoadingBranch && provider.branchError == null)
+            _buildPagination(provider, totalPages),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          if (_branchId != null) {
-            context.push('/stock-adjustment', extra: {'branchId': _branchId});
-          }
-        },
-        icon: const Icon(Icons.edit_note),
-        label: const Text('Kiểm Kê'),
-      ),
     );
   }
 
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: 'Tìm kiếm sản phẩm (tên, mã vạch)...',
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: () {
-              _searchController.clear();
-              _loadData(refresh: true);
-            },
+  Widget _buildSearch(InventoryProvider provider) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: TextField(
+          controller: _searchController,
+          textInputAction: TextInputAction.search,
+          onSubmitted: (_) => _loadPage(1),
+          decoration: InputDecoration(
+            labelText: 'Tìm tên sản phẩm hoặc mã vạch',
+            prefixIcon: const Icon(Icons.search),
+            suffixIcon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  tooltip: 'Xóa tìm kiếm',
+                  onPressed: provider.isLoadingBranch
+                      ? null
+                      : () {
+                          _searchController.clear();
+                          _loadPage(1);
+                        },
+                  icon: const Icon(Icons.clear),
+                ),
+                IconButton(
+                  tooltip: 'Tìm kiếm',
+                  onPressed:
+                      provider.isLoadingBranch ? null : () => _loadPage(1),
+                  icon: const Icon(Icons.arrow_forward),
+                ),
+              ],
+            ),
+            border: const OutlineInputBorder(),
+            isDense: true,
           ),
         ),
-        onSubmitted: (_) => _loadData(refresh: true),
+      );
+
+  Widget _buildContent(InventoryProvider provider) {
+    if (_branchId == null) {
+      return const Center(child: Text('Tài khoản chưa được gán chi nhánh.'));
+    }
+    if (provider.isLoadingBranch) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (provider.branchError != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(provider.branchError!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => _loadPage(_currentPage),
+              child: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (provider.branchItems.isEmpty) {
+      return const Center(child: Text('Không tìm thấy tồn kho chi nhánh.'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => _loadPage(_currentPage),
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+        itemCount: provider.branchItems.length,
+        itemBuilder: (context, index) {
+          final item = provider.branchItems[index];
+          final isLowStock = item.quantity <= 10;
+          return Card(
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: (isLowStock ? Colors.red : AppColors.primary)
+                    .withValues(alpha: 0.12),
+                child: Icon(
+                  Icons.inventory_2,
+                  color: isLowStock ? Colors.red : AppColors.primary,
+                ),
+              ),
+              title: Text(item.productName,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(
+                'Mã vạch: ${item.barcode ?? 'Chưa có'}\n'
+                'Cập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}',
+              ),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${item.quantity} ${item.unit ?? ''}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isLowStock ? Colors.red : AppColors.primary,
+                    ),
+                  ),
+                  if (isLowStock)
+                    const Text('Sắp hết hàng',
+                        style: TextStyle(color: Colors.red, fontSize: 11)),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildList() {
-    return Consumer<InventoryProvider>(
-      builder: (context, provider, child) {
-        if (provider.isLoadingBranch && _currentPage == 1) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (provider.branchError != null && provider.branchItems.isEmpty) {
-          return Center(
-            child: Text(
-              provider.branchError!,
-              style: const TextStyle(color: Colors.red),
-            ),
-          );
-        }
-
-        if (provider.branchItems.isEmpty) {
-          return const Center(child: Text('Không tìm thấy dữ liệu tồn kho.'));
-        }
-
-        return RefreshIndicator(
-          onRefresh: () async => _loadData(refresh: true),
-          child: ListView.separated(
-            controller: _scrollController,
-            itemCount: provider.branchItems.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final item = provider.branchItems[index];
-              final bool isLowStock = item.quantity <= 10;
-
-              return ListTile(
-                title: Text(
-                  item.productName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  'Barcode: ${item.barcode ?? "N/A"}\nCập nhật: ${DateFormat('dd/MM/yyyy HH:mm').format(item.lastUpdated.toLocal())}',
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '${item.quantity}',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: isLowStock ? Colors.red : AppColors.primary,
-                      ),
-                    ),
-                    if (isLowStock)
-                      const Text(
-                        'Sắp hết',
-                        style: TextStyle(color: Colors.red, fontSize: 10),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildPaginationControl() {
-    return Consumer<InventoryProvider>(
-      builder: (context, provider, child) {
-        if (provider.branchTotalCount == 0) return const SizedBox.shrink();
-        
-        // Assume default pageSize = 10
-        final int pageSize = 10;
-        final int totalPages = (provider.branchTotalCount / pageSize).ceil();
-        
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withValues(alpha: 0.2),
-                blurRadius: 4,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
+  Widget _buildPagination(InventoryProvider provider, int totalPages) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'Tổng: ${provider.branchTotalCount} sp',
-                style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              IconButton(
+                tooltip: 'Trang trước',
+                onPressed: _currentPage > 1
+                    ? () => _loadPage(_currentPage - 1)
+                    : null,
+                icon: const Icon(Icons.chevron_left),
               ),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left),
-                    onPressed: _currentPage > 1
-                        ? () {
-                            setState(() {
-                              _currentPage--;
-                            });
-                            _loadData();
-                          }
-                        : null,
-                  ),
-                  Text(
-                    'Trang $_currentPage / $totalPages',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right),
-                    onPressed: _currentPage < totalPages
-                        ? () {
-                            setState(() {
-                              _currentPage++;
-                            });
-                            _loadData();
-                          }
-                        : null,
-                  ),
-                ],
+              Text(
+                'Trang $_currentPage/$totalPages  •  ${provider.branchTotalCount} sản phẩm',
+              ),
+              IconButton(
+                tooltip: 'Trang sau',
+                onPressed: _currentPage < totalPages
+                    ? () => _loadPage(_currentPage + 1)
+                    : null,
+                icon: const Icon(Icons.chevron_right),
               ),
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
 }

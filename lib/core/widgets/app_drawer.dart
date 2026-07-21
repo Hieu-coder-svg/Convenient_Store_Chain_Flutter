@@ -100,6 +100,27 @@ class AppDrawer extends StatelessWidget {
                     title: 'Sản phẩm',
                     onTap: () => context.go('/products'),
                   ),
+                  if (user?.roleName.contains('Store Staff') == true ||
+                      user?.roleName.contains('StoreStaff') == true)
+                    _buildNavItem(
+                      context,
+                      icon: Icons.store_mall_directory_outlined,
+                      title: 'Tồn kho cửa hàng',
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.go('/branch-inventory');
+                      },
+                    ),
+                  if (user?.roleName == 'Chain Director')
+                    _buildNavItem(
+                      context,
+                      icon: Icons.store_mall_directory_outlined,
+                      title: 'Tồn kho các chi nhánh',
+                      onTap: () {
+                        Navigator.pop(context);
+                        context.go('/branch-inventory');
+                      },
+                    ),
                   if (user?.roleName == 'Chain Director')
                     _buildNavItem(
                       context,
@@ -108,9 +129,7 @@ class AppDrawer extends StatelessWidget {
                       onTap: () => context.go('/categories'),
                     ),
                 ],
-                if (user?.roleName.contains('Store Manager') == true ||
-                    user?.roleName.contains('StoreManager') == true ||
-                    user?.roleName.contains('Warehouse') == true) ...[
+                if (user?.roleName.contains('Warehouse') == true) ...[
                   _buildNavItem(
                     context,
                     icon: Icons.warehouse_outlined,
@@ -118,15 +137,6 @@ class AppDrawer extends StatelessWidget {
                     onTap: () {
                       Navigator.pop(context);
                       context.go('/warehouse-inventory');
-                    },
-                  ),
-                  _buildNavItem(
-                    context,
-                    icon: Icons.store_mall_directory_outlined,
-                    title: 'Kho chi nhánh (Branch)',
-                    onTap: () {
-                      Navigator.pop(context);
-                      context.go('/branch-inventory');
                     },
                   ),
                 ],
@@ -221,7 +231,16 @@ class AppDrawer extends StatelessWidget {
                       context.go('/branch-orders');
                     },
                   ),
-                if (user?.roleName.contains('Warehouse') == true)
+                if (user?.roleName.contains('Warehouse') == true) ...[
+                  _buildNavItem(
+                    context,
+                    icon: Icons.assignment_outlined,
+                    title: 'Đơn nhập hàng (Purchase Orders)',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/purchase-orders');
+                    },
+                  ),
                   _buildNavItem(
                     context,
                     icon: Icons.add_box_outlined,
@@ -231,6 +250,7 @@ class AppDrawer extends StatelessWidget {
                       context.go('/goods-receiving');
                     },
                   ),
+                ],
                 if (user?.roleName.contains('Warehouse Staff') != true &&
                     user?.roleName.contains('WarehouseStaff') != true &&
                     user?.roleName.contains('Admin') != true &&
@@ -315,12 +335,6 @@ class AppDrawer extends StatelessWidget {
                 const Divider(),
                 
 
-                _buildNavItem(
-                  context,
-                  icon: Icons.warehouse_outlined,
-                  title: 'Kho tổng (Warehouse)',
-                  onTap: () => context.go('/warehouse-inventory'),
-                ),
                 _buildNavItem(
                   context,
                   icon: Icons.store_mall_directory_outlined,

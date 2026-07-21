@@ -11,6 +11,7 @@ class InventoryApiService {
     int page = 1,
     int pageSize = 20,
     String? search,
+    bool lowStockOnly = false,
   }) async {
     try {
       final response = await _dioClient.dio.get(
@@ -19,13 +20,12 @@ class InventoryApiService {
           'page': page,
           'pageSize': pageSize,
           if (search != null && search.isNotEmpty) 'search': search,
+          'lowStockOnly': lowStockOnly,
         },
       );
       return response.data;
     } on DioException catch (e) {
-      throw Exception(
-        _getErrorMessage(e) ?? 'Lỗi tải danh sách kho tổng',
-      );
+      throw Exception(_getErrorMessage(e) ?? 'Lỗi tải danh sách kho tổng');
     }
   }
 
@@ -47,45 +47,38 @@ class InventoryApiService {
       );
       return response.data;
     } on DioException catch (e) {
-      throw Exception(
-        _getErrorMessage(e) ?? 'Lỗi tải danh sách kho chi nhánh',
-      );
+      throw Exception(_getErrorMessage(e) ?? 'Lỗi tải danh sách kho chi nhánh');
     }
   }
 
   // STOCK ADJUSTMENT
-  Future<void> adjustStock(
+  Future<Map<String, dynamic>> adjustStock(
     int branchId,
     List<Map<String, dynamic>> items,
   ) async {
     try {
-      await _dioClient.dio.post(
+      final response = await _dioClient.dio.post(
         '/branches/$branchId/inventory/adjust',
         data: {'items': items},
       );
+      return Map<String, dynamic>.from(response.data as Map);
     } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e) ?? 'Lỗi điều chỉnh tồn kho chi nhánh');
-    }
-  }
-
-  // WAREHOUSE STOCK ADJUSTMENT
-  Future<void> adjustWarehouseStock(
-    List<Map<String, dynamic>> items,
-  ) async {
-    try {
-      await _dioClient.dio.post(
-        '/warehouse-inventory/adjust',
-        data: {'items': items},
+      throw Exception(
+        _getErrorMessage(e) ?? 'Lỗi điều chỉnh tồn kho chi nhánh',
       );
-    } on DioException catch (e) {
-      throw Exception(_getErrorMessage(e) ?? 'Lỗi điều chỉnh tồn kho tổng');
     }
   }
 
   // GOODS RECEIVING
-  Future<void> receiveGoods(Map<String, dynamic> receiptData) async {
+  Future<Map<String, dynamic>> receiveGoods(
+    Map<String, dynamic> receiptData,
+  ) async {
     try {
-      await _dioClient.dio.post('/goods-receipts', data: receiptData);
+      final response = await _dioClient.dio.post(
+        '/goods-receipts',
+        data: receiptData,
+      );
+      return Map<String, dynamic>.from(response.data as Map);
     } on DioException catch (e) {
       throw Exception(_getErrorMessage(e) ?? 'Lỗi tạo phiếu nhận hàng');
     }
@@ -93,7 +86,9 @@ class InventoryApiService {
 
   String? _getErrorMessage(DioException e) {
     if (e.response?.data is Map<String, dynamic>) {
-      return e.response?.data['message'] ?? e.response?.data['Message'] ?? e.response?.data['title'];
+      return e.response?.data['message'] ??
+          e.response?.data['Message'] ??
+          e.response?.data['title'];
     } else if (e.response?.data is String) {
       return e.response?.data as String;
     }

@@ -79,6 +79,24 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade700,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          context.go('/branch-inventory');
+                        },
+                        icon: const Icon(
+                          Icons.store_mall_directory_outlined,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Tồn kho cửa hàng',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                     ],
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
@@ -89,13 +107,34 @@ class HomeScreen extends StatelessWidget {
                         context.go('/products');
                       },
                       icon: const Icon(Icons.warehouse, color: Colors.white),
-                      label: const Text(
-                        'Quản lý sản phẩm',
-                        style: TextStyle(color: Colors.white),
+                      label: Text(
+                        user?.roleName.contains('Store Staff') == true ||
+                                user?.roleName.contains('StoreStaff') == true
+                            ? 'Danh mục sản phẩm'
+                            : 'Quản lý sản phẩm',
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                     const SizedBox(height: 12),
                     if (user?.roleName == 'Chain Director') ...[
+                      ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey.shade700,
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        onPressed: () {
+                          context.go('/branch-inventory');
+                        },
+                        icon: const Icon(
+                          Icons.store_mall_directory_outlined,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Tồn kho các chi nhánh',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       ElevatedButton.icon(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.secondary,
