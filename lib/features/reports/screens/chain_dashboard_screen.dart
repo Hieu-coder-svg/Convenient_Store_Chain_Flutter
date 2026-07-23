@@ -39,7 +39,7 @@ class _ChainDashboardScreenState extends State<ChainDashboardScreen> {
       drawer: const AppDrawer(),
       appBar: AppBar(
         title: const Text(
-          'Bảng điều khiển Kinh doanh',
+          'Doanh Thu Toàn Chuỗi',
           style: TextStyle(
             color: AppColors.primary,
             fontWeight: FontWeight.bold,
